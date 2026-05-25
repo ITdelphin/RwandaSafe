@@ -1,3 +1,4 @@
+require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const { sequelize, User, Report, Notification } = require("./models");
 
@@ -20,7 +21,7 @@ const seedDatabase = async () => {
             id: "RPT-2402", type: "Road Accident", description: "Car crash on KN 5 Rd", location: "Remera, Kigali", lat: -1.9541, lng: 30.1119, date: new Date().toISOString(), level: "Critical", status: "Resolved", reporter: "Anonymous", reporterId: null
         });
 
-        console.log("✅ Database seeded with SQLite via Sequelize!");
+        console.log("✅ Database seeded with Supabase via Sequelize!");
         process.exit(0);
     } catch (err) {
         console.error("Seed error", err);

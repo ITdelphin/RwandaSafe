@@ -267,18 +267,39 @@ const TrackPage = ({ user }) => {
                                     </div>
                                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                                         {r.evidence.map((ev, i) => (
-                                            <div key={i} className="evidence-thumb" title={ev}>
-                                                <Icon
-                                                    name={
-                                                        ev.includes("mp4")
-                                                            ? "video"
-                                                            : ev.includes("mp3")
-                                                                ? "microphone"
-                                                                : "photo"
-                                                    }
-                                                    size={20}
-                                                    color={COLORS.primary}
-                                                />
+                                            <div
+                                                key={i}
+                                                className="evidence-thumb"
+                                                title={ev}
+                                                onClick={() => window.open(ev, "_blank")}
+                                                style={{
+                                                    cursor: "pointer",
+                                                    overflow: "hidden",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    background: COLORS.bgPanel,
+                                                    borderRadius: 8,
+                                                    width: 44,
+                                                    height: 44,
+                                                    border: `1px solid ${COLORS.border}`
+                                                }}
+                                            >
+                                                {ev.match(/\.(jpg|jpeg|png|gif|webp)/i) || ev.includes("supabase.co/storage/v1/object/public/evidence") ? (
+                                                    <img src={ev} alt="evidence" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                                ) : (
+                                                    <Icon
+                                                        name={
+                                                            ev.includes("mp4")
+                                                                ? "video"
+                                                                : ev.includes("mp3")
+                                                                    ? "microphone"
+                                                                    : "photo"
+                                                        }
+                                                        size={20}
+                                                        color={COLORS.primary}
+                                                    />
+                                                )}
                                             </div>
                                         ))}
                                     </div>

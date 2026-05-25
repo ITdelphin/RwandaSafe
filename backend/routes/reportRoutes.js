@@ -4,26 +4,21 @@ const { auth, authorize } = require("../middleware/auth");
 const multer = require("multer");
 const path = require("path");
 
+const supabase = require("../config/supabase");
+
 const router = express.Router();
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, "uploads/"),
-    filename: (req, file, cb) => {
-        const safeName = Date.now() + "-" + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
-        cb(null, safeName);
-    }
-});
+// Buffer storage for serverless environments
+const storage = multer.memoryStorage();
 const upload = multer({
     storage,
     limits: { fileSize: 50 * 1024 * 1024 } // 50MB
 });
 
-// POST new report (open to anyone/authenticated)
+// POST new report
 router.post("/", upload.array("evidenceFiles", 5), async (req, res) => {
     try {
         const { type, description, location, lat, lng, date, level, reporter } = req.body;
-
         const reportId = `RPT-${Math.floor(1000 + Math.random() * 9000)}`;
 
         const newReport = await Report.create({
@@ -41,12 +36,31 @@ router.post("/", upload.array("evidenceFiles", 5), async (req, res) => {
         });
 
         if (req.files && req.files.length > 0) {
-            await Promise.all(req.files.map(file => Evidence.create({
-                filename: file.filename,
-                type: file.mimetype.split('/')[0] === "image" ? "Photo" : file.mimetype.split('/')[0] === "video" ? "Video" : "Audio",
-                url: `/uploads/${file.filename}`,
-                ReportId: reportId
-            })));
+            for (const file of req.files) {
+                const fileName = `${reportId}/${Date.now()}-${file.originalname}`;
+
+                // Upload to Supabase Storage
+                const { data, error } = await supabase.storage
+                    .from("evidence")
+                    .upload(fileName, file.buffer, {
+                        contentType: file.mimetype,
+                        upsert: false
+                    });
+
+                if (error) throw error;
+
+                // Get Public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from("evidence")
+                    .getPublicUrl(fileName);
+
+                await Evidence.create({
+                    filename: file.originalname,
+                    type: file.mimetype.split('/')[0] === "image" ? "Photo" : file.mimetype.split('/')[0] === "video" ? "Video" : "Audio",
+                    url: publicUrl,
+                    ReportId: reportId
+                });
+            }
         }
 
         await ReportUpdate.create({
@@ -57,8 +71,8 @@ router.post("/", upload.array("evidenceFiles", 5), async (req, res) => {
 
         res.status(201).json({ id: reportId, message: "Report logged successfully" });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Failed to submit report" });
+        console.error("Report submission error:", error);
+        res.status(500).json({ error: "Failed to submit report. " + error.message });
     }
 });
 
@@ -82,7 +96,7 @@ router.get("/", auth, async (req, res) => {
         // Map output to match frontend expectation
         const formatted = reports.map(r => ({
             ...r.toJSON(),
-            evidence: r.evidenceFiles.map(e => e.filename),
+            evidence: r.evidenceFiles.map(e => e.url),
             updates: r.updates.map(u => ({ msg: u.msg, time: new Date(u.time).toLocaleString() }))
         }));
 

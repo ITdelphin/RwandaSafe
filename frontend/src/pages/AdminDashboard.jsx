@@ -287,12 +287,16 @@ const AdminDashboard = () => {
                         <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24 }}>Evidence Vault</h2>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 14 }}>
                             {reports.flatMap(r => r.evidence.map(ev => ({ ev, id: r.id, type: r.type }))).map(({ ev, id, type }, i) => (
-                                <div key={i} className="card" style={{ padding: 16, textAlign: "center" }}>
-                                    <div style={{ width: 60, height: 60, borderRadius: 10, background: COLORS.bgPanel, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-                                        <Icon name={ev.includes("mp4") ? "video" : ev.includes("mp3") ? "microphone" : "photo"} size={28} color={COLORS.primary} />
+                                <div key={i} className="card" style={{ padding: 12, textAlign: "center", cursor: "pointer" }} onClick={() => window.open(ev, "_blank")}>
+                                    <div style={{ width: "100%", height: 120, borderRadius: 10, background: COLORS.bgPanel, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, overflow: "hidden" }}>
+                                        {ev.match(/\.(jpg|jpeg|png|gif|webp)/i) || ev.includes("supabase.co/storage/v1/object/public/evidence") ? (
+                                            <img src={ev} alt="evidence" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                        ) : (
+                                            <Icon name={ev.includes("mp4") ? "video" : ev.includes("mp3") ? "microphone" : "photo"} size={32} color={COLORS.primary} />
+                                        )}
                                     </div>
-                                    <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{ev}</div>
-                                    <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 10 }}>{type} · {id}</div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{type}</div>
+                                    <div style={{ fontSize: 10, color: COLORS.textMuted }}>Case {id}</div>
                                 </div>
                             ))}
                         </div>
