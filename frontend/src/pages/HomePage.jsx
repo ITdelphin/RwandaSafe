@@ -30,7 +30,7 @@ const HomePage = () => {
                     textAlign: "center",
                     overflow: "hidden",
                     background:
-                        "radial-gradient(ellipse at 50% 0%,rgba(200,16,46,.18) 0%,transparent 70%)",
+                        "radial-gradient(ellipse at 50% 0%,rgba(200,16,46,.05) 0%,transparent 70%)",
                 }}
             >
                 <div
@@ -38,7 +38,8 @@ const HomePage = () => {
                         position: "absolute",
                         inset: 0,
                         backgroundImage:
-                            "radial-gradient(circle at 20% 80%,rgba(0,106,78,.1) 0%,transparent 50%), radial-gradient(circle at 80% 20%,rgba(200,16,46,.08) 0%,transparent 50%)",
+                            "radial-gradient(circle at 20% 80%,rgba(0,106,78,.05) 0%,transparent 50%), radial-gradient(circle at 80% 20%,rgba(200,16,46,.04) 0%,transparent 50%)",
+                        opacity: 0.5,
                     }}
                 />
                 <div
@@ -69,13 +70,13 @@ const HomePage = () => {
                     </span>
                 </div>
                 <h1
-                    className="glow-text"
                     style={{
                         fontSize: 52,
-                        fontWeight: 700,
-                        lineHeight: 1.15,
+                        fontWeight: 800,
+                        lineHeight: 1.1,
                         marginBottom: 20,
-                        letterSpacing: -1.5,
+                        letterSpacing: -2,
+                        color: "#0F172A",
                     }}
                 >
                     Protect Rwanda.<br />
@@ -153,17 +154,17 @@ const HomePage = () => {
                     </div>
                     <button
                         style={{
-                            width: 90,
-                            height: 90,
+                            width: 100,
+                            height: 100,
                             borderRadius: "50%",
-                            background: `radial-gradient(circle,${COLORS.primary},${COLORS.primaryDark})`,
-                            border: "3px solid rgba(200,16,46,.4)",
+                            background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryDark})`,
+                            border: "none",
                             color: "#fff",
-                            fontSize: 18,
-                            fontWeight: 800,
+                            fontSize: 20,
+                            fontWeight: 900,
                             letterSpacing: 2,
                             cursor: "pointer",
-                            boxShadow: "0 0 30px rgba(200,16,46,.5)",
+                            boxShadow: "0 10px 30px rgba(200,16,46,.4)",
                             animation: "ring 2s infinite",
                         }}
                         onClick={() => {
@@ -219,9 +220,9 @@ const HomePage = () => {
                     Select a category to begin your emergency report
                 </p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-                    {types.map((t) => (
+                    {types.map((t, idx) => (
                         <button
-                            key={t.name}
+                            key={t.name || t || idx}
                             onClick={() => navigate("/report")}
                             style={{
                                 background: COLORS.bgCard,
@@ -285,7 +286,7 @@ const HomePage = () => {
                             marginBottom: 4,
                         }}
                     >
-                        ⚠️ Warning — False Reports are Illegal
+                        Warning — False Reports are Illegal
                     </div>
                     <div style={{ fontSize: 12, color: COLORS.textMuted, lineHeight: 1.6 }}>
                         Submitting fake reports, false information, or misleading emergency alerts
@@ -326,7 +327,7 @@ const HomePage = () => {
                     <Icon name="phone" size={14} /> Contact Help
                 </button>
             </div>
-        </div>
+        </div >
     );
 };
 

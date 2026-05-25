@@ -1,40 +1,38 @@
 // ── Color Palette ────────────────────────────────────────
 export const COLORS = {
-    primary: "#C8102E",
-    primaryDark: "#9B0C23",
-    primaryLight: "#FF1A45",
-    secondary: "#006A4E",
-    secondaryDark: "#004D38",
-    accent: "#FFD700",
-    bg: "#0A0E1A",
-    bgCard: "#111827",
-    bgPanel: "#1a2236",
-    bgInput: "#0d1525",
-    border: "rgba(255,255,255,0.08)",
-    borderStrong: "rgba(255,255,255,0.15)",
-    text: "#F1F5F9",
-    textMuted: "#94A3B8",
-    textDim: "#64748B",
-    success: "#10B981",
-    warning: "#F59E0B",
-    danger: "#EF4444",
-    info: "#3B82F6",
+    primary: "#C8102E", // Red (Danger / Branding)
+    primaryDark: "#A80D26",
+    primaryLight: "#DC2626",
+    secondary: "#1E3A8A", // Dark Blue (Standard Action / Success / System Online)
+    secondaryDark: "#172554",
+    secondaryLight: "#1E40AF",
+    accent: "#F4B400", // Yellow (Warning / Accent)
+    bg: "#FFFFFF", // White
+    bgCard: "#FFFFFF",
+    bgPanel: "#F8FAFC",
+    bgInput: "#FFFFFF",
+    border: "rgba(0, 0, 0, 0.08)",
+    borderStrong: "rgba(0, 0, 0, 0.12)",
+    text: "#1E293B",
+    textMuted: "#64748B",
+    textDim: "#94A3B8",
+    success: "#1E3A8A", // Dark Blue
+    warning: "#F4B400", // Yellow
+    danger: "#C8102E", // Red
+    info: "#1E3A8A", // Dark Blue
 };
+
 
 // ── Emergency Types ──────────────────────────────────────
 export const EMERGENCY_TYPES = [
-    "Theft",
-    "Road Accident",
-    "Fire",
-    "Violence/Assault",
-    "Suspicious Activity",
-    "Kidnapping",
-    "Vandalism",
-    "Drug Activity",
-    "Domestic Violence",
-    "Medical Emergency",
-    "Terrorism Threat",
-    "Other",
+    { name: "Theft", icon: "wallet", defaultLevel: "Medium" },
+    { name: "Road Accident", icon: "car-crash", defaultLevel: "High" },
+    { name: "Fire", icon: "flame", defaultLevel: "Critical" },
+    { name: "Assault", icon: "hand-off", defaultLevel: "High" },
+    { name: "Suspicious", icon: "search", defaultLevel: "Medium" },
+    { name: "Medical", icon: "ambulance", defaultLevel: "High" },
+    { name: "Terrorism", icon: "alert-octagon", defaultLevel: "Critical" },
+    { name: "Other", icon: "dots", defaultLevel: "Low" },
 ];
 
 // ── Police Stations ──────────────────────────────────────

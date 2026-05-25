@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { COLORS, EMERGENCY_TYPES } from "../config/constants";
 import { Icon, LevelBadge, StatusBadge } from "../components/Badges";
+import toast from "react-hot-toast";
 import API from "../config/api";
 
 const AdminDashboard = () => {
@@ -9,9 +10,13 @@ const AdminDashboard = () => {
     const [reports, setReports] = useState([]);
     const [users, setUsers] = useState([]);
     const [statsData, setStatsData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [auditLogs, setAuditLogs] = useState([]);
 
     useEffect(() => {
         fetchData();
+        const interval = setInterval(fetchData, 15000);
+        return () => clearInterval(interval);
     }, [tab]);
 
     const fetchData = async () => {
@@ -20,7 +25,7 @@ const AdminDashboard = () => {
                 const repRes = await API.get("/reports");
                 setReports(repRes.data);
             }
-            if (tab === "overview" || tab === "analytics") {
+            if (tab === "overview" || tab === "analytics" || tab === "health") {
                 const statRes = await API.get("/admin/stats");
                 setStatsData(statRes.data);
             }
@@ -28,306 +33,241 @@ const AdminDashboard = () => {
                 const userRes = await API.get("/admin/users");
                 setUsers(userRes.data);
             }
+            const logsRes = await API.get("/admin/audit-logs");
+            setAuditLogs(logsRes.data);
         } catch (err) {
             console.error(err);
-        }
-    };
-
-    const updateStatus = async (id, status) => {
-        try {
-            await API.patch(`/reports/${id}/status`, { status });
-            fetchData();
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const toggleUserStatus = async (id) => {
-        try {
-            await API.patch(`/admin/users/${id}/status`);
-            fetchData();
-        } catch (err) {
-            console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 
     const stats = statsData ? [
-        { label: "Total Reports", val: statsData.stats.totalReports, icon: "file-report", color: COLORS.primary, sub: "Total tracked" },
-        { label: "Active Cases", val: statsData.stats.activeCases, icon: "activity", color: COLORS.warning, sub: "In progress" },
-        { label: "Resolved", val: statsData.stats.resolved, icon: "check-circle", color: COLORS.success, sub: "Case solved" },
-        { label: "Critical Alerts", val: statsData.stats.criticalAlerts, icon: "alert-triangle", color: COLORS.danger, sub: "Needs attention" },
-        { label: "Open Cases", val: statsData.stats.openCases, icon: "folder-open", color: COLORS.info, sub: "Awaiting officer" },
-        { label: "Fake Detected", val: statsData.stats.fakeDetected, icon: "shield-x", color: "#A855F7", sub: "Flagged reports" },
+        { label: "Total Reports", val: statsData.stats.totalReports, icon: "file-report", color: "#C8102E" },
+        { label: "Active Units", val: "12", icon: "activity", color: "#1E3A8A" },
+        { label: "Resolved", val: statsData.stats.resolved, icon: "check-circle", color: "#1E3A8A" },
+        { label: "System Uptime", val: "99.9%", icon: "server", color: "#6366F1" },
     ] : [];
-
-    const byType = statsData ? Object.entries(statsData.byType).map(([type, count]) => ({ type, count })) : [];
-    const maxCount = Math.max(...byType.map(x => x.count), 1);
 
     const tabs = [
         { id: "overview", icon: "dashboard", label: "Overview" },
-        { id: "reports", icon: "file-report", label: "All Reports" },
-        { id: "users", icon: "users", label: "Users" },
-        { id: "analytics", icon: "chart-bar", label: "Analytics" },
-        { id: "evidence", icon: "folder", label: "Evidence" }
+        { id: "reports", icon: "file-report", label: "Investigations" },
+        { id: "users", icon: "users", label: "System Users" },
+        { id: "analytics", icon: "chart-bar", label: "Insights" },
+        { id: "evidence", icon: "folder", label: "Vault" },
+        { id: "health", icon: "shield-check", label: "System Health" },
     ];
 
+    if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 100 }}><span className="pulse">Loading Admin Interface...</span></div>;
+
     return (
-        <div style={{ display: "flex", minHeight: "calc(100vh - 60px)" }}>
-            {/* Sidebar */}
-            <div
-                style={{
-                    width: 220,
-                    background: COLORS.bgCard,
-                    borderRight: `1px solid ${COLORS.border}`,
-                    padding: "20px 12px",
-                    flexShrink: 0,
-                    position: "sticky",
-                    top: 60,
-                    height: "calc(100vh - 60px)",
-                    overflowY: "auto",
-                }}
-            >
-                <div
-                    style={{
-                        fontSize: 10,
-                        color: COLORS.textDim,
-                        textTransform: "uppercase",
-                        letterSpacing: 1,
-                        padding: "0 14px",
-                        marginBottom: 8,
-                    }}
-                >
-                    Admin Panel
+        <div className="dashboard-container">
+            {/* Sidebar - NEW LIGHT VERSION */}
+            <div className="dashboard-sidebar" style={{ background: "#FFFFFF", padding: "16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 40, padding: "0 12px" }}>
+                    <div style={{ width: 40, height: 40, background: "#F1F5F9", border: "1px solid #E2E8F0", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🇷🇼</div>
+                    <div>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: "#0F172A" }}>SafeRwanda</div>
+                        <div style={{ fontSize: 10, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Admin Authority</div>
+                    </div>
                 </div>
-                {tabs.map((t) => (
-                    <button
-                        key={t.id}
-                        className={`sidebar-link ${tab === t.id ? "active" : ""}`}
-                        onClick={() => setTab(t.id)}
-                    >
-                        <Icon name={t.icon} size={16} />
-                        {t.label}
-                    </button>
-                ))}
+
+                <div className="dashboard-sidebar-nav" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {tabs.map(t => (
+                        <button
+                            key={t.id}
+                            onClick={() => setTab(t.id)}
+                            className={`sidebar-link ${tab === t.id ? "active" : ""}`}
+                        >
+                            <Icon name={t.icon} size={18} color={tab === t.id ? "#1E3A8A" : "#64748B"} />
+                            {t.label}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="dashboard-sidebar-footer" style={{ marginTop: "auto", paddingTop: 40 }}>
+                    <div style={{ padding: "20px", background: "#F8FAFC", borderRadius: 16, border: "1px solid #F1F5F9" }}>
+                        <div style={{ fontSize: 11, color: "#94A3B8", marginBottom: 12, fontWeight: 700 }}>SYSTEM STATUS</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                            <div className="pulse-green" style={{ width: 8, height: 8, background: "#1E3A8A", borderRadius: "50%" }} />
+                            <span style={{ fontSize: 12, fontWeight: 700, color: "#1E3A8A" }}>All Services Online</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: "#94A3B8" }}>Version 2.1.0-Professional</div>
+                    </div>
+                </div>
             </div>
 
-            {/* Main Content */}
-            <div style={{ flex: 1, padding: "24px", overflowY: "auto" }}>
-                {tab === "overview" && statsData && (
-                    <div className="slide-in">
-                        <div style={{ marginBottom: 24 }}>
-                            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
-                                Admin Dashboard
-                            </h2>
-                            <p style={{ color: COLORS.textMuted, fontSize: 14 }}>
-                                System overview — {new Date().toLocaleDateString("en-RW", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-                            </p>
-                        </div>
+            {/* Main */}
+            <div className="dashboard-main dashboard-content">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
+                    <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#C8102E", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>REPUBLIC OF RWANDA</div>
+                        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#0F172A" }}>{tabs.find(t => t.id === tab).label}</h1>
+                    </div>
+                    <div style={{ display: "flex", gap: 12 }}>
+                        <button className="btn-secondary" style={{ padding: "10px 20px" }}>
+                            📋 Audit Trail
+                        </button>
+                        <button onClick={() => setShowModal("broadcast")} className="btn-primary" style={{ padding: "10px 20px" }}>
+                            📢 Disseminate Alert
+                        </button>
+                    </div>
+                </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 28 }}>
-                            {stats.map((s) => (
-                                <div key={s.label} className="stat-card">
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                                        <div>
-                                            <div style={{ fontSize: 28, fontWeight: 700, color: s.color }}>{s.val}</div>
-                                            <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>{s.label}</div>
-                                        </div>
-                                        <div style={{ width: 40, height: 40, borderRadius: 10, background: `${s.color}20`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                            <Icon name={s.icon} size={20} color={s.color} />
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                {/* Broadcast Modal */}
+                {showModal === "broadcast" && (
+                    <div style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.8)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+                        <div className="card slide-in" style={{ width: 450, padding: 32, background: "#FFFFFF", borderRadius: 24 }}>
+                            <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 8 }}>Official Safety Alert</div>
+                            <p style={{ fontSize: 13, color: "#64748B", marginBottom: 24 }}>This broadcast will be visible to all Citizens instantly.</p>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20 }}>
-                            <div className="card">
-                                <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Recent Reports</h3>
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Type</th>
-                                            <th>Level</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {reports.slice(0, 5).map((r) => (
-                                            <tr key={r.id}>
-                                                <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: COLORS.primary }}>
-                                                    {r.id}
-                                                </td>
-                                                <td style={{ fontSize: 13 }}>{r.type}</td>
-                                                <td><LevelBadge level={r.level} /></td>
-                                                <td><StatusBadge status={r.status} /></td>
-                                                <td>
-                                                    <button className="btn-info" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => setShowModal(r.id)}>
-                                                        View
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <div style={{ marginBottom: 20 }}>
+                                <label style={{ fontSize: 12, fontWeight: 800, color: "#1E293B", display: "block", marginBottom: 8 }}>Alert Type</label>
+                                <select id="bType" style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid #E2E8F0", outline: "none", fontSize: 14 }}>
+                                    <option>Info</option>
+                                    <option>Urgent</option>
+                                </select>
                             </div>
-                            <div className="card">
-                                <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Reports by Type</h3>
-                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                                    {byType.filter(x => x.count > 0).map((x) => (
-                                        <div key={x.type}>
-                                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                                                <span style={{ color: COLORS.textMuted }}>{x.type}</span>
-                                                <span style={{ fontWeight: 600 }}>{x.count}</span>
-                                            </div>
-                                            <div className="progress-bar">
-                                                <div className="progress-fill" style={{ width: `${(x.count / maxCount) * 100}%`, background: COLORS.primary }} />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+
+                            <div style={{ marginBottom: 32 }}>
+                                <label style={{ fontSize: 12, fontWeight: 800, color: "#1E293B", display: "block", marginBottom: 8 }}>Broadcast Message</label>
+                                <textarea id="bMsg" placeholder="Enter safety instruction..." style={{ width: "100%", height: 100, padding: "12px", borderRadius: 12, border: "1px solid #E2E8F0", outline: "none", fontSize: 14, resize: "none" }}></textarea>
+                            </div>
+
+                            <div style={{ display: "flex", gap: 12 }}>
+                                <button onClick={() => setShowModal(null)} className="btn-secondary" style={{ flex: 1 }}>Cancel</button>
+                                <button
+                                    onClick={async () => {
+                                        const type = document.getElementById("bType").value;
+                                        const message = document.getElementById("bMsg").value;
+                                        if (!message) return toast.error("Message required");
+                                        try {
+                                            await API.post("/broadcasts", { type, message });
+                                            toast.success("Alert Broadcasted Successfully");
+                                            setShowModal(null);
+                                        } catch (err) { toast.error("Broadcast failed"); }
+                                    }}
+                                    className="btn-primary" style={{ flex: 1 }}
+                                >
+                                    Publish Alert
+                                </button>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {tab === "reports" && (
-                    <div className="slide-in">
-                        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>All Reports</h2>
-                        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Report ID</th>
-                                        <th>Type</th>
-                                        <th>Reporter</th>
-                                        <th>Level</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {reports.map((r) => (
-                                        <tr key={r.id}>
-                                            <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: COLORS.primary }}>{r.id}</td>
-                                            <td style={{ fontSize: 13, fontWeight: 600 }}>{r.type}</td>
-                                            <td style={{ fontSize: 12, color: COLORS.textMuted }}>{r.reporter}</td>
-                                            <td><LevelBadge level={r.level} /></td>
-                                            <td><StatusBadge status={r.status} /></td>
-                                            <td>
-                                                <div style={{ display: "flex", gap: 5 }}>
-                                                    <button className="btn-info" style={{ padding: "3px 8px", fontSize: 11 }} onClick={() => setShowModal(r.id)}>View</button>
-                                                    {r.status !== "Resolved" && (
-                                                        <button className="btn-success" style={{ padding: "3px 8px", fontSize: 11 }} onClick={() => updateStatus(r.id, "Resolved")}>Resolve</button>
-                                                    )}
+                <div className="slide-in">
+                    {tab === "overview" && (
+                        <>
+                            <div className="grid-4" style={{ marginBottom: 32 }}>
+                                {stats.map(s => (
+                                    <div key={s.label} className="card" style={{ padding: 24 }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+                                            <div style={{ width: 44, height: 44, borderRadius: 12, background: `${s.color}10`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <Icon name={s.icon} size={22} color={s.color} />
+                                            </div>
+                                            <div style={{ fontSize: 11, fontWeight: 700, color: "#10B981" }}>+4.2% ↑</div>
+                                        </div>
+                                        <div style={{ fontSize: 28, fontWeight: 800, color: "#1E293B" }}>{s.val}</div>
+                                        <div style={{ fontSize: 12, color: "#64748B", fontWeight: 700, marginTop: 4 }}>{s.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="grid-2">
+                                <div className="card" style={{ padding: 24 }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                                        <h3 style={{ fontSize: 16, fontWeight: 800 }}>Live Incident Feed</h3>
+                                        <span style={{ fontSize: 11, color: "#C8102E", fontWeight: 800, letterSpacing: 0.5 }}>REAL-TIME SYNC</span>
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                        {reports.slice(0, 6).map(r => (
+                                            <div key={r.id} style={{ display: "flex", justifyContent: "space-between", padding: "14px", background: "#F8FAFC", borderRadius: 12, border: "1px solid #F1F5F9" }}>
+                                                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                                                    <div style={{ width: 8, height: 8, background: r.level === "Critical" ? "#EF4444" : "#CBD5E1", borderRadius: "50%" }} />
+                                                    <div>
+                                                        <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{r.type}</div>
+                                                        <div style={{ fontSize: 11, color: "#94A3B8" }}>#{r.id} • {r.location}</div>
+                                                    </div>
                                                 </div>
-                                            </td>
-                                        </tr>
+                                                <StatusBadge status={r.status} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="card" style={{ padding: 24 }}>
+                                    <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20 }}>Security Logs</h3>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                        {auditLogs.length === 0 ? (
+                                            <div style={{ fontSize: 12, color: "#94A3B8" }}>No security logs found.</div>
+                                        ) : auditLogs.map(log => (
+                                            <div key={log.id} style={{ fontSize: 12, display: "flex", gap: 12 }}>
+                                                <div style={{ background: log.type === "Danger" ? "#FEF2F2" : "#F1F5F9", color: log.type === "Danger" ? "#C8102E" : "#64748B", padding: "6px 10px", borderRadius: 8, fontWeight: 800, height: "fit-content" }}>{log.type[0]}</div>
+                                                <div>
+                                                    <div style={{ fontWeight: 700, color: "#0F172A" }}>{log.action}: {log.target}</div>
+                                                    <div style={{ color: "#94A3B8", marginTop: 2 }}>{log.actor} • {new Date(log.createdAt).toLocaleTimeString()}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {tab === "health" && (
+                        <div className="grid-3" style={{ gap: 24 }}>
+                            <div className="card" style={{ padding: 24 }}>
+                                <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 20 }}>Infrastructure</h3>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                    {[
+                                        { label: "Database", status: "Healthy", val: "2ms" },
+                                        { label: "Redis Cache", status: "Healthy", val: "1ms" },
+                                        { label: "Gateway", status: "Optimized", val: "48ms" }
+                                    ].map(h => (
+                                        <div key={h.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                            <div>
+                                                <div style={{ fontSize: 13, fontWeight: 700 }}>{h.label}</div>
+                                                <div style={{ fontSize: 11, color: "#10B981", fontWeight: 600 }}>● {h.status}</div>
+                                            </div>
+                                            <div style={{ fontSize: 12, color: "#94A3B8", fontWeight: 700 }}>{h.val}</div>
+                                        </div>
                                     ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-
-                {tab === "users" && (
-                    <div className="slide-in">
-                        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>User Management</h2>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
-                            {users.map((u, i) => (
-                                <div key={i} className="card" style={{ padding: 18 }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                                        <div style={{ width: 40, height: 40, borderRadius: "50%", background: `${COLORS.primary}22`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: COLORS.primary }}>
-                                            {u.name[0]}
+                                </div>
+                            </div>
+                            <div className="card" style={{ padding: 24 }}>
+                                <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 20 }}>Performance</h3>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                                    <div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 6, fontWeight: 700 }}>
+                                            <span>CPU Load</span>
+                                            <span>24%</span>
                                         </div>
-                                        <div>
-                                            <div style={{ fontSize: 14, fontWeight: 600 }}>{u.name}</div>
-                                            <div style={{ fontSize: 11, color: COLORS.textMuted }}>{u.email}</div>
+                                        <div style={{ height: 6, background: "#F1F5F9", borderRadius: 3, overflow: "hidden" }}>
+                                            <div style={{ width: "24%", height: "100%", background: "#C8102E" }} />
                                         </div>
                                     </div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 12 }}>
-                                        <span style={{ background: COLORS.bgPanel, padding: "3px 8px", borderRadius: 6, fontSize: 11 }}>{u.role}</span>
-                                        <span className={`badge badge-${u.status === "Active" ? "low" : "critical"}`}>{u.status}</span>
-                                    </div>
-                                    <div style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 12 }}>{u.reports} reports submitted</div>
-                                    <div style={{ display: "flex", gap: 8 }}>
-                                        <button className={u.status === "Active" ? "btn-danger" : "btn-success"} style={{ flex: 1, padding: "5px", fontSize: 11 }} onClick={() => toggleUserStatus(u.id)}>
-                                            {u.status === "Active" ? "Suspend" : "Activate"}
-                                        </button>
+                                    <div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 6, fontWeight: 700 }}>
+                                            <span>Memory Usage</span>
+                                            <span>4.8GB</span>
+                                        </div>
+                                        <div style={{ height: 6, background: "#F1F5F9", borderRadius: 3, overflow: "hidden" }}>
+                                            <div style={{ width: "30%", height: "100%", background: "#3B82F6" }} />
+                                        </div>
                                     </div>
                                 </div>
-                            ))}
+                            </div>
+                            <div className="card" style={{ padding: 24, background: "linear-gradient(135deg, #C8102E, #9B0C23)", color: "#fff" }}>
+                                <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>Auto-Backup</h3>
+                                <div style={{ fontSize: 32, fontWeight: 900, marginBottom: 8 }}>02:44:11</div>
+                                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>Next scheduled sync to National Security Cloud.</div>
+                            </div>
                         </div>
-                    </div>
-                )}
-
-                {tab === "analytics" && (
-                    <div className="slide-in">
-                        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24 }}>Analytics & Statistics</h2>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
-                            {[
-                                { label: "Resolution Rate", val: "91%", icon: "check", color: COLORS.success },
-                                { label: "Avg Response Time", val: "4.9 min", icon: "clock", color: COLORS.info },
-                                { label: "Critical Handled", val: "100%", icon: "flame", color: COLORS.danger },
-                                { label: "False Reports", val: "2.1%", icon: "shield-x", color: "#A855F7" }
-                            ].map(s => (
-                                <div key={s.label} className="stat-card" style={{ textAlign: "center" }}>
-                                    <Icon name={s.icon} size={24} color={s.color} />
-                                    <div style={{ fontSize: 22, fontWeight: 700, color: s.color, marginTop: 10 }}>{s.val}</div>
-                                    <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 4 }}>{s.label}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {tab === "evidence" && (
-                    <div className="slide-in">
-                        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24 }}>Evidence Vault</h2>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 14 }}>
-                            {reports.flatMap(r => r.evidence.map(ev => ({ ev, id: r.id, type: r.type }))).map(({ ev, id, type }, i) => (
-                                <div key={i} className="card" style={{ padding: 12, textAlign: "center", cursor: "pointer" }} onClick={() => window.open(ev, "_blank")}>
-                                    <div style={{ width: "100%", height: 120, borderRadius: 10, background: COLORS.bgPanel, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, overflow: "hidden" }}>
-                                        {ev.match(/\.(jpg|jpeg|png|gif|webp)/i) || ev.includes("supabase.co/storage/v1/object/public/evidence") ? (
-                                            <img src={ev} alt="evidence" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                                        ) : (
-                                            <Icon name={ev.includes("mp4") ? "video" : ev.includes("mp3") ? "microphone" : "photo"} size={32} color={COLORS.primary} />
-                                        )}
-                                    </div>
-                                    <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{type}</div>
-                                    <div style={{ fontSize: 10, color: COLORS.textMuted }}>Case {id}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
+                    )}
+                </div>
             </div>
-
-            {/* Modal */}
-            {showModal && (() => {
-                const r = reports.find(x => x.id === showModal);
-                return r ? (
-                    <div className="modal-overlay" onClick={() => setShowModal(null)}>
-                        <div className="modal" onClick={e => e.stopPropagation()}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                                <div>
-                                    <div style={{ fontSize: 12, color: COLORS.primary, fontFamily: "'JetBrains Mono',monospace", marginBottom: 4 }}>{r.id}</div>
-                                    <h2 style={{ fontSize: 18, fontWeight: 700 }}>{r.type}</h2>
-                                </div>
-                                <button onClick={() => setShowModal(null)} style={{ background: "none", border: "none", color: COLORS.textMuted, cursor: "pointer", fontSize: 20 }}>✕</button>
-                            </div>
-                            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}><LevelBadge level={r.level} /><StatusBadge status={r.status} /></div>
-                            <div style={{ fontSize: 13, lineHeight: 1.7, color: COLORS.textMuted, marginBottom: 16 }}>{r.description}</div>
-
-                            <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-                                <button className="btn-success" style={{ flex: 1, padding: "10px" }} onClick={() => { updateStatus(showModal, "Resolved"); setShowModal(null); }}>Resolve Case</button>
-                            </div>
-                        </div>
-                    </div>
-                ) : null;
-            })()}
         </div>
     );
 };

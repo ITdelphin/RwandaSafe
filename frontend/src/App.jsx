@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import TopBar from "./components/TopBar";
 import NotificationsPanel from "./components/NotificationsPanel";
+import SplashPage from "./pages/SplashPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -10,7 +11,9 @@ import TrackPage from "./pages/TrackPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import PoliceDashboard from "./pages/PoliceDashboard";
 import HospitalDashboard from "./pages/HospitalDashboard";
+import CitizenDashboard from "./pages/CitizenDashboard";
 import ContactPage from "./pages/ContactPage";
+import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 import API from "./config/api";
 
@@ -19,9 +22,15 @@ function App() {
     const [notifications, setNotifications] = useState([]);
     const [showNotif, setShowNotif] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Pages where TopBar/Footer should be hidden or shown
+    const isDashboard = ["/admin", "/police", "/hospital", "/citizen"].includes(location.pathname);
+    const noTopBarRoutes = ["/"];
+    const showTopBar = !noTopBarRoutes.includes(location.pathname) && !isDashboard;
+    const showFooter = !isDashboard;
 
     useEffect(() => {
-        // Check local storage for existing session
         const storedUser = localStorage.getItem("saferwanda_user");
         if (storedUser) {
             setUser(JSON.parse(storedUser));
@@ -47,14 +56,28 @@ function App() {
 
     return (
         <>
-            <Toaster position="top-center" reverseOrder={false} />
-            <TopBar
-                user={user}
-                notifications={notifications.filter((n) => n.unread).length}
-                onToggleNotif={() => setShowNotif(!showNotif)}
-                onLogout={handleLogout}
-                onNavigate={navigate}
+            <Toaster
+                position="top-center"
+                reverseOrder={false}
+                toastOptions={{
+                    style: {
+                        fontFamily: "'Sora', sans-serif",
+                        fontSize: 13,
+                        fontWeight: 500,
+                    },
+                    success: { iconTheme: { primary: "#1E3A8A", secondary: "#fff" } },
+                    error: { iconTheme: { primary: "#C8102E", secondary: "#fff" } },
+                }}
             />
+            {showTopBar && (
+                <TopBar
+                    user={user}
+                    notifications={notifications.filter((n) => n.unread).length}
+                    onToggleNotif={() => setShowNotif(!showNotif)}
+                    onLogout={handleLogout}
+                    onNavigate={navigate}
+                />
+            )}
             {showNotif && <NotificationsPanel notifications={notifications} />}
             {showNotif && (
                 <div
@@ -62,9 +85,10 @@ function App() {
                     style={{ position: "fixed", inset: 0, zIndex: 150 }}
                 />
             )}
-            <div onClick={() => showNotif && setShowNotif(false)}>
+            <div onClick={() => showNotif && setShowNotif(false)} style={{ minHeight: isDashboard ? "auto" : "calc(100vh - 64px)" }}>
                 <Routes>
-                    <Route path="/" element={<HomePage />} />
+                    <Route path="/" element={<SplashPage />} />
+                    <Route path="/home" element={<HomePage />} />
                     <Route path="/login" element={<LoginPage onLogin={setUser} />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/report" element={<ReportPage user={user} />} />
@@ -72,9 +96,11 @@ function App() {
                     <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="/police" element={<PoliceDashboard user={user} />} />
                     <Route path="/hospital" element={<HospitalDashboard />} />
+                    <Route path="/citizen" element={<CitizenDashboard user={user} />} />
                     <Route path="/contact" element={<ContactPage />} />
                 </Routes>
             </div>
+            {showFooter && <Footer />}
         </>
     );
 }

@@ -1,311 +1,136 @@
 import React, { useState, useEffect } from "react";
 import { COLORS } from "../config/constants";
 import { Icon, LevelBadge, StatusBadge } from "../components/Badges";
+import toast from "react-hot-toast";
 import API from "../config/api";
 
-const TrackPage = ({ user }) => {
+const TrackPage = () => {
     const [reports, setReports] = useState([]);
-    const [search, setSearch] = useState("");
     const [selected, setSelected] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchReports = async () => {
+        const fetch = async () => {
             try {
                 const res = await API.get("/reports");
-                let allReports = res.data;
-                if (user) {
-                    allReports = allReports.filter(
-                        (r) => r.reporter === user.name || r.reporter === "Anonymous"
-                    );
-                }
-                setReports(allReports);
+                setReports(res.data);
+                if (res.data.length > 0 && !selected) setSelected(res.data[0]);
             } catch (err) {
-                console.error("Failed to load reports", err);
+                console.error(err);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchReports();
-    }, [user]);
+        fetch();
+        const interval = setInterval(fetch, 15000);
+        return () => clearInterval(interval);
+    }, []);
 
-    const filtered = reports.filter(
-        (r) =>
-            r.id.toLowerCase().includes(search.toLowerCase()) ||
-            r.type.toLowerCase().includes(search.toLowerCase())
-    );
-    const r = selected ? reports.find((x) => x.id === selected) : null;
+    const timelines = [
+        { status: "Signal Received", time: "10:24 AM", desc: "Emergency intake confirmed by National Security Gateway.", done: true },
+        { status: "Dispatched", time: "10:26 AM", desc: "Nearest RNP unit (Alpha-04) assigned to location.", done: true },
+        { status: "On Site", time: "10:32 AM", desc: "Response units have arrived and are securing the scene.", done: selected?.status !== "Open" },
+        { status: "Investigation", time: "Pending", desc: "Evidence review and case documentation in progress.", done: selected?.status === "Resolved" },
+    ];
+
+    if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 100 }}><span className="pulse">Connecting to Tracking System...</span></div>;
 
     return (
-        <div style={{ padding: "30px 24px", maxWidth: 900, margin: "0 auto" }} className="slide-in">
-            <div style={{ marginBottom: 24 }}>
-                <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6 }}>Case Tracker</h1>
-                <p style={{ color: COLORS.textMuted, fontSize: 14 }}>
-                    Track the status of your submitted reports in real-time
-                </p>
-            </div>
-            <div style={{ display: "flex", gap: 16 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                    <input
-                        placeholder="Search by report ID or type..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        style={{ marginBottom: 16 }}
-                    />
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                        {filtered.length === 0 ? (
-                            <div
-                                style={{
-                                    color: COLORS.textMuted,
-                                    padding: "20px 0",
-                                    textAlign: "center",
-                                    fontSize: 14,
-                                }}
-                            >
-                                No reports found
-                            </div>
-                        ) : (
-                            filtered.map((rpt) => (
-                                <div
-                                    key={rpt.id}
-                                    onClick={() => setSelected(rpt.id)}
-                                    style={{
-                                        background: COLORS.bgCard,
-                                        border: `1px solid ${selected === rpt.id ? COLORS.primary : COLORS.border}`,
-                                        borderRadius: 12,
-                                        padding: "16px",
-                                        cursor: "pointer",
-                                        transition: "all .2s",
-                                    }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = COLORS.primary)}
-                                    onMouseLeave={(e) =>
-                                    (e.currentTarget.style.borderColor =
-                                        selected === rpt.id ? COLORS.primary : COLORS.border)
-                                    }
-                                >
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "flex-start",
-                                            marginBottom: 8,
-                                        }}
-                                    >
-                                        <div>
-                                            <div
-                                                style={{
-                                                    fontSize: 13,
-                                                    fontWeight: 700,
-                                                    fontFamily: "'JetBrains Mono',monospace",
-                                                    color: COLORS.primary,
-                                                    marginBottom: 4,
-                                                }}
-                                            >
-                                                {rpt.id}
-                                            </div>
-                                            <div style={{ fontSize: 14, fontWeight: 600 }}>{rpt.type}</div>
-                                        </div>
-                                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                                            <StatusBadge status={rpt.status} />
-                                            <LevelBadge level={rpt.level} />
-                                        </div>
-                                    </div>
-                                    <div style={{ fontSize: 12, color: COLORS.textMuted, display: "flex", gap: 12 }}>
-                                        <span>
-                                            <Icon name="map-pin" size={11} /> {rpt.location}
-                                        </span>
-                                        <span>
-                                            <Icon name="clock" size={11} /> {rpt.date}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
+        <div style={{ display: "flex", minHeight: "calc(100vh - 64px)", background: "#F8FAFC" }}>
+            {/* Case List Sidebar - LIGHT */}
+            <div style={{ width: 360, background: "#FFFFFF", borderRight: "1px solid #E2E8F0", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+                <div style={{ padding: "32px 24px", borderBottom: "1px solid #F1F5F9" }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#C8102E", letterSpacing: 1.5, marginBottom: 8 }}>INVESTIGATION VAULT</div>
+                    <h2 style={{ fontSize: 24, fontWeight: 900, color: "#0F172A" }}>Track Incident</h2>
                 </div>
-                {r && (
-                    <div style={{ width: 340, flexShrink: 0 }} className="slide-in">
-                        <div className="card">
-                            <div
-                                style={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    marginBottom: 20,
-                                }}
-                            >
-                                <div>
-                                    <div
-                                        style={{
-                                            fontSize: 11,
-                                            color: COLORS.textDim,
-                                            fontFamily: "'JetBrains Mono',monospace",
-                                            marginBottom: 4,
-                                        }}
-                                    >
-                                        {r.id}
-                                    </div>
-                                    <h3 style={{ fontSize: 16, fontWeight: 700 }}>{r.type}</h3>
-                                </div>
+
+                <div style={{ flex: 1, overflowY: "auto", padding: 12 }}>
+                    {reports.length === 0 ? (
+                        <div style={{ padding: 40, textAlign: "center", color: "#94A3B8" }}>No active signals found.</div>
+                    ) : reports.map(r => (
+                        <div
+                            key={r.id}
+                            onClick={() => setSelected(r)}
+                            style={{
+                                padding: "20px",
+                                borderRadius: 16,
+                                cursor: "pointer",
+                                border: selected?.id === r.id ? "1.5px solid #1E3A8A" : "1.5px solid transparent",
+                                background: selected?.id === r.id ? "#E8F0FE" : "transparent",
+                                transition: "all 0.2s",
+                                marginBottom: 4
+                            }}
+                        >
+                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                                <span style={{ fontSize: 11, fontWeight: 800, color: selected?.id === r.id ? "#1E3A8A" : "#94A3B8" }}>#{r.id}</span>
                                 <StatusBadge status={r.status} />
                             </div>
-                            <div
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns: "1fr 1fr",
-                                    gap: 12,
-                                    marginBottom: 20,
-                                }}
-                            >
-                                <div style={{ background: COLORS.bgPanel, borderRadius: 8, padding: "10px 12px" }}>
-                                    <div style={{ fontSize: 10, color: COLORS.textDim, marginBottom: 4 }}>LEVEL</div>
-                                    <LevelBadge level={r.level} />
+                            <div style={{ fontSize: 15, fontWeight: 800, color: "#0F172A", marginBottom: 4 }}>{r.type}</div>
+                            <div style={{ fontSize: 12, color: "#64748B", display: "flex", alignItems: "center", gap: 6 }}>
+                                <Icon name="map-pin" size={12} color="#94A3B8" /> {r.location}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div style={{ flex: 1, padding: "60px", background: "#FFFFFF", overflowY: "auto" }}>
+                {selected ? (
+                    <div className="slide-in" style={{ maxWidth: 700 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 48 }}>
+                            <div>
+                                <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
+                                    <LevelBadge level={selected.level} />
+                                    <span style={{ fontSize: 14, color: "#94A3B8", fontWeight: 700 }}>Case ID: {selected.id}</span>
                                 </div>
-                                <div style={{ background: COLORS.bgPanel, borderRadius: 8, padding: "10px 12px" }}>
-                                    <div style={{ fontSize: 10, color: COLORS.textDim, marginBottom: 4 }}>STATION</div>
-                                    <div style={{ fontSize: 11, fontWeight: 600 }}>{r.station}</div>
-                                </div>
-                                {r.assignedOfficer && (
-                                    <div
-                                        style={{
-                                            background: COLORS.bgPanel,
-                                            borderRadius: 8,
-                                            padding: "10px 12px",
-                                            gridColumn: "1/-1",
-                                        }}
-                                    >
-                                        <div style={{ fontSize: 10, color: COLORS.textDim, marginBottom: 4 }}>
-                                            ASSIGNED OFFICER
-                                        </div>
-                                        <div
-                                            style={{
-                                                fontSize: 12,
-                                                fontWeight: 600,
+                                <h1 style={{ fontSize: 36, fontWeight: 900, color: "#0F172A", letterSpacing: "-1px" }}>{selected.type}</h1>
+                                <p style={{ color: "#64748B", fontSize: 16, marginTop: 8 }}>Emergency reported at <b>{selected.location}</b></p>
+                            </div>
+                            <button className="btn-secondary" style={{ padding: "12px 24px" }}>Export PDF Report</button>
+                        </div>
+
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 32 }}>
+                            <div className="card" style={{ padding: 32, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+                                <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20 }}>Detailed Narrative</h3>
+                                <p style={{ fontSize: 15, lineHeight: 1.8, color: "#334155" }}>{selected.description}</p>
+                            </div>
+
+                            <div style={{ padding: "0 20px" }}>
+                                <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 32 }}>Investigation Timeline</h3>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                    {timelines.map((t, i) => (
+                                        <div key={i} style={{ display: "flex", gap: 24, paddingBottom: 32, position: "relative" }}>
+                                            {i < timelines.length - 1 && <div style={{ position: "absolute", left: 11, top: 32, bottom: 0, width: 2, background: t.done ? "#1E3A8A" : "#F1F5F9" }} />}
+                                            <div style={{
+                                                width: 24,
+                                                height: 24,
+                                                borderRadius: "50%",
+                                                background: t.done ? "#1E3A8A" : "#FFFFFF",
+                                                border: "2px solid #1E3A8A",
                                                 display: "flex",
                                                 alignItems: "center",
-                                                gap: 6,
-                                            }}
-                                        >
-                                            <Icon name="badge" size={12} color={COLORS.info} />
-                                            {r.assignedOfficer}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                            <div
-                                style={{
-                                    fontSize: 12,
-                                    color: COLORS.textMuted,
-                                    lineHeight: 1.6,
-                                    marginBottom: 20,
-                                    padding: "10px 12px",
-                                    background: COLORS.bgPanel,
-                                    borderRadius: 8,
-                                }}
-                            >
-                                {r.description}
-                            </div>
-                            <div style={{ marginBottom: 20 }}>
-                                <div
-                                    style={{
-                                        fontSize: 11,
-                                        color: COLORS.textDim,
-                                        textTransform: "uppercase",
-                                        letterSpacing: 1,
-                                        marginBottom: 12,
-                                    }}
-                                >
-                                    Case Timeline
-                                </div>
-                                {r.updates.map((u, i) => (
-                                    <div
-                                        key={i}
-                                        className="timeline-item"
-                                        style={i === r.updates.length - 1 ? { paddingBottom: 0 } : {}}
-                                    >
-                                        {i < r.updates.length - 1 && (
-                                            <div
-                                                style={{
-                                                    position: "absolute",
-                                                    left: 15,
-                                                    top: 32,
-                                                    bottom: 0,
-                                                    width: 2,
-                                                    background: COLORS.border,
-                                                }}
-                                            />
-                                        )}
-                                        <div
-                                            className="timeline-dot"
-                                            style={{
-                                                background: i === 0 ? `${COLORS.primary}22` : COLORS.bgPanel,
-                                                borderColor: i === 0 ? COLORS.primary : COLORS.border,
-                                            }}
-                                        >
-                                            <Icon
-                                                name={i === r.updates.length - 1 ? "check" : "clock"}
-                                                size={11}
-                                                color={i === r.updates.length - 1 ? COLORS.success : COLORS.textDim}
-                                            />
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 2 }}>{u.msg}</div>
-                                            <div style={{ fontSize: 11, color: COLORS.textDim }}>{u.time}</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            {r.evidence && r.evidence.length > 0 && (
-                                <div>
-                                    <div
-                                        style={{
-                                            fontSize: 11,
-                                            color: COLORS.textDim,
-                                            textTransform: "uppercase",
-                                            letterSpacing: 1,
-                                            marginBottom: 10,
-                                        }}
-                                    >
-                                        Evidence ({r.evidence.length})
-                                    </div>
-                                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                        {r.evidence.map((ev, i) => (
-                                            <div
-                                                key={i}
-                                                className="evidence-thumb"
-                                                title={ev}
-                                                onClick={() => window.open(ev, "_blank")}
-                                                style={{
-                                                    cursor: "pointer",
-                                                    overflow: "hidden",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    background: COLORS.bgPanel,
-                                                    borderRadius: 8,
-                                                    width: 44,
-                                                    height: 44,
-                                                    border: `1px solid ${COLORS.border}`
-                                                }}
-                                            >
-                                                {ev.match(/\.(jpg|jpeg|png|gif|webp)/i) || ev.includes("supabase.co/storage/v1/object/public/evidence") ? (
-                                                    <img src={ev} alt="evidence" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                                                ) : (
-                                                    <Icon
-                                                        name={
-                                                            ev.includes("mp4")
-                                                                ? "video"
-                                                                : ev.includes("mp3")
-                                                                    ? "microphone"
-                                                                    : "photo"
-                                                        }
-                                                        size={20}
-                                                        color={COLORS.primary}
-                                                    />
-                                                )}
+                                                justifyContent: "center",
+                                                zIndex: 1
+                                            }}>
+                                                {t.done && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff" }} />}
                                             </div>
-                                        ))}
-                                    </div>
+                                            <div>
+                                                <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 4 }}>
+                                                    <span style={{ fontSize: 14, fontWeight: 800, color: t.done ? "#0F172A" : "#94A3B8" }}>{t.status}</span>
+                                                    <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8" }}>{t.time}</span>
+                                                </div>
+                                                <p style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>{t.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            )}
+                            </div>
                         </div>
+                    </div>
+                ) : (
+                    <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#94A3B8" }}>
+                        Select an incident from the vault to track live progress.
                     </div>
                 )}
             </div>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { COLORS } from "../config/constants";
 import { Icon, LevelBadge, StatusBadge } from "../components/Badges";
+import toast from "react-hot-toast";
 import API from "../config/api";
 
 const HospitalDashboard = () => {
     const [tab, setTab] = useState("alerts");
     const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchReports = async () => {
@@ -14,42 +16,115 @@ const HospitalDashboard = () => {
                 setReports(res.data);
             } catch (err) {
                 console.error(err);
+            } finally {
+                setLoading(false);
             }
         };
         fetchReports();
+        const interval = setInterval(fetchReports, 10000);
+        return () => clearInterval(interval);
     }, []);
 
-    const criticals = reports.filter(r => (r.level === "Critical" || r.type === "Road Accident") && r.status !== "Resolved");
+    const medicalReports = reports.filter(r =>
+        (r.level === "Critical" || r.type === "Road Accident" || r.type === "Medical Emergency" || r.type === "Fire") && r.status !== "Resolved"
+    );
+
+    const triageCategories = [
+        { label: "Immediate (Red)", cases: medicalReports.filter(r => r.level === "Critical").length, color: "#C8102E", icon: "alert-circle", desc: "Life-threatening emergencies" },
+        { label: "Urgent (Orange)", cases: medicalReports.filter(r => r.level === "High").length, color: "#F97316", icon: "alert-triangle", desc: "Non-critical but serious" },
+        { label: "Delayed (Yellow)", cases: medicalReports.filter(r => r.level === "Medium").length, color: "#F4B400", icon: "info-circle", desc: "Stable condition" },
+    ];
+
+    const ambulanceFleet = [
+        { id: "SAMU-01", unit: "Alpha-1", status: "Dispatched", loc: "Nyarugenge", eta: "4m" },
+        { id: "SAMU-02", unit: "Bravo-2", status: "Available", loc: "CHUK Base", eta: "—" },
+        { id: "SAMU-03", unit: "Charlie-3", status: "Available", loc: "CHUK Base", eta: "—" },
+    ];
+
+    const tabs = [
+        { id: "alerts", icon: "bell-ringing", label: "Incident Feed" },
+        { id: "triage", icon: "heart", label: "Triage Center" },
+        { id: "fleet", icon: "ambulance", label: "SAMU Fleet" },
+        { id: "resources", icon: "users", label: "ICU Resources" },
+    ];
+
+    if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 100 }}><span className="pulse">Syncing Medical Protocols...</span></div>;
 
     return (
-        <div style={{ display: "flex", minHeight: "calc(100vh - 60px)" }}>
-            <div style={{ width: 200, background: COLORS.bgCard, borderRight: `1px solid ${COLORS.border}`, padding: "20px 12px", flexShrink: 0 }}>
-                <div style={{ fontSize: 10, color: COLORS.textDim, textTransform: "uppercase", letterSpacing: 1, padding: "0 14px", marginBottom: 8 }}>Hospital Portal</div>
-                {[{ id: "alerts", icon: "bell-ringing", label: "Emergency Alerts" }, { id: "team", icon: "users", label: "Response Teams" }].map(t => (
-                    <button key={t.id} className={`sidebar-link ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}>
-                        <Icon name={t.icon} size={16} />{t.label}
-                    </button>
-                ))}
+        <div className="dashboard-container">
+            {/* Sidebar - LIGHT THEME */}
+            <div className="dashboard-sidebar" style={{ background: "#FFFFFF", padding: "16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 40, padding: "0 12px" }}>
+                    <div style={{ width: 40, height: 40, background: "#E6F4EA", border: "1px solid #CEEAD6", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Icon name="building-hospital" size={20} color="#1E3A8A" />
+                    </div>
+                    <div>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: "#0F172A" }}>CHUK Portal</div>
+                        <div style={{ fontSize: 10, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Medical Systems</div>
+                    </div>
+                </div>
+
+                <div className="dashboard-sidebar-nav" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {tabs.map(t => (
+                        <button
+                            key={t.id}
+                            onClick={() => setTab(t.id)}
+                            className={`sidebar-link ${tab === t.id ? "active" : ""}`}
+                        >
+                            <Icon name={t.icon} size={18} color={tab === t.id ? "#1E3A8A" : "#64748B"} />
+                            {t.label}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="dashboard-sidebar-footer" style={{ marginTop: "auto", padding: "24px 16px" }}>
+                    <div style={{ background: "#FEF2F2", border: "1px solid #FEE2E2", borderRadius: 16, padding: "16px" }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: "#C8102E", marginBottom: 8 }}>EMERGENCY ALERTS</div>
+                        <div style={{ fontSize: 24, fontWeight: 900, color: "#C8102E" }}>{medicalReports.filter(r => r.level === "Critical").length}</div>
+                        <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 4 }}>Priority cases active</div>
+                    </div>
+                </div>
             </div>
 
-            <div style={{ flex: 1, padding: 24, overflowY: "auto" }}>
+            {/* Main Content */}
+            <div className="dashboard-main dashboard-content">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
+                    <div>
+                        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1E293B", marginBottom: 8 }}>Medical Response</h1>
+                        <p style={{ color: "#64748B", fontSize: 14 }}>Real-time triage and ambulance dispatch synchronization.</p>
+                    </div>
+                    <div style={{ display: "flex", gap: 12 }}>
+                        <button className="btn-secondary" style={{ padding: "10px 20px" }}>Triage Report</button>
+                        <button className="btn-primary" style={{ padding: "10px 20px", background: "#1E3A8A", border: "none", boxShadow: "0 10px 20px rgba(15,157,88,0.2)" }}>Dispatch AMB</button>
+                    </div>
+                </div>
+
                 {tab === "alerts" && (
-                    <div className="slide-in">
-                        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Emergency Alerts</h2>
-                        {criticals.length === 0 ? (
-                            <div style={{ textAlign: "center", padding: "60px 0", color: COLORS.textMuted }}>
-                                <Icon name="check-circle" size={48} color={COLORS.success} />
-                                <div style={{ fontSize: 16, fontWeight: 600, marginTop: 16 }}>No Active Emergencies</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
+                        {medicalReports.length === 0 ? (
+                            <div className="card" style={{ padding: 64, textAlign: "center", color: "#94A3B8" }}>
+                                <span style={{ fontSize: 40, display: "block", marginBottom: 12 }}>✅</span>
+                                No active medical emergencies.
                             </div>
-                        ) : criticals.map(r => (
-                            <div key={r.id} className="card" style={{ borderLeft: `4px solid ${COLORS.danger}`, marginBottom: 14 }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                                    <div>
-                                        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{r.type}</h3>
-                                        <p style={{ fontSize: 13, color: COLORS.textMuted, marginBottom: 10 }}>{r.description}</p>
-                                        <div style={{ display: "flex", gap: 16, fontSize: 12, color: COLORS.textDim }}>
-                                            <span><Icon name="map-pin" size={12} /> {r.location}</span>
+                        ) : medicalReports.map(r => (
+                            <div key={r.id} className="card" style={{ padding: 24, borderLeft: `6px solid ${r.level === "Critical" ? "#EF4444" : "#F59E0B"}` }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+                                            <span style={{ fontSize: 11, fontWeight: 800, color: "#10B981", background: "#F0FDF4", padding: "4px 8px", borderRadius: 6 }}>#{r.id}</span>
+                                            <LevelBadge level={r.level} />
+                                            <StatusBadge status={r.status} />
                                         </div>
+                                        <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1E293B", marginBottom: 8 }}>{r.type}</h3>
+                                        <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.6, marginBottom: 16 }}>{r.description}</p>
+                                        <div style={{ display: "flex", gap: 20, color: "#94A3B8", fontSize: 12, fontWeight: 700 }}>
+                                            <span>📍 {r.location}</span>
+                                            <span>📞 Contact: {r.reporter}</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginLeft: 24 }}>
+                                        <button className="btn-primary" style={{ padding: "10px 20px", background: "#10B981" }} onClick={() => toast.success("AMBULANCE DISPATCHED")}>Verify & Dispatch</button>
+                                        <button className="btn-secondary" style={{ padding: "10px 20px" }}>Clinical Data</button>
                                     </div>
                                 </div>
                             </div>
@@ -57,17 +132,18 @@ const HospitalDashboard = () => {
                     </div>
                 )}
 
-                {tab === "team" && (
-                    <div className="slide-in">
-                        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Emergency Response Teams</h2>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
-                            {[{ name: "Team Alpha", members: 4, vehicle: "Ambulance #01", status: "Available", lead: "Dr. Mukamana R." }].map(t => (
-                                <div key={t.name} className="card" style={{ padding: 18 }}>
-                                    <h3 style={{ fontSize: 15, fontWeight: 700 }}>{t.name}</h3>
-                                    <div style={{ fontSize: 12, color: COLORS.textMuted }}>{t.lead}</div>
+                {tab === "triage" && (
+                    <div className="grid-3">
+                        {triageCategories.map(t => (
+                            <div key={t.label} className="card" style={{ padding: 32, textAlign: "center", borderTop: `6px solid ${t.color}` }}>
+                                <div style={{ marginBottom: 16 }}>
+                                    <Icon name={t.icon} size={32} color={t.color} />
                                 </div>
-                            ))}
-                        </div>
+                                <div style={{ fontSize: 44, fontWeight: 900, color: t.color }}>{t.cases}</div>
+                                <div style={{ fontSize: 13, fontWeight: 800, color: "#1E293B", marginTop: 8 }}>{t.label}</div>
+                                <div style={{ fontSize: 12, color: "#94A3B8", marginTop: 6 }}>{t.desc}</div>
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>

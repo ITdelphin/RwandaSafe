@@ -11,6 +11,7 @@ const authRoutes = require("./routes/authRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const broadcastRoutes = require("./routes/broadcastRoutes");
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/broadcasts", broadcastRoutes);
 
 app.get("/api/health", (req, res) => res.json({ status: "OK", db: "Supabase" }));
 

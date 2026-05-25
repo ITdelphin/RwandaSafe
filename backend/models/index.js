@@ -84,6 +84,55 @@ const Report = sequelize.define("Report", {
         type: DataTypes.STRING,
         defaultValue: "Central Dispatch",
     },
+    isSOS: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+});
+
+const Broadcast = sequelize.define("Broadcast", {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+    },
+    type: {
+        type: DataTypes.STRING,
+        defaultValue: "Info",
+    },
+    message: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+    },
+    time: {
+        type: DataTypes.STRING,
+    },
+    senderId: {
+        type: DataTypes.UUID,
+    },
+});
+
+const AuditLog = sequelize.define("AuditLog", {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+    },
+    action: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    actor: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    target: {
+        type: DataTypes.STRING,
+    },
+    type: {
+        type: DataTypes.STRING, // Security, Maintenance, Danger
+        defaultValue: "Security",
+    },
 });
 
 const Evidence = sequelize.define("Evidence", {
@@ -140,4 +189,7 @@ Report.belongsTo(User, { foreignKey: "reporterId" });
 User.hasMany(Notification, { foreignKey: "userId" });
 Notification.belongsTo(User, { foreignKey: "userId" });
 
-module.exports = { sequelize, User, Report, Evidence, ReportUpdate, Notification };
+User.hasMany(Broadcast, { foreignKey: "senderId" });
+Broadcast.belongsTo(User, { foreignKey: "senderId" });
+
+module.exports = { sequelize, User, Report, Evidence, ReportUpdate, Notification, Broadcast, AuditLog };

@@ -15,8 +15,8 @@ const upload = multer({
     limits: { fileSize: 50 * 1024 * 1024 } // 50MB
 });
 
-// POST new report
-router.post("/", upload.array("evidenceFiles", 5), async (req, res) => {
+// POST new report (Authenticated)
+router.post("/", auth, upload.array("evidenceFiles", 5), async (req, res) => {
     try {
         const { type, description, location, lat, lng, date, level, reporter } = req.body;
         const reportId = `RPT-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -73,6 +73,41 @@ router.post("/", upload.array("evidenceFiles", 5), async (req, res) => {
     } catch (error) {
         console.error("Report submission error:", error);
         res.status(500).json({ error: "Failed to submit report. " + error.message });
+    }
+});
+
+// POST SOS instant dispatch
+router.post("/sos", auth, async (req, res) => {
+    try {
+        const { lat, lng, location } = req.body;
+        const reportId = `SOS-${Math.floor(1000 + Math.random() * 9000)}`;
+
+        const newReport = await Report.create({
+            id: reportId,
+            type: "Emergency SOS",
+            description: "Instant Panic Button Triggered. Immediate assistance required.",
+            location: location || "Undefined (GPS Pending)",
+            lat: parseFloat(lat) || 0,
+            lng: parseFloat(lng) || 0,
+            date: new Date().toISOString(),
+            level: "Critical",
+            reporter: req.user.name,
+            reporterId: req.user.id,
+            status: "In Progress",
+            isSOS: true,
+            station: "National Dispatch Center"
+        });
+
+        await ReportUpdate.create({
+            msg: "SOS Signal Received - Police Units Dispatched",
+            time: new Date().toISOString(),
+            ReportId: reportId
+        });
+
+        res.status(201).json({ id: reportId, message: "SOS Dispatched" });
+    } catch (error) {
+        console.error("SOS error:", error);
+        res.status(500).json({ error: "SOS transmission failed." });
     }
 });
 

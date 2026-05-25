@@ -1,5 +1,5 @@
 const express = require("express");
-const { Report, User, Notification } = require("../models");
+const { Report, User, Notification, AuditLog } = require("../models");
 const { auth, authorize } = require("../middleware/auth");
 
 const router = express.Router();
@@ -69,10 +69,31 @@ router.patch("/users/:id/status", auth, authorize("Admin"), async (req, res) => 
         user.status = user.status === "Active" ? "Suspended" : "Active";
         await user.save();
 
+        // Record Audit Log
+        await AuditLog.create({
+            action: `User ${user.status === "Suspended" ? "Suspension" : "Activation"}`,
+            actor: req.user.name,
+            target: user.name,
+            type: user.status === "Suspended" ? "Danger" : "Security"
+        });
+
         res.json({ message: `User status changed to ${user.status}`, user });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Failed to update user status" });
+    }
+});
+
+router.get("/audit-logs", auth, authorize("Admin"), async (req, res) => {
+    try {
+        const logs = await AuditLog.findAll({
+            order: [["createdAt", "DESC"]],
+            limit: 50
+        });
+        res.json(logs);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch audit logs" });
     }
 });
 
