@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Safe Rwanda Emergency System</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body style="margin:0;background:#0A0E1A;">
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const COLORS = {
+  primary: "#C8102E",
+  primaryDark: "#9B0C23",
+  primaryLight: "#FF1A45",
+  secondary: "#006A4E",
+  secondaryDark: "#004D38",
+  accent: "#FFD700",
+  bg: "#0A0E1A",
+  bgCard: "#111827",
+  bgPanel: "#1a2236",
+  bgInput: "#0d1525",
+  border: "rgba(255,255,255,0.08)",
+  borderStrong: "rgba(255,255,255,0.15)",
+  text: "#F1F5F9",
+  textMuted: "#94A3B8",
+  textDim: "#64748B",
+  success: "#10B981",
+  warning: "#F59E0B",
+  danger: "#EF4444",
+  info: "#3B82F6",
+};
+
+const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Sora',sans-serif;background:${COLORS.bg};color:${COLORS.text};min-height:100vh;overflow-x:hidden}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:${COLORS.bgCard}}::-webkit-scrollbar-thumb{background:${COLORS.primary};border-radius:2px}
+  input,select,textarea{font-family:'Sora',sans-serif;background:${COLORS.bgInput};border:1px solid ${COLORS.border};color:${COLORS.text};padding:10px 14px;border-radius:8px;width:100%;font-size:14px;transition:border-color .2s,box-shadow .2s;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:${COLORS.primary};box-shadow:0 0 0 3px rgba(200,16,46,0.15)}
+  select option{background:${COLORS.bgCard}}
+  button{font-family:'Sora',sans-serif;cursor:pointer;border:none;transition:all .2s}
+  .btn-primary{background:${COLORS.primary};color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;letter-spacing:.3px}
+  .btn-primary:hover{background:${COLORS.primaryLight};transform:translateY(-1px)}
+  .btn-secondary{background:transparent;color:${COLORS.text};padding:10px 20px;border-radius:8px;font-size:14px;border:1px solid ${COLORS.border}}
+  .btn-secondary:hover{background:rgba(255,255,255,0.05);border-color:${COLORS.borderStrong}}
+  .btn-success{background:${COLORS.success};color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600}
+  .btn-danger{background:${COLORS.danger};color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600}
+  .btn-warning{background:${COLORS.warning};color:#000;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600}
+  .btn-info{background:${COLORS.info};color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600}
+  .card{background:${COLORS.bgCard};border:1px solid ${COLORS.border};border-radius:16px;padding:24px}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+  .badge-critical{background:rgba(239,68,68,.18);color:#FCA5A5}
+  .badge-high{background:rgba(245,158,11,.18);color:#FCD34D}
+  .badge-medium{background:rgba(59,130,246,.18);color:#93C5FD}
+  .badge-low{background:rgba(16,185,129,.18);color:#6EE7B7}
+  .badge-open{background:rgba(59,130,246,.18);color:#93C5FD}
+  .badge-closed{background:rgba(16,185,129,.18);color:#6EE7B7}
+  .badge-pending{background:rgba(245,158,11,.18);color:#FCD34D}
+  .badge-progress{background:rgba(167,139,250,.18);color:#C4B5FD}
+  .sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;color:${COLORS.textMuted};font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s;border:none;background:none;width:100%;text-align:left}
+  .sidebar-link:hover,.sidebar-link.active{background:rgba(200,16,46,.12);color:${COLORS.primary}}
+  .sidebar-link.active{border-left:3px solid ${COLORS.primary}}
+  .pulse{animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .slide-in{animation:slideIn .3s ease}
+  @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .ring-animation{animation:ring 1.5s ease-in-out infinite}
+  @keyframes ring{0%{box-shadow:0 0 0 0 rgba(200,16,46,.7)}70%{box-shadow:0 0 0 15px transparent}100%{box-shadow:0 0 0 0 transparent}}
+  .stat-card{background:${COLORS.bgPanel};border:1px solid ${COLORS.border};border-radius:14px;padding:20px;transition:transform .2s,border-color .2s}
+  .stat-card:hover{transform:translateY(-2px);border-color:${COLORS.borderStrong}}
+  .map-placeholder{background:linear-gradient(135deg,#0f1b2e 0%,#162035 50%,#0f1b2e 100%);border-radius:12px;position:relative;overflow:hidden;min-height:300px;display:flex;align-items:center;justify-content:center}
+  .map-dot{position:absolute;width:12px;height:12px;border-radius:50%;background:${COLORS.primary};box-shadow:0 0 12px ${COLORS.primary}}
+  .timeline-item{display:flex;gap:16px;padding-bottom:20px;position:relative}
+  .timeline-item::before{content:'';position:absolute;left:15px;top:32px;bottom:0;width:2px;background:${COLORS.border}}
+  .timeline-dot{width:32px;height:32px;border-radius:50%;background:${COLORS.bgPanel};border:2px solid ${COLORS.primary};display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1}
+  .notification-item{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:10px;background:${COLORS.bgPanel};border:1px solid ${COLORS.border};margin-bottom:8px;transition:border-color .2s}
+  .notification-item:hover{border-color:${COLORS.primary}}
+  .notification-item.unread{border-left:3px solid ${COLORS.primary}}
+  .alert-banner{background:linear-gradient(90deg,${COLORS.primaryDark},rgba(200,16,46,.6));border:1px solid ${COLORS.primary};border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .progress-bar{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+  .progress-fill{height:100%;border-radius:3px;transition:width .5s ease}
+  .evidence-thumb{width:80px;height:80px;border-radius:8px;background:${COLORS.bgPanel};border:1px solid ${COLORS.border};display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s}
+  .evidence-thumb:hover{border-color:${COLORS.primary}}
+  .step-indicator{display:flex;align-items:center;gap:0}
+  .step{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;transition:all .3s}
+  .step.active{background:rgba(200,16,46,.15);color:${COLORS.primary};border:1px solid rgba(200,16,46,.3)}
+  .step.done{background:rgba(16,185,129,.12);color:${COLORS.success}}
+  .step.inactive{color:${COLORS.textDim}}
+  .step-connector{width:30px;height:2px;background:${COLORS.border}}
+  .step-connector.done{background:${COLORS.success}}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;padding:10px 14px;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:${COLORS.textDim};border-bottom:1px solid ${COLORS.border}}
+  td{padding:12px 14px;font-size:13.5px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+  tr:hover td{background:rgba(255,255,255,.02)}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+  .modal{background:${COLORS.bgCard};border:1px solid ${COLORS.borderStrong};border-radius:20px;padding:28px;max-width:520px;width:100%;max-height:80vh;overflow-y:auto}
+  .nav-tab{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;color:${COLORS.textMuted};background:none;border:1px solid transparent}
+  .nav-tab:hover{color:${COLORS.text};border-color:${COLORS.border}}
+  .nav-tab.active{background:${COLORS.primary};color:#fff;border-color:transparent}
+  .form-group{margin-bottom:18px}
+  .form-label{display:block;font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:${COLORS.textMuted};margin-bottom:8px}
+  .form-hint{font-size:11px;color:${COLORS.textDim};margin-top:5px}
+  .chart-bar{background:rgba(200,16,46,.6);border-radius:4px 4px 0 0;transition:all .3s;min-width:30px}
+  .chart-bar:hover{background:${COLORS.primary}}
+  .logo-text{font-weight:700;font-size:20px;letter-spacing:-0.5px}
+  .logo-text span{color:${COLORS.primary}}
+  .glow-text{text-shadow:0 0 20px rgba(200,16,46,.5)}
+`;
+
+const INITIAL_REPORTS = [
+  { id: "RPT-2401", type: "Theft", description: "Motorcycle theft at Kimironko Market. Two suspects on a red motorcycle.", location: "Kimironko, Kigali", lat: -1.9441, lng: 30.1219, date: "2025-05-20 08:42", level: "High", status: "In Progress", reporter: "Jean Baptiste M.", evidence: ["photo1.jpg"], station: "Remera Police Station", assignedOfficer: "Sgt. Uwimana K.", updates: [{ time: "08:45", msg: "Report received and dispatched" }, { time: "09:10", msg: "Officers en route to location" }, { time: "09:45", msg: "Scene investigated, suspects identified" }] },
+  { id: "RPT-2402", type: "Road Accident", description: "Serious road accident on KK15 Ave. Multiple casualties. Ambulance needed urgently.", location: "Kacyiru, Kigali", lat: -1.9506, lng: 30.0897, date: "2025-05-20 07:15", level: "Critical", status: "Resolved", reporter: "Marie Claire U.", evidence: ["video1.mp4", "photo2.jpg"], station: "Kacyiru Police Station", assignedOfficer: "Insp. Nkurunziza A.", updates: [{ time: "07:18", msg: "Emergency alert sent to CHUK Hospital" }, { time: "07:25", msg: "Ambulance dispatched" }, { time: "07:50", msg: "Casualties transported to hospital" }, { time: "09:00", msg: "Case resolved" }] },
+  { id: "RPT-2403", type: "Suspicious Activity", description: "Suspicious individuals with bags near Nyabugogo bus park. Possible threat.", location: "Nyabugogo, Kigali", lat: -1.9355, lng: 30.0527, date: "2025-05-19 22:30", level: "Medium", status: "Open", reporter: "Patrick N.", evidence: [], station: "Nyabugogo Police Station", assignedOfficer: null, updates: [{ time: "22:33", msg: "Report received, under review" }] },
+  { id: "RPT-2404", type: "Violence/Assault", description: "Physical assault reported near Gisozi area. Victim sustained injuries.", location: "Gisozi, Kigali", lat: -1.9203, lng: 30.0782, date: "2025-05-19 20:10", level: "High", status: "In Progress", reporter: "Amina K.", evidence: ["audio1.mp3"], station: "Remera Police Station", assignedOfficer: "Sgt. Habimana D.", updates: [{ time: "20:15", msg: "Officers dispatched" }, { time: "21:00", msg: "Victim assisted and statement taken" }] },
+  { id: "RPT-2405", type: "Fire", description: "House fire at Kanombe residential area. Family trapped inside.", location: "Kanombe, Kigali", lat: -1.9683, lng: 30.1323, date: "2025-05-19 15:55", level: "Critical", status: "Resolved", reporter: "Emmanuel R.", evidence: ["photo3.jpg", "photo4.jpg"], station: "Kanombe Police Station", assignedOfficer: "Insp. Mutesi G.", updates: [{ time: "15:58", msg: "Fire brigade alerted" }, { time: "16:20", msg: "Family evacuated safely" }, { time: "17:45", msg: "Fire extinguished" }] },
+  { id: "RPT-2406", type: "Theft", description: "Handbag snatching at Muhima area.", location: "Muhima, Kigali", lat: -1.9500, lng: 30.0600, date: "2025-05-18 14:30", level: "Low", status: "Open", reporter: "Grace T.", evidence: [], station: "Nyarugenge Police Station", assignedOfficer: null, updates: [{ time: "14:35", msg: "Report logged" }] },
+];
+
+const EMERGENCY_TYPES = ["Theft", "Road Accident", "Fire", "Violence/Assault", "Suspicious Activity", "Kidnapping", "Vandalism", "Drug Activity", "Domestic Violence", "Medical Emergency", "Terrorism Threat", "Other"];
+const STATIONS = ["Remera Police Station", "Kacyiru Police Station", "Nyabugogo Police Station", "Kanombe Police Station", "Nyarugenge Police Station", "Gikondo Police Station"];
+const HOSPITALS = ["CHUK Hospital", "King Faisal Hospital", "Kibagabaga Hospital", "Kacyiru Hospital"];
+const OFFICERS = ["Sgt. Uwimana K.", "Insp. Nkurunziza A.", "Sgt. Habimana D.", "Insp. Mutesi G.", "Cpl. Niyonzima P."];
+
+// ── icons ───────────────────────────────────────────────
+const Icon = ({ name, size = 16, color }) => (
+  <i className={`ti ti-${name}`} style={{ fontSize: size, color, lineHeight: 1 }} aria-hidden="true" />
+);
+
+// ── level badge ─────────────────────────────────────────
+const LevelBadge = ({ level }) => {
+  const map = { Critical: "critical", High: "high", Medium: "medium", Low: "low" };
+  return <span className={`badge badge-${map[level] || "low"}`}><Icon name={level === "Critical" ? "flame" : level === "High" ? "alert-triangle" : level === "Medium" ? "alert-circle" : "info-circle"} size={11} />{level}</span>;
+};
+
+const StatusBadge = ({ status }) => {
+  const map = { Open: "open", "In Progress": "progress", Resolved: "closed", Pending: "pending", Rejected: "danger" };
+  const cls = map[status] || "open";
+  return <span className={`badge badge-${cls}`}>{status}</span>;
+};
+
+// ── TOPBAR ───────────────────────────────────────────────
+const TopBar = ({ page, setPage, user, notifications, setShowNotif }) => (
+  <div style={{ background: COLORS.bgCard, borderBottom: `1px solid ${COLORS.border}`, padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div style={{ width: 36, height: 36, borderRadius: "50%", background: COLORS.primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Icon name="shield-check" size={18} color="#fff" />
+      </div>
+      <span className="logo-text">Safe<span>Rwanda</span></span>
+    </div>
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      {user && (
+        <button className="sidebar-link" style={{ padding: "6px 12px", borderRadius: 8, gap: 8, display: "flex", alignItems: "center" }} onClick={() => setShowNotif(p => !p)}>
+          <div style={{ position: "relative" }}>
+            <Icon name="bell" size={18} />
+            {notifications > 0 && <span style={{ position: "absolute", top: -5, right: -5, background: COLORS.primary, color: "#fff", fontSize: 9, fontWeight: 700, width: 14, height: 14, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>{notifications}</span>}
+          </div>
+        </button>
+      )}
+      {user ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg,${COLORS.primary},${COLORS.primaryDark})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 }}>{user.name[0]}</div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>{user.name}</span>
+            <span style={{ fontSize: 11, color: COLORS.textMuted }}>{user.role}</span>
+          </div>
+          <button className="btn-secondary" style={{ padding: "5px 12px", fontSize: 12 }} onClick={() => setPage("home")}>Logout</button>
+        </div>
+      ) : (
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn-secondary" style={{ padding: "6px 14px", fontSize: 13 }} onClick={() => setPage("login")}>Log In</button>
+          <button className="btn-primary" style={{ padding: "6px 14px", fontSize: 13 }} onClick={() => setPage("register")}>Register</button>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+// ── HOME PAGE ────────────────────────────────────────────
+const HomePage = ({ setPage }) => {
+  const stats = [{ label: "Reports Today", val: "24", icon: "file-report", color: COLORS.primary }, { label: "Cases Resolved", val: "91%", icon: "check-circle", color: COLORS.success }, { label: "Avg Response", val: "4 min", icon: "clock", color: COLORS.warning }, { label: "Active Officers", val: "182", icon: "badge", color: COLORS.info }];
+  const types = [{ name: "Theft", icon: "backpack", color: "#EF4444" }, { name: "Accident", icon: "car-crash", color: "#F59E0B" }, { name: "Fire", icon: "flame", color: "#F97316" }, { name: "Violence", icon: "bolt", color: "#8B5CF6" }, { name: "Suspicious", icon: "eye", color: "#06B6D4" }, { name: "Emergency", icon: "first-aid-kit", color: "#10B981" }];
+  return (
+    <div className="slide-in">
+      {/* Hero */}
+      <div style={{ position: "relative", padding: "80px 40px", textAlign: "center", overflow: "hidden", background: "radial-gradient(ellipse at 50% 0%,rgba(200,16,46,.18) 0%,transparent 70%)" }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 20% 80%,rgba(0,106,78,.1) 0%,transparent 50%), radial-gradient(circle at 80% 20%,rgba(200,16,46,.08) 0%,transparent 50%)" }} />
+        <div className="ring-animation" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(200,16,46,.12)", border: `1px solid rgba(200,16,46,.3)`, borderRadius: 20, padding: "6px 14px", marginBottom: 24 }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS.primary, display: "inline-block" }} className="pulse" />
+          <span style={{ fontSize: 12, color: COLORS.primary, fontWeight: 600 }}>Emergency Response System — Active</span>
+        </div>
+        <h1 className="glow-text" style={{ fontSize: 52, fontWeight: 700, lineHeight: 1.15, marginBottom: 20, letterSpacing: -1.5 }}>
+          Protect Rwanda.<br /><span style={{ color: COLORS.primary }}>Report. Respond. Resolve.</span>
+        </h1>
+        <p style={{ fontSize: 17, color: COLORS.textMuted, maxWidth: 560, margin: "0 auto 36px", lineHeight: 1.7 }}>Rwanda's official crime and emergency reporting platform. Submit reports instantly, track case progress, and connect with emergency services in real-time.</p>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+          <button className="btn-primary" style={{ padding: "14px 32px", fontSize: 15, borderRadius: 12, display: "flex", alignItems: "center", gap: 8 }} onClick={() => setPage("report")}>
+            <Icon name="alert-triangle" size={18} /> Report Emergency
+          </button>
+          <button className="btn-secondary" style={{ padding: "14px 32px", fontSize: 15, borderRadius: 12, display: "flex", alignItems: "center", gap: 8 }} onClick={() => setPage("track")}>
+            <Icon name="map-search" size={18} /> Track My Case
+          </button>
+          <button className="btn-secondary" style={{ padding: "14px 32px", fontSize: 15, borderRadius: 12, display: "flex", alignItems: "center", gap: 8 }} onClick={() => setPage("login")}>
+            <Icon name="login" size={18} /> Login
+          </button>
+        </div>
+        {/* SOS Button */}
+        <div style={{ marginTop: 40 }}>
+          <div style={{ fontSize: 12, color: COLORS.textDim, marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>Life-threatening emergency?</div>
+          <button style={{ width: 90, height: 90, borderRadius: "50%", background: `radial-gradient(circle,${COLORS.primary},${COLORS.primaryDark})`, border: `3px solid rgba(200,16,46,.4)`, color: "#fff", fontSize: 18, fontWeight: 800, letterSpacing: 2, cursor: "pointer", boxShadow: `0 0 30px rgba(200,16,46,.5)`, animation: "ring 2s infinite" }} onClick={() => { alert("🚨 SOS ALERT SENT\nEmergency services have been notified. Help is on the way.\n\nRwanda Emergency: 112 | Police: 113 | Ambulance: 912"); }}>SOS</button>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div style={{ padding: "0 40px 40px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+        {stats.map(s => (
+          <div key={s.label} className="stat-card" style={{ textAlign: "center" }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: `${s.color}22`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+              <Icon name={s.icon} size={22} color={s.color} />
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: s.color }}>{s.val}</div>
+            <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 4 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Report Types */}
+      <div style={{ padding: "0 40px 40px" }}>
+        <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>What can you report?</h2>
+        <p style={{ color: COLORS.textMuted, fontSize: 14, marginBottom: 24 }}>Select a category to begin your emergency report</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
+          {types.map(t => (
+            <button key={t.name} onClick={() => setPage("report")} style={{ background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, cursor: "pointer", transition: "all .2s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = t.color; e.currentTarget.style.transform = "translateY(-3px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = COLORS.border; e.currentTarget.style.transform = ""; }}>
+              <div style={{ width: 52, height: 52, borderRadius: 14, background: `${t.color}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon name={t.icon} size={26} color={t.color} />
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>{t.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Warning */}
+      <div style={{ margin: "0 40px 40px", background: "rgba(245,158,11,.08)", border: `1px solid rgba(245,158,11,.3)`, borderRadius: 12, padding: 16, display: "flex", gap: 12 }}>
+        <Icon name="alert-triangle" size={20} color={COLORS.warning} />
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.warning, marginBottom: 4 }}>⚠️ Warning — False Reports are Illegal</div>
+          <div style={{ fontSize: 12, color: COLORS.textMuted, lineHeight: 1.6 }}>Submitting fake reports, false information, or misleading emergency alerts is strictly prohibited under Rwandan law. Violators may have their account suspended and their information reported to authorities for prosecution.</div>
+        </div>
+      </div>
+
+      {/* Contact bar */}
+      <div style={{ background: COLORS.primary, padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+        {[{ label: "Emergency", val: "112" }, { label: "Rwanda Police", val: "113" }, { label: "Ambulance", val: "912" }, { label: "Fire Brigade", val: "111" }].map(c => (
+          <div key={c.label} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 11, opacity: .8, marginBottom: 2 }}>{c.label}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: 1 }}>{c.val}</div>
+          </div>
+        ))}
+        <button className="btn-secondary" style={{ borderColor: "rgba(255,255,255,.4)", color: "#fff" }} onClick={() => setPage("contact")}><Icon name="phone" size={14} /> Contact Help</button>
+      </div>
+    </div>
+  );
+};
+
+// ── LOGIN PAGE ───────────────────────────────────────────
+const LoginPage = ({ setPage, setUser }) => {
+  const [form, setForm] = useState({ email: "", password: "", role: "citizen" });
+  const [error, setError] = useState("");
+  const USERS = {
+    "admin@saferwanda.rw": { name: "Admin User", role: "Admin", pw: "admin123" },
+    "police@rdf.gov.rw": { name: "Insp. Uwimana", role: "Police", pw: "police123" },
+    "hospital@chuk.rw": { name: "Dr. Mukamana", role: "Hospital", pw: "hospital123" },
+    "citizen@gmail.com": { name: "Jean Baptiste", role: "Citizen", pw: "user123" },
+  };
+  const handle = () => {
+    const u = USERS[form.email];
+    if (!u || u.pw !== form.password) { setError("Invalid credentials. Try demo accounts below."); return; }
+    setUser({ ...u, email: form.email });
+    setPage(u.role === "Admin" ? "adminDash" : u.role === "Police" ? "policeDash" : u.role === "Hospital" ? "hospitalDash" : "report");
+  };
+  const demos = [{ label: "Admin", email: "admin@saferwanda.rw", pw: "admin123" }, { label: "Police", email: "police@rdf.gov.rw", pw: "police123" }, { label: "Hospital", email: "hospital@chuk.rw", pw: "hospital123" }, { label: "Citizen", email: "citizen@gmail.com", pw: "user123" }];
+  return (
+    <div style={{ minHeight: "calc(100vh - 60px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, background: "radial-gradient(ellipse at 50% 50%,rgba(200,16,46,.08) 0%,transparent 70%)" }} className="slide-in">
+      <div style={{ width: "100%", maxWidth: 440 }}>
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div style={{ width: 60, height: 60, borderRadius: 16, background: COLORS.primary, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            <Icon name="shield-lock" size={28} color="#fff" />
+          </div>
+          <h1 style={{ fontSize: 26, fontWeight: 700, marginBottom: 8 }}>Secure Sign In</h1>
+          <p style={{ color: COLORS.textMuted, fontSize: 14 }}>SafeRwanda Emergency Reporting System</p>
+        </div>
+        <div className="card">
+          {error && <div style={{ background: "rgba(239,68,68,.1)", border: `1px solid rgba(239,68,68,.3)`, borderRadius: 8, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#FCA5A5" }}>{error}</div>}
+          <div className="form-group">
+            <label className="form-label">Email Address</label>
+            <input type="email" placeholder="your@email.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+          </div>
+          <button className="btn-primary" style={{ width: "100%", padding: "12px", fontSize: 15, borderRadius: 10, marginTop: 4 }} onClick={handle}>Sign In</button>
+          <div style={{ textAlign: "center", marginTop: 16, fontSize: 13, color: COLORS.textMuted }}>
+            Don't have an account? <span style={{ color: COLORS.primary, cursor: "pointer", fontWeight: 600 }} onClick={() => setPage("register")}>Register</span>
+          </div>
+        </div>
+        <div style={{ marginTop: 20 }}>
+          <div style={{ fontSize: 11, color: COLORS.textDim, textAlign: "center", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>Demo Accounts</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {demos.map(d => (
+              <button key={d.label} onClick={() => setForm({ email: d.email, password: d.pw })} style={{ background: COLORS.bgPanel, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "10px", fontSize: 12, color: COLORS.textMuted, cursor: "pointer", transition: "all .2s" }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = COLORS.primary}
+                onMouseLeave={e => e.currentTarget.style.borderColor = COLORS.border}>
+                <div style={{ fontWeight: 600, color: COLORS.text, marginBottom: 2 }}>{d.label}</div>
+                <div style={{ fontSize: 10 }}>{d.email}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── REGISTER PAGE ────────────────────────────────────────
+const RegisterPage = ({ setPage }) => {
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", national_id: "", password: "", confirm: "", district: "", agree: false });
+  const [done, setDone] = useState(false);
+  const upd = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  const submit = () => {
+    if (form.password !== form.confirm) { alert("Passwords don't match"); return; }
+    setDone(true);
+  };
+  if (done) return (
+    <div style={{ minHeight: "calc(100vh-60px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} className="slide-in">
+      <div style={{ textAlign: "center", maxWidth: 400 }}>
+        <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(16,185,129,.15)", border: `2px solid ${COLORS.success}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+          <Icon name="check" size={36} color={COLORS.success} />
+        </div>
+        <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Account Created!</h2>
+        <p style={{ color: COLORS.textMuted, fontSize: 14, marginBottom: 24 }}>Welcome to SafeRwanda. Your account has been verified and is ready to use.</p>
+        <button className="btn-primary" style={{ padding: "12px 32px", borderRadius: 10 }} onClick={() => setPage("login")}>Sign In Now</button>
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ minHeight: "calc(100vh - 60px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} className="slide-in">
+      <div style={{ width: "100%", maxWidth: 480 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700, textAlign: "center", marginBottom: 6 }}>Create Account</h2>
+        <p style={{ color: COLORS.textMuted, textAlign: "center", fontSize: 14, marginBottom: 28 }}>Join SafeRwanda to report and track emergencies</p>
+        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 28 }}>
+          {[1, 2].map(s => <div key={s} style={{ width: 80, height: 4, borderRadius: 2, background: step >= s ? COLORS.primary : COLORS.border, transition: "background .3s" }} />)}
+        </div>
+        <div className="card">
+          {step === 1 ? (
+            <>
+              <div className="form-group"><label className="form-label">Full Name</label><input placeholder="Jean Baptiste Nkurunziza" value={form.name} onChange={e => upd("name", e.target.value)} /></div>
+              <div className="form-group"><label className="form-label">Email Address</label><input type="email" placeholder="jean@example.com" value={form.email} onChange={e => upd("email", e.target.value)} /></div>
+              <div className="form-group"><label className="form-label">Phone Number</label><input placeholder="+250 7XX XXX XXX" value={form.phone} onChange={e => upd("phone", e.target.value)} /></div>
+              <div className="form-group"><label className="form-label">National ID</label><input placeholder="1 XXXX X XXXXXXX X XX" value={form.national_id} onChange={e => upd("national_id", e.target.value)} /><div className="form-hint">Your National ID is required for account verification</div></div>
+              <button className="btn-primary" style={{ width: "100%", padding: 12, borderRadius: 10 }} onClick={() => setStep(2)}>Continue</button>
+            </>
+          ) : (
+            <>
+              <div className="form-group"><label className="form-label">District</label>
+                <select value={form.district} onChange={e => upd("district", e.target.value)}>
+                  <option value="">Select your district</option>
+                  {["Nyarugenge", "Gasabo", "Kicukiro", "Bugesera", "Gatsibo", "Kayonza", "Kirehe", "Ngoma", "Nyagatare", "Rwamagana"].map(d => <option key={d}>{d}</option>)}
+                </select>
+              </div>
+              <div className="form-group"><label className="form-label">Password</label><input type="password" placeholder="Min. 8 characters" value={form.password} onChange={e => upd("password", e.target.value)} /></div>
+              <div className="form-group"><label className="form-label">Confirm Password</label><input type="password" placeholder="Repeat password" value={form.confirm} onChange={e => upd("confirm", e.target.value)} /></div>
+              <div style={{ background: "rgba(245,158,11,.08)", border: `1px solid rgba(245,158,11,.2)`, borderRadius: 8, padding: "12px 14px", marginBottom: 18, fontSize: 12, color: COLORS.textMuted, lineHeight: 1.6 }}>
+                <strong style={{ color: COLORS.warning }}>⚠️ Important:</strong> Submitting false or misleading reports is a criminal offense under Rwandan law. By registering, you agree to use this platform responsibly.
+              </div>
+              <label style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 18, cursor: "pointer", fontSize: 13, color: COLORS.textMuted }}>
+                <input type="checkbox" checked={form.agree} onChange={e => upd("agree", e.target.checked)} style={{ width: 16, height: 16, marginTop: 2 }} />
+                I agree to the Terms of Service and acknowledge that false reporting is a punishable offense
+              </label>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button className="btn-secondary" style={{ flex: 1, padding: 12, borderRadius: 10 }} onClick={() => setStep(1)}>Back</button>
+                <button className="btn-primary" style={{ flex: 2, padding: 12, borderRadius: 10 }} onClick={submit} disabled={!form.agree}>Create Account</button>
+              </div>
+            </>
+          )}
+        </div>
+        <div style={{ textAlign: "center", marginTop: 16, fontSize: 13, color: COLORS.textMuted }}>
+          Already registered? <span style={{ color: COLORS.primary, cursor: "pointer", fontWeight: 600 }} onClick={() => setPage("login")}>Sign In</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── REPORT FORM ──────────────────────────────────────────
+const ReportPage = ({ setPage, reports, setReports, user }) => {
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState({ type: "", description: "", location: "", level: "", date: new Date().toISOString().slice(0, 16), lat: -1.9441, lng: 30.0619, evidence: [] });
+  const [submitted, setSubmitted] = useState(null);
+  const upd = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  const addEvidence = (type) => setForm(p => ({ ...p, evidence: [...p.evidence, { type, name: `${type}_${Date.now()}.${type === "Photo" ? "jpg" : type === "Video" ? "mp4" : "mp3"}` }] }));
+  const submit = () => {
+    const id = `RPT-${2400 + reports.length + 7}`;
+    const newReport = { id, ...form, status: "Open", reporter: user?.name || "Anonymous", station: STATIONS[Math.floor(Math.random() * STATIONS.length)], assignedOfficer: null, updates: [{ time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), msg: "Report received and logged in system" }] };
+    setReports(p => [newReport, ...p]);
+    setSubmitted(id);
+  };
+  if (submitted) return (
+    <div style={{ minHeight: "calc(100vh-60px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} className="slide-in">
+      <div className="card" style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
+        <div style={{ width: 70, height: 70, borderRadius: "50%", background: "rgba(16,185,129,.15)", border: `2px solid ${COLORS.success}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+          <Icon name="check" size={34} color={COLORS.success} />
+        </div>
+        <h2 style={{ marginBottom: 8 }}>Report Submitted</h2>
+        <p style={{ color: COLORS.textMuted, fontSize: 14, marginBottom: 20 }}>Your emergency report has been logged and dispatched to the nearest police station.</p>
+        <div style={{ background: COLORS.bgPanel, borderRadius: 10, padding: 16, marginBottom: 24 }}>
+          <div style={{ fontSize: 11, color: COLORS.textDim, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Report ID</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: COLORS.primary, letterSpacing: 1, fontFamily: "'JetBrains Mono',monospace" }}>{submitted}</div>
+        </div>
+        {form.level === "Critical" && <div className="alert-banner" style={{ marginBottom: 20 }}><Icon name="bell-ringing" size={18} color="#fff" /><span style={{ fontSize: 13 }}>🚨 Emergency alert sent to nearest hospital and police station!</span></div>}
+        <div style={{ display: "flex", gap: 10 }}>
+          <button className="btn-primary" style={{ flex: 1, padding: 12, borderRadius: 10 }} onClick={() => setPage("track")}>Track Case</button>
+          <button className="btn-secondary" style={{ flex: 1, padding: 12, borderRadius: 10 }} onClick={() => { setSubmitted(null); setStep(1); setForm({ type: "", description: "", location: "", level: "", date: new Date().toISOString().slice(0, 16), lat: -1.9441, lng: 30.0619, evidence: [] }); }}>New Report</button>
+        </div>
+      </div>
+    </div>
+  );
+  const steps = ["Incident Details", "Location & Time", "Evidence Upload", "Review & Submit"];
+  return (
+    <div style={{ maxWidth: 660, margin: "0 auto", padding: "30px 24px" }} className="slide-in">
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6 }}>Report Emergency</h1>
+        <p style={{ color: COLORS.textMuted, fontSize: 14 }}>Fill in the details accurately. Your report will be sent to emergency services immediately.</p>
+      </div>
+      {/* Step indicator */}
+      <div style={{ display: "flex", alignItems: "center", marginBottom: 32, overflowX: "auto" }}>
+        {steps.map((s, i) => (
+          <div key={s} style={{ display: "flex", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: i < step ? "pointer" : "default" }} onClick={() => i < step && setStep(i + 1)}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: step > i + 1 ? COLORS.success : step === i + 1 ? COLORS.primary : COLORS.bgPanel, border: `2px solid ${step > i + 1 ? COLORS.success : step === i + 1 ? COLORS.primary : COLORS.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0, transition: "all .3s" }}>
+                {step > i + 1 ? <Icon name="check" size={14} color="#fff" /> : i + 1}
+              </div>
+              <span style={{ fontSize: 12, fontWeight: step === i + 1 ? 600 : 400, color: step === i + 1 ? COLORS.text : COLORS.textDim, whiteSpace: "nowrap" }}>{s}</span>
+            </div>
+            {i < 3 && <div style={{ width: 20, height: 2, background: step > i + 1 ? COLORS.success : COLORS.border, margin: "0 8px", flexShrink: 0, transition: "background .3s" }} />}
+          </div>
+        ))}
+      </div>
+      <div className="card">
+        {step === 1 && (
+          <div className="slide-in">
+            <div className="form-group">
+              <label className="form-label">Emergency Type *</label>
+              <select value={form.type} onChange={e => upd("type", e.target.value)}>
+                <option value="">Select emergency type...</option>
+                {EMERGENCY_TYPES.map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Detailed Description *</label>
+              <textarea rows={5} placeholder="Describe the incident in detail. Include: what happened, number of people involved, any suspects' description, vehicle numbers, etc." value={form.description} onChange={e => upd("description", e.target.value)} />
+              <div className="form-hint">{form.description.length}/500 characters — Be as specific as possible</div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Emergency Level *</label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10 }}>
+                {[{ l: "Low", desc: "Non-urgent situation", icon: "info-circle", color: COLORS.success }, { l: "Medium", desc: "Attention needed soon", icon: "alert-circle", color: COLORS.info }, { l: "High", desc: "Urgent — respond quickly", icon: "alert-triangle", color: COLORS.warning }, { l: "Critical", desc: "Life threatening — immediate", icon: "flame", color: COLORS.danger }].map(({ l, desc, icon, color }) => (
+                  <button key={l} onClick={() => upd("level", l)} style={{ background: form.level === l ? `${color}18` : COLORS.bgPanel, border: `2px solid ${form.level === l ? color : COLORS.border}`, borderRadius: 10, padding: "12px", textAlign: "left", cursor: "pointer", transition: "all .2s" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                      <Icon name={icon} size={16} color={color} />
+                      <span style={{ fontSize: 13, fontWeight: 700, color }}>{l}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: COLORS.textMuted }}>{desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button className="btn-primary" style={{ width: "100%", padding: 12, borderRadius: 10 }} onClick={() => setStep(2)} disabled={!form.type || !form.description || !form.level}>Next: Location →</button>
+          </div>
+        )}
+        {step === 2 && (
+          <div className="slide-in">
+            <div className="form-group">
+              <label className="form-label">Location Description *</label>
+              <input placeholder="e.g. Near Kimironko Market, KG 15 Ave, Kigali" value={form.location} onChange={e => upd("location", e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Live GPS Location</label>
+              <div style={{ background: COLORS.bgPanel, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Icon name="map-pin" size={16} color={COLORS.primary} />
+                  <span style={{ fontSize: 13 }}>Lat: {form.lat.toFixed(4)}, Lng: {form.lng.toFixed(4)}</span>
+                </div>
+                <button className="btn-primary" style={{ padding: "6px 12px", fontSize: 12, borderRadius: 6 }} onClick={() => { upd("lat", -1.9441 + (Math.random() - 0.5) * 0.05); upd("lng", 30.0619 + (Math.random() - 0.5) * 0.05); alert("📍 GPS location captured!"); }}>
+                  <Icon name="current-location" size={13} /> Capture
+                </button>
+              </div>
+            </div>
+            {/* Fake Map */}
+            <div className="map-placeholder" style={{ marginBottom: 18, height: 200 }}>
+              <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }}>
+                <div className="map-dot ring-animation" />
+              </div>
+              <div style={{ position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)", background: "rgba(0,0,0,.7)", padding: "4px 12px", borderRadius: 20, fontSize: 11, color: COLORS.textMuted }}>
+                Kigali, Rwanda
+              </div>
+              {[{ top: "30%", left: "35%" }, { top: "60%", left: "65%" }, { top: "45%", left: "20%" }].map((pos, i) => (
+                <div key={i} style={{ position: "absolute", ...pos, width: 8, height: 8, borderRadius: "50%", background: "#3B82F6", opacity: .6 }} />
+              ))}
+            </div>
+            <div className="form-group">
+              <label className="form-label">Date & Time of Incident *</label>
+              <input type="datetime-local" value={form.date} onChange={e => upd("date", e.target.value)} />
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button className="btn-secondary" style={{ flex: 1, padding: 12, borderRadius: 10 }} onClick={() => setStep(1)}>← Back</button>
+              <button className="btn-primary" style={{ flex: 2, padding: 12, borderRadius: 10 }} onClick={() => setStep(3)} disabled={!form.location}>Next: Evidence →</button>
+            </div>
+          </div>
+        )}
+        {step === 3 && (
+          <div className="slide-in">
+            <div style={{ marginBottom: 20 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Upload Evidence</h3>
+              <p style={{ fontSize: 13, color: COLORS.textMuted }}>Optional but recommended. Attach photos, videos, or audio recordings.</p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 20 }}>
+              {[{ t: "Photo", i: "photo", ext: "JPG/PNG" }, { t: "Video", i: "video", ext: "MP4/MOV" }, { t: "Audio", i: "microphone", ext: "MP3/WAV" }].map(({ t, i, ext }) => (
+                <button key={t} onClick={() => { addEvidence(t); }} style={{ background: COLORS.bgPanel, border: `2px dashed ${COLORS.border}`, borderRadius: 12, padding: "24px 12px", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, cursor: "pointer", transition: "border-color .2s" }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = COLORS.primary}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = COLORS.border}>
+                  <Icon name={i} size={28} color={COLORS.primary} />
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>Add {t}</span>
+                  <span style={{ fontSize: 11, color: COLORS.textDim }}>{ext}</span>
+                </button>
+              ))}
+            </div>
+            {form.evidence.length > 0 && (
+              <div>
+                <div style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 10 }}>{form.evidence.length} file(s) attached</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                  {form.evidence.map((ev, i) => (
+                    <div key={i} className="evidence-thumb" style={{ flexDirection: "column", gap: 6, padding: 8 }}>
+                      <Icon name={ev.type === "Photo" ? "photo" : ev.type === "Video" ? "video" : "microphone"} size={24} color={COLORS.primary} />
+                      <span style={{ fontSize: 9, color: COLORS.textDim, textAlign: "center", wordBreak: "break-all" }}>{ev.name}</span>
+                      <button onClick={() => setForm(p => ({ ...p, evidence: p.evidence.filter((_, j) => j !== i) }))} style={{ background: "none", border: "none", color: COLORS.danger, fontSize: 11, cursor: "pointer", padding: 0 }}>Remove</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div style={{ background: "rgba(59,130,246,.08)", border: `1px solid rgba(59,130,246,.2)`, borderRadius: 8, padding: "10px 14px", marginTop: 16, fontSize: 12, color: COLORS.textMuted }}>
+              <Icon name="lock" size={13} color={COLORS.info} /> Evidence is securely stored and only accessible by authorized officers. Max 50MB per file.
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+              <button className="btn-secondary" style={{ flex: 1, padding: 12, borderRadius: 10 }} onClick={() => setStep(2)}>← Back</button>
+              <button className="btn-primary" style={{ flex: 2, padding: 12, borderRadius: 10 }} onClick={() => setStep(4)}>Next: Review →</button>
+            </div>
+          </div>
+        )}
+        {step === 4 && (
+          <div className="slide-in">
+            <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Review Your Report</h3>
+            {[["Emergency Type", form.type], ["Emergency Level", form.level], ["Location", form.location], ["Date & Time", form.date.replace("T", " ")], ["Evidence Files", form.evidence.length + " file(s)"]].map(([k, v]) => (
+              <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${COLORS.border}`, fontSize: 13 }}>
+                <span style={{ color: COLORS.textMuted }}>{k}</span>
+                <span style={{ fontWeight: 600, textAlign: "right", maxWidth: "60%" }}>{v}</span>
+              </div>
+            ))}
+            <div style={{ padding: "10px 0", borderBottom: `1px solid ${COLORS.border}` }}>
+              <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 6 }}>DESCRIPTION</div>
+              <div style={{ fontSize: 13, lineHeight: 1.6 }}>{form.description}</div>
+            </div>
+            {form.level === "Critical" && (
+              <div className="alert-banner" style={{ marginTop: 16 }}>
+                <Icon name="bell-ringing" size={18} color="#fff" />
+                <div><div style={{ fontWeight: 700, marginBottom: 2 }}>Critical Emergency Detected</div><div style={{ fontSize: 12, opacity: .85 }}>Alert will be sent to nearest police station AND hospital upon submission.</div></div>
+              </div>
+            )}
+            <div style={{ background: "rgba(245,158,11,.08)", border: `1px solid rgba(245,158,11,.2)`, borderRadius: 8, padding: "12px 14px", marginTop: 16, fontSize: 12, color: COLORS.textMuted }}>
+              ⚠️ By submitting, you confirm this information is accurate and truthful. False reports are illegal.
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+              <button className="btn-secondary" style={{ flex: 1, padding: 12, borderRadius: 10 }} onClick={() => setStep(3)}>← Edit</button>
+              <button className="btn-primary" style={{ flex: 2, padding: 12, borderRadius: 10, background: form.level === "Critical" ? COLORS.danger : COLORS.primary }} onClick={submit}>
+                <Icon name="send" size={15} /> Submit Report
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ── TRACK PAGE ───────────────────────────────────────────
+const TrackPage = ({ reports, user }) => {
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState(null);
+  const myReports = user ? reports.filter(r => r.reporter === user.name || r.reporter === "Anonymous") : reports;
+  const filtered = myReports.filter(r => r.id.toLowerCase().includes(search.toLowerCase()) || r.type.toLowerCase().includes(search.toLowerCase()));
+  const r = selected ? reports.find(x => x.id === selected) : null;
+  return (
+    <div style={{ padding: "30px 24px", maxWidth: 900, margin: "0 auto" }} className="slide-in">
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6 }}>Case Tracker</h1>
+        <p style={{ color: COLORS.textMuted, fontSize: 14 }}>Track the status of your submitted reports in real-time</p>
+      </div>
+      <div style={{ display: "flex", gap: 16 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <input placeholder="Search by report ID or type..." value={search} onChange={e => setSearch(e.target.value)} style={{ marginBottom: 16 }} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {filtered.length === 0 ? <div style={{ color: COLORS.textMuted, padding: "20px 0", textAlign: "center", fontSize: 14 }}>No reports found</div> :
+              filtered.map(r => (
+                <div key={r.id} onClick={() => setSelected(r.id)} style={{ background: COLORS.bgCard, border: `1px solid ${selected === r.id ? COLORS.primary : COLORS.border}`, borderRadius: 12, padding: "16px", cursor: "pointer", transition: "all .2s" }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = COLORS.primary}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = selected === r.id ? COLORS.primary : COLORS.border}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, fontFamily: "'JetBrains Mono',monospace", color: COLORS.primary, marginBottom: 4 }}>{r.id}</div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>{r.type}</div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                      <StatusBadge status={r.status} />
+                      <LevelBadge level={r.level} />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 12, color: COLORS.textMuted, display: "flex", gap: 12 }}>
+                    <span><Icon name="map-pin" size={11} /> {r.location}</span>
+                    <span><Icon name="clock" size={11} /> {r.date}</span>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+        {r && (
+          <div style={{ width: 340, flexShrink: 0 }} className="slide-in">
+            <div className="card">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: COLORS.textDim, fontFamily: "'JetBrains Mono',monospace", marginBottom: 4 }}>{r.id}</div>
+                  <h3 style={{ fontSize: 16, fontWeight: 700 }}>{r.type}</h3>
+                </div>
+                <StatusBadge status={r.status} />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+                <div style={{ background: COLORS.bgPanel, borderRadius: 8, padding: "10px 12px" }}>
+                  <div style={{ fontSize: 10, color: COLORS.textDim, marginBottom: 4 }}>LEVEL</div>
+                  <LevelBadge level={r.level} />
+                </div>
+                <div style={{ background: COLORS.bgPanel, borderRadius: 8, padding: "10px 12px" }}>
+                  <div style={{ fontSize: 10, color: COLORS.textDim, marginBottom: 4 }}>STATION</div>
+                  <div style={{ fontSize: 11, fontWeight: 600 }}>{r.station}</div>
+                </div>
+                {r.assignedOfficer && <div style={{ background: COLORS.bgPanel, borderRadius: 8, padding: "10px 12px", gridColumn: "1/-1" }}>
+                  <div style={{ fontSize: 10, color: COLORS.textDim, marginBottom: 4 }}>ASSIGNED OFFICER</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}><Icon name="badge" size={12} color={COLORS.info} />{r.assignedOfficer}</div>
+                </div>}
+              </div>
+              <div style={{ fontSize: 12, color: COLORS.textMuted, lineHeight: 1.6, marginBottom: 20, padding: "10px 12px", background: COLORS.bgPanel, borderRadius: 8 }}>{r.description}</div>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 11, color: COLORS.textDim, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Case Timeline</div>
+                {r.updates.map((u, i) => (
+                  <div key={i} className="timeline-item" style={i === r.updates.length - 1 ? { paddingBottom: 0 } : {}}>
+                    {i < r.updates.length - 1 && <div style={{ position: "absolute", left: 15, top: 32, bottom: 0, width: 2, background: COLORS.border }} />}
+                    <div className="timeline-dot" style={{ background: i === 0 ? `${COLORS.primary}22` : COLORS.bgPanel, borderColor: i === 0 ? COLORS.primary : COLORS.border }}>
+                      <Icon name={i === r.updates.length - 1 ? "check" : "clock"} size={11} color={i === r.updates.length - 1 ? COLORS.success : COLORS.textDim} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 2 }}>{u.msg}</div>
+                      <div style={{ fontSize: 11, color: COLORS.textDim }}>{u.time}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {r.evidence.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 11, color: COLORS.textDim, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Evidence ({r.evidence.length})</div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {r.evidence.map((ev, i) => (
+                      <div key={i} className="evidence-thumb" title={ev}><Icon name={ev.includes("mp4") ? "video" : ev.includes("mp3") ? "microphone" : "photo"} size={20} color={COLORS.primary} /></div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ── ADMIN DASHBOARD ──────────────────────────────────────
+const AdminDashboard = ({ reports, setReports }) => {
+  const [tab, setTab] = useState("overview");
+  const [showModal, setShowModal] = useState(null);
+  const stats = [
+    { label: "Total Reports", val: reports.length, icon: "file-report", color: COLORS.primary, sub: "+3 today" },
+    { label: "Active Cases", val: reports.filter(r => r.status === "In Progress").length, icon: "activity", color: COLORS.warning, sub: "In progress" },
+    { label: "Resolved", val: reports.filter(r => r.status === "Resolved").length, icon: "check-circle", color: COLORS.success, sub: "This week" },
+    { label: "Critical Alerts", val: reports.filter(r => r.level === "Critical").length, icon: "alert-triangle", color: COLORS.danger, sub: "Needs attention" },
+    { label: "Open Cases", val: reports.filter(r => r.status === "Open").length, icon: "folder-open", color: COLORS.info, sub: "Awaiting officer" },
+    { label: "Fake Detected", val: 2, icon: "shield-x", color: "#A855F7", sub: "Flagged reports" },
+  ];
+  const byType = EMERGENCY_TYPES.slice(0, 6).map(t => ({ type: t, count: reports.filter(r => r.type === t).length }));
+  const maxCount = Math.max(...byType.map(x => x.count), 1);
+  const updateStatus = (id, status) => setReports(p => p.map(r => r.id === id ? { ...r, status, updates: [...r.updates, { time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), msg: `Status updated to ${status} by Admin` }] } : r));
+  const tabs = [{ id: "overview", icon: "dashboard", label: "Overview" }, { id: "reports", icon: "file-report", label: "All Reports" }, { id: "users", icon: "users", label: "Users" }, { id: "analytics", icon: "chart-bar", label: "Analytics" }, { id: "evidence", icon: "folder", label: "Evidence" }];
+  return (
+    <div style={{ display: "flex", minHeight: "calc(100vh - 60px)" }}>
+      {/* Sidebar */}
+      <div style={{ width: 220, background: COLORS.bgCard, borderRight: `1px solid ${COLORS.border}`, padding: "20px 12px", flexShrink: 0, position: "sticky", top: 60, height: "calc(100vh - 60px)", overflowY: "auto" }}>
+        <div style={{ fontSize: 10, color: COLORS.textDim, textTransform: "uppercase", letterSpacing: 1, padding: "0 14px", marginBottom: 8 }}>Admin Panel</div>
+        {tabs.map(t => <button key={t.id} className={`sidebar-link ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}><Icon name={t.icon} size={16} />{t.label}</button>)}
+        <div style={{ marginTop: 20, borderTop: `1px solid ${COLORS.border}`, paddingTop: 16 }}>
+          <div style={{ fontSize: 10, color: COLORS.textDim, textTransform: "uppercase", letterSpacing: 1, padding: "0 14px", marginBottom: 8 }}>System</div>
+          <button className="sidebar-link"><Icon name="settings" size={16} />Settings</button>
+          <button className="sidebar-link"><Icon name="shield" size={16} />Security Logs</button>
+          <button className="sidebar-link"><Icon name="download" size={16} />Export Data</button>
+        </div>
+      </div>
+      {/* Main */}
+      <div style={{ flex: 1, padding: "24px", overflowY: "auto" }}>
+        {tab === "overview" && (
+          <div className="slide-in">
+            <div style={{ marginBottom: 24 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>Admin Dashboard</h2>
+              <p style={{ color: COLORS.textMuted, fontSize: 14 }}>System overview — {new Date().toLocaleDateString("en-RW", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
+            </div>
+            <div className="alert-banner" style={{ marginBottom: 24 }}>
+              <span className="pulse" style={{ width: 10, height: 10, borderRadius: "50%", background: "#fff", flexShrink: 0 }} />
+              <span style={{ fontSize: 13 }}>2 critical reports require immediate attention — <span style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => setTab("reports")}>View now</span></span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 28 }}>
+              {stats.map(s => (
+                <div key={s.label} className="stat-card">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div><div style={{ fontSize: 28, fontWeight: 700, color: s.color }}>{s.val}</div><div style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>{s.label}</div></div>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: `${s.color}20`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name={s.icon} size={20} color={s.color} /></div>
+                  </div>
+                  <div style={{ fontSize: 11, color: COLORS.textDim, marginTop: 8 }}>{s.sub}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20 }}>
+              <div className="card">
+                <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Recent Reports</h3>
+                <table><thead><tr><th>ID</th><th>Type</th><th>Level</th><th>Status</th><th>Action</th></tr></thead><tbody>
+                  {reports.slice(0, 5).map(r => (
+                    <tr key={r.id}>
+                      <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: COLORS.primary }}>{r.id}</td>
+                      <td style={{ fontSize: 13 }}>{r.type}</td>
+                      <td><LevelBadge level={r.level} /></td>
+                      <td><StatusBadge status={r.status} /></td>
+                      <td><button className="btn-info" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => setShowModal(r.id)}>View</button></td>
+                    </tr>
+                  ))}
+                </tbody></table>
+              </div>
+              <div className="card">
+                <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Reports by Type</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {byType.filter(x => x.count > 0).map(x => (
+                    <div key={x.type}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+                        <span style={{ color: COLORS.textMuted }}>{x.type}</span>
+                        <span style={{ fontWeight: 600 }}>{x.count}</span>
+                      </div>
+                      <div className="progress-bar"><div className="progress-fill" style={{ width: `${(x.count / maxCount) * 100}%`, background: COLORS.primary }} /></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {tab === "reports" && (
+          <div className="slide-in">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700 }}>All Reports</h2>
+              <div style={{ display: "flex", gap: 10 }}>
+                <input placeholder="Search reports..." style={{ width: 220 }} />
+                <select style={{ width: 140 }}><option>All Levels</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+              </div>
+            </div>
+            <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+              <table><thead><tr><th>Report ID</th><th>Type</th><th>Reporter</th><th>Location</th><th>Level</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                <tbody>{reports.map(r => (
+                  <tr key={r.id}>
+                    <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: COLORS.primary }}>{r.id}</td>
+                    <td style={{ fontSize: 13, fontWeight: 600 }}>{r.type}</td>
+                    <td style={{ fontSize: 12, color: COLORS.textMuted }}>{r.reporter}</td>
+                    <td style={{ fontSize: 12 }}>{r.location}</td>
+                    <td><LevelBadge level={r.level} /></td>
+                    <td><StatusBadge status={r.status} /></td>
+                    <td style={{ fontSize: 11, color: COLORS.textDim }}>{r.date}</td>
+                    <td>
+                      <div style={{ display: "flex", gap: 5 }}>
+                        <button className="btn-info" style={{ padding: "3px 8px", fontSize: 11 }} onClick={() => setShowModal(r.id)}>View</button>
+                        {r.status !== "Resolved" && <button className="btn-success" style={{ padding: "3px 8px", fontSize: 11 }} onClick={() => updateStatus(r.id, "Resolved")}>Resolve</button>}
+                        {r.status === "Open" && <button className="btn-warning" style={{ padding: "3px 8px", fontSize: 11 }} onClick={() => updateStatus(r.id, "Rejected")}>Reject</button>}
+                      </div>
+                    </td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        {tab === "users" && (
+          <div className="slide-in">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700 }}>User Management</h2>
+              <button className="btn-primary" style={{ padding: "8px 16px", fontSize: 13 }}><Icon name="plus" size={14} /> Add User</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
+              {[{ name: "Jean Baptiste M.", email: "jean@gmail.com", role: "Citizen", reports: 3, status: "Active" }, { name: "Marie Claire U.", email: "marie@gmail.com", role: "Citizen", reports: 2, status: "Active" }, { name: "Insp. Uwimana K.", email: "uwimana@rdf.gov.rw", role: "Police Officer", reports: 0, status: "Active" }, { name: "Dr. Mukamana", email: "mukamana@chuk.rw", role: "Hospital Staff", reports: 0, status: "Active" }, { name: "Patrick N.", email: "patrick@gmail.com", role: "Citizen", reports: 1, status: "Suspended" }, { name: "Amina K.", email: "amina@gmail.com", role: "Citizen", reports: 1, status: "Active" }].map((u, i) => (
+                <div key={i} className="card" style={{ padding: 18 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: `${COLORS.primary}22`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: COLORS.primary }}>{u.name[0]}</div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>{u.name}</div>
+                      <div style={{ fontSize: 11, color: COLORS.textMuted }}>{u.email}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 12 }}>
+                    <span style={{ background: COLORS.bgPanel, padding: "3px 8px", borderRadius: 6, fontSize: 11 }}>{u.role}</span>
+                    <span className={`badge badge-${u.status === "Active" ? "low" : "critical"}`}>{u.status}</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 12 }}>{u.reports} reports submitted</div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button className="btn-info" style={{ flex: 1, padding: "5px", fontSize: 11 }}>Edit</button>
+                    <button className={u.status === "Active" ? "btn-danger" : "btn-success"} style={{ flex: 1, padding: "5px", fontSize: 11 }}>{u.status === "Active" ? "Suspend" : "Activate"}</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {tab === "analytics" && (
+          <div className="slide-in">
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24 }}>Analytics & Statistics</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
+              <div className="card">
+                <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 20 }}>Reports This Week (by day)</h3>
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 140 }}>
+                  {[{ day: "Mon", val: 3 }, { day: "Tue", val: 7 }, { day: "Wed", val: 5 }, { day: "Thu", val: 12 }, { day: "Fri", val: 8 }, { day: "Sat", val: 15 }, { day: "Sun", val: 4 }].map(({ day, val }) => (
+                    <div key={day} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                      <div className="chart-bar" style={{ width: "100%", height: `${(val / 15) * 120}px` }} />
+                      <div style={{ fontSize: 10, color: COLORS.textDim }}>{day}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="card">
+                <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 20 }}>Response Time by Station</h3>
+                {[{ name: "Remera", time: 4.2 }, { name: "Kacyiru", time: 3.8 }, { name: "Nyabugogo", time: 6.1 }, { name: "Kanombe", time: 5.5 }, { name: "Nyarugenge", time: 4.9 }].map(s => (
+                  <div key={s.name} style={{ marginBottom: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+                      <span style={{ color: COLORS.textMuted }}>{s.name}</span>
+                      <span style={{ fontWeight: 600, color: s.time < 5 ? COLORS.success : COLORS.warning }}>{s.time} min avg</span>
+                    </div>
+                    <div className="progress-bar"><div className="progress-fill" style={{ width: `${(s.time / 8) * 100}%`, background: s.time < 5 ? COLORS.success : COLORS.warning }} /></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
+              {[{ label: "Resolution Rate", val: "91%", icon: "check", color: COLORS.success }, { label: "Avg Response Time", val: "4.9 min", icon: "clock", color: COLORS.info }, { label: "Critical Handled", val: "100%", icon: "flame", color: COLORS.danger }, { label: "False Reports", val: "2.1%", icon: "shield-x", color: "#A855F7" }].map(s => (
+                <div key={s.label} className="stat-card" style={{ textAlign: "center" }}>
+                  <Icon name={s.icon} size={24} color={s.color} />
+                  <div style={{ fontSize: 22, fontWeight: 700, color: s.color, marginTop: 10 }}>{s.val}</div>
+                  <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 4 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {tab === "evidence" && (
+          <div className="slide-in">
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24 }}>Evidence Management</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 14 }}>
+              {reports.flatMap(r => r.evidence.map(ev => ({ ev, id: r.id, type: r.type }))).map(({ ev, id, type }, i) => (
+                <div key={i} className="card" style={{ padding: 16, textAlign: "center" }}>
+                  <div style={{ width: 60, height: 60, borderRadius: 10, background: COLORS.bgPanel, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+                    <Icon name={ev.includes("mp4") ? "video" : ev.includes("mp3") ? "microphone" : "photo"} size={28} color={COLORS.primary} />
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{ev}</div>
+                  <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 10 }}>{type} · {id}</div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button className="btn-info" style={{ flex: 1, padding: "4px", fontSize: 10 }}>View</button>
+                    <button className="btn-secondary" style={{ flex: 1, padding: "4px", fontSize: 10 }}>Download</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      {/* Modal */}
+      {showModal && (() => { const r = reports.find(x => x.id === showModal); return r ? (
+        <div className="modal-overlay" onClick={() => setShowModal(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <div>
+                <div style={{ fontSize: 12, color: COLORS.primary, fontFamily: "'JetBrains Mono',monospace", marginBottom: 4 }}>{r.id}</div>
+                <h2 style={{ fontSize: 18, fontWeight: 700 }}>{r.type}</h2>
+              </div>
+              <button onClick={() => setShowModal(null)} style={{ background: "none", border: "none", color: COLORS.textMuted, cursor: "pointer", fontSize: 20 }}>✕</button>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}><LevelBadge level={r.level} /><StatusBadge status={r.status} /></div>
+            <div style={{ fontSize: 13, lineHeight: 1.7, color: COLORS.textMuted, marginBottom: 16 }}>{r.description}</div>
+            {[["Location", r.location], ["Reporter", r.reporter], ["Date", r.date], ["Station", r.station], ["Officer", r.assignedOfficer || "Unassigned"]].map(([k, v]) => (
+              <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${COLORS.border}`, fontSize: 13 }}>
+                <span style={{ color: COLORS.textMuted }}>{k}</span><span style={{ fontWeight: 600 }}>{v}</span>
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+              <button className="btn-success" style={{ flex: 1, padding: "10px" }} onClick={() => { updateStatus(showModal, "Resolved"); setShowModal(null); }}>Resolve</button>
+              <button className="btn-danger" style={{ flex: 1, padding: "10px" }} onClick={() => { updateStatus(showModal, "Rejected"); setShowModal(null); }}>Reject</button>
+            </div>
+          </div>
+        </div>
+      ) : null; })()}
+    </div>
+  );
+};
+
+// ── POLICE DASHBOARD ─────────────────────────────────────
+const PoliceDashboard = ({ reports, setReports }) => {
+  const [tab, setTab] = useState("cases");
+  const [showModal, setShowModal] = useState(null);
+  const myReports = reports.filter(r => r.status !== "Resolved");
+  const accept = (id) => setReports(p => p.map(r => r.id === id ? { ...r, status: "In Progress", assignedOfficer: "Insp. Uwimana K.", updates: [...r.updates, { time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), msg: "Case accepted by Insp. Uwimana K. — On route" }] } : r));
+  const resolve = (id) => setReports(p => p.map(r => r.id === id ? { ...r, status: "Resolved", updates: [...r.updates, { time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), msg: "Case resolved by Insp. Uwimana K." }] } : r));
+  return (
+    <div style={{ display: "flex", minHeight: "calc(100vh - 60px)" }}>
+      <div style={{ width: 200, background: COLORS.bgCard, borderRight: `1px solid ${COLORS.border}`, padding: "20px 12px", flexShrink: 0 }}>
+        <div style={{ fontSize: 10, color: COLORS.textDim, textTransform: "uppercase", letterSpacing: 1, padding: "0 14px", marginBottom: 8 }}>Police Portal</div>
+        {[{ id: "cases", icon: "file-report", label: "Active Cases" }, { id: "map", icon: "map", label: "Crime Map" }, { id: "history", icon: "history", label: "History" }, { id: "contact", icon: "phone", label: "Contact Reporter" }].map(t => <button key={t.id} className={`sidebar-link ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}><Icon name={t.icon} size={16} />{t.label}</button>)}
+      </div>
+      <div style={{ flex: 1, padding: 24, overflowY: "auto" }}>
+        {tab === "cases" && (
+          <div className="slide-in">
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Active Cases</h2>
+            <p style={{ color: COLORS.textMuted, fontSize: 14, marginBottom: 24 }}>Cases assigned to your station area</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
+              {myReports.map(r => (
+                <div key={r.id} className="card" style={{ borderLeft: `4px solid ${r.level === "Critical" ? COLORS.danger : r.level === "High" ? COLORS.warning : r.level === "Medium" ? COLORS.info : COLORS.success}` }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
+                        <span style={{ fontSize: 12, fontFamily: "'JetBrains Mono',monospace", color: COLORS.primary }}>{r.id}</span>
+                        <LevelBadge level={r.level} />
+                        <StatusBadge status={r.status} />
+                      </div>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{r.type}</h3>
+                      <p style={{ fontSize: 13, color: COLORS.textMuted, lineHeight: 1.6, marginBottom: 10 }}>{r.description.slice(0, 120)}...</p>
+                      <div style={{ display: "flex", gap: 16, fontSize: 12, color: COLORS.textDim }}>
+                        <span><Icon name="map-pin" size={12} /> {r.location}</span>
+                        <span><Icon name="clock" size={12} /> {r.date}</span>
+                        <span><Icon name="user" size={12} /> {r.reporter}</span>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginLeft: 20 }}>
+                      <button className="btn-info" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => setShowModal(r.id)}><Icon name="eye" size={13} /> View</button>
+                      {r.status === "Open" && <button className="btn-primary" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => accept(r.id)}><Icon name="check" size={13} /> Accept</button>}
+                      {r.status === "In Progress" && <button className="btn-success" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => resolve(r.id)}><Icon name="check-circle" size={13} /> Resolve</button>}
+                      <button className="btn-secondary" style={{ padding: "6px 12px", fontSize: 12 }}><Icon name="phone" size={13} /> Call</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {tab === "map" && (
+          <div className="slide-in">
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Crime Map — Kigali</h2>
+            <div className="map-placeholder" style={{ height: 480, marginBottom: 20 }}>
+              <div style={{ position: "absolute", top: 16, left: 16, background: "rgba(0,0,0,.7)", padding: "10px 14px", borderRadius: 10, fontSize: 12 }}>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Active Reports</div>
+                {reports.filter(r => r.status !== "Resolved").map(r => <div key={r.id} style={{ display: "flex", gap: 6, marginBottom: 3, color: COLORS.textMuted }}><Icon name="map-pin" size={11} color={r.level === "Critical" ? COLORS.danger : r.level === "High" ? COLORS.warning : COLORS.info} />{r.location}</div>)}
+              </div>
+              {reports.map((r, i) => (
+                <div key={r.id} style={{ position: "absolute", left: `${30 + i * 12}%`, top: `${20 + (i % 3) * 25}%`, cursor: "pointer" }} title={r.type}>
+                  <div style={{ width: 16, height: 16, borderRadius: "50%", background: r.level === "Critical" ? COLORS.danger : r.level === "High" ? COLORS.warning : r.level === "Medium" ? COLORS.info : COLORS.success, boxShadow: `0 0 10px ${r.level === "Critical" ? COLORS.danger : COLORS.primary}`, animation: r.level === "Critical" ? "ring 1.5s infinite" : undefined }} />
+                </div>
+              ))}
+              <div style={{ position: "absolute", bottom: 12, right: 12, background: "rgba(0,0,0,.7)", padding: "10px 14px", borderRadius: 10, fontSize: 11 }}>
+                {[{ c: COLORS.danger, l: "Critical" }, { c: COLORS.warning, l: "High" }, { c: COLORS.info, l: "Medium" }, { c: COLORS.success, l: "Low" }].map(({ c, l }) => (
+                  <div key={l} style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4 }}><div style={{ width: 10, height: 10, borderRadius: "50%", background: c }} /><span>{l}</span></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        {tab === "history" && (
+          <div className="slide-in">
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Case History</h2>
+            <div className="card" style={{ padding: 0 }}>
+              <table><thead><tr><th>ID</th><th>Type</th><th>Level</th><th>Status</th><th>Officer</th><th>Date</th></tr></thead>
+                <tbody>{reports.map(r => <tr key={r.id}><td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: COLORS.primary }}>{r.id}</td><td style={{ fontSize: 13 }}>{r.type}</td><td><LevelBadge level={r.level} /></td><td><StatusBadge status={r.status} /></td><td style={{ fontSize: 12, color: COLORS.textMuted }}>{r.assignedOfficer || "—"}</td><td style={{ fontSize: 11, color: COLORS.textDim }}>{r.date}</td></tr>)}</tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        {tab === "contact" && (
+          <div className="slide-in">
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Contact Reporters</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
+              {reports.map(r => (
+                <div key={r.id} className="card" style={{ padding: 18 }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: "50%", background: `${COLORS.primary}22`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: COLORS.primary }}>{r.reporter[0]}</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600 }}>{r.reporter}</div>
+                      <div style={{ fontSize: 11, color: COLORS.textMuted }}>{r.id} · {r.type}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button className="btn-primary" style={{ flex: 1, padding: "7px", fontSize: 12 }}><Icon name="phone" size={13} /> Call</button>
+                    <button className="btn-secondary" style={{ flex: 1, padding: "7px", fontSize: 12 }}><Icon name="message" size={13} /> Message</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ── HOSPITAL DASHBOARD ───────────────────────────────────
+const HospitalDashboard = ({ reports }) => {
+  const [tab, setTab] = useState("alerts");
+  const criticals = reports.filter(r => (r.level === "Critical" || r.type === "Road Accident") && r.status !== "Resolved");
+  return (
+    <div style={{ display: "flex", minHeight: "calc(100vh - 60px)" }}>
+      <div style={{ width: 200, background: COLORS.bgCard, borderRight: `1px solid ${COLORS.border}`, padding: "20px 12px", flexShrink: 0 }}>
+        <div style={{ fontSize: 10, color: COLORS.textDim, textTransform: "uppercase", letterSpacing: 1, padding: "0 14px", marginBottom: 8 }}>Hospital Portal</div>
+        {[{ id: "alerts", icon: "bell-ringing", label: "Emergency Alerts" }, { id: "map", icon: "map-pin", label: "Patient Locations" }, { id: "team", icon: "users", label: "Response Teams" }, { id: "log", icon: "history", label: "Alert History" }].map(t => <button key={t.id} className={`sidebar-link ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}><Icon name={t.icon} size={16} />{t.label}</button>)}
+      </div>
+      <div style={{ flex: 1, padding: 24, overflowY: "auto" }}>
+        {tab === "alerts" && (
+          <div className="slide-in">
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Emergency Alerts</h2>
+            <p style={{ color: COLORS.textMuted, fontSize: 14, marginBottom: 20 }}>Critical incidents requiring medical response</p>
+            {criticals.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 0", color: COLORS.textMuted }}>
+                <Icon name="check-circle" size={48} color={COLORS.success} />
+                <div style={{ fontSize: 16, fontWeight: 600, marginTop: 16 }}>No Active Emergencies</div>
+              </div>
+            ) : criticals.map(r => (
+              <div key={r.id} className="card" style={{ borderLeft: `4px solid ${COLORS.danger}`, marginBottom: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
+                      <span style={{ fontSize: 12, fontFamily: "'JetBrains Mono',monospace", color: COLORS.primary }}>{r.id}</span>
+                      <LevelBadge level={r.level} />
+                      <span className="pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS.danger, display: "inline-block" }} />
+                    </div>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{r.type}</h3>
+                    <p style={{ fontSize: 13, color: COLORS.textMuted, marginBottom: 10 }}>{r.description}</p>
+                    <div style={{ display: "flex", gap: 16, fontSize: 12, color: COLORS.textDim }}>
+                      <span><Icon name="map-pin" size={12} /> {r.location}</span>
+                      <span><Icon name="clock" size={12} /> {r.date}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginLeft: 20 }}>
+                    <button className="btn-danger" style={{ padding: "8px 14px", fontSize: 13, fontWeight: 700 }}><Icon name="first-aid-kit" size={14} /> Dispatch Team</button>
+                    <button className="btn-warning" style={{ padding: "8px 14px", fontSize: 13 }}><Icon name="map" size={14} /> View Location</button>
+                    <button className="btn-secondary" style={{ padding: "8px 14px", fontSize: 13 }}><Icon name="phone" size={14} /> Contact Police</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {tab === "map" && (
+          <div className="slide-in">
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Patient & Emergency Locations</h2>
+            <div className="map-placeholder" style={{ height: 400, marginBottom: 20 }}>
+              {criticals.map((r, i) => (
+                <div key={r.id} style={{ position: "absolute", left: `${25 + i * 20}%`, top: `${30 + (i % 2) * 25}%` }}>
+                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: COLORS.danger, boxShadow: `0 0 15px ${COLORS.danger}`, animation: "ring 1.5s infinite" }} />
+                  <div style={{ background: "rgba(0,0,0,.8)", padding: "3px 8px", borderRadius: 6, fontSize: 10, marginTop: 4, whiteSpace: "nowrap" }}>{r.type}</div>
+                </div>
+              ))}
+              <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }}>
+                <div style={{ width: 20, height: 20, borderRadius: "50%", background: COLORS.success, boxShadow: `0 0 12px ${COLORS.success}` }} />
+                <div style={{ background: "rgba(0,0,0,.8)", padding: "3px 8px", borderRadius: 6, fontSize: 10, marginTop: 4, textAlign: "center" }}>CHUK</div>
+              </div>
+            </div>
+          </div>
+        )}
+        {tab === "team" && (
+          <div className="slide-in">
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Emergency Response Teams</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
+              {[{ name: "Team Alpha", members: 4, vehicle: "Ambulance #01", status: "Available", lead: "Dr. Mukamana R." }, { name: "Team Beta", members: 3, vehicle: "Ambulance #02", status: "Dispatched", lead: "Dr. Niyonzima P." }, { name: "Team Gamma", members: 5, vehicle: "Ambulance #03", status: "Available", lead: "Nurse Uwase A." }, { name: "Team Delta", members: 4, vehicle: "Ambulance #04", status: "On Break", lead: "Dr. Habimana E." }].map(t => (
+                <div key={t.name} className="card" style={{ padding: 18 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                    <div>
+                      <h3 style={{ fontSize: 15, fontWeight: 700 }}>{t.name}</h3>
+                      <div style={{ fontSize: 12, color: COLORS.textMuted }}>{t.lead}</div>
+                    </div>
+                    <span className={`badge badge-${t.status === "Available" ? "low" : t.status === "Dispatched" ? "critical" : "pending"}`}>{t.status}</span>
+                  </div>
+                  {[["Members", t.members], ["Vehicle", t.vehicle]].map(([k, v]) => <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, padding: "4px 0", borderBottom: `1px solid ${COLORS.border}`, color: COLORS.textMuted }}><span>{k}</span><span style={{ color: COLORS.text }}>{v}</span></div>)}
+                  <button className={t.status === "Available" ? "btn-danger" : "btn-secondary"} style={{ width: "100%", marginTop: 14, padding: "7px", fontSize: 12 }} disabled={t.status !== "Available"}>
+                    {t.status === "Available" ? "Dispatch Team" : t.status === "Dispatched" ? "Currently On Call" : "Unavailable"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {tab === "log" && (
+          <div className="slide-in">
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Alert History</h2>
+            <div className="card" style={{ padding: 0 }}>
+              <table><thead><tr><th>Report ID</th><th>Type</th><th>Level</th><th>Location</th><th>Team Sent</th><th>Status</th></tr></thead>
+                <tbody>{reports.map(r => <tr key={r.id}><td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: COLORS.primary }}>{r.id}</td><td style={{ fontSize: 13 }}>{r.type}</td><td><LevelBadge level={r.level} /></td><td style={{ fontSize: 12 }}>{r.location}</td><td style={{ fontSize: 12, color: COLORS.textMuted }}>{r.level === "Critical" ? "Team Alpha" : "—"}</td><td><StatusBadge status={r.status} /></td></tr>)}</tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ── CONTACT PAGE ─────────────────────────────────────────
+const ContactPage = () => (
+  <div style={{ maxWidth: 700, margin: "0 auto", padding: "30px 24px" }} className="slide-in">
+    <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6 }}>Contact & Help</h1>
+    <p style={{ color: COLORS.textMuted, fontSize: 14, marginBottom: 28 }}>Emergency hotlines and support contacts for Rwanda</p>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 28 }}>
+      {[{ label: "General Emergency", num: "112", desc: "All emergencies", icon: "alert-triangle", color: COLORS.danger }, { label: "Rwanda National Police", num: "113", desc: "Crime & security", icon: "shield", color: COLORS.primary }, { label: "Ambulance Service", num: "912", desc: "Medical emergencies", icon: "first-aid-kit", color: COLORS.success }, { label: "Fire Brigade", num: "111", desc: "Fire & rescue", icon: "flame", color: COLORS.warning }, { label: "Traffic Police", num: "113", desc: "Road accidents", icon: "car", color: COLORS.info }, { label: "Anti-Corruption", num: "997", desc: "Report corruption", icon: "badge-off", color: "#A855F7" }].map(c => (
+        <div key={c.label} className="card" style={{ display: "flex", gap: 14, padding: 18 }}>
+          <div style={{ width: 46, height: 46, borderRadius: 12, background: `${c.color}22`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Icon name={c.icon} size={22} color={c.color} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700 }}>{c.label}</div>
+            <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>{c.desc}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: c.color, fontFamily: "'JetBrains Mono',monospace" }}>{c.num}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+    <div className="card">
+      <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 20 }}>Send Us a Message</h3>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="form-group"><label className="form-label">Full Name</label><input placeholder="Your full name" /></div>
+        <div className="form-group"><label className="form-label">Email</label><input placeholder="your@email.com" /></div>
+      </div>
+      <div className="form-group"><label className="form-label">Subject</label><input placeholder="Support request or feedback" /></div>
+      <div className="form-group"><label className="form-label">Message</label><textarea rows={4} placeholder="Describe your issue or question..." /></div>
+      <button className="btn-primary" style={{ padding: "10px 24px", borderRadius: 8 }}><Icon name="send" size={14} /> Send Message</button>
+    </div>
+  </div>
+);
+
+// ── NOTIFICATIONS PANEL ───────────────────────────────────
+const NotificationsPanel = ({ reports }) => (
+  <div style={{ position: "fixed", top: 70, right: 20, width: 340, background: COLORS.bgCard, border: `1px solid ${COLORS.borderStrong}`, borderRadius: 16, padding: 16, zIndex: 200, maxHeight: "70vh", overflowY: "auto", boxShadow: "0 20px 40px rgba(0,0,0,.5)" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <h3 style={{ fontSize: 14, fontWeight: 700 }}>Notifications</h3>
+      <span className="badge badge-critical">3 new</span>
+    </div>
+    {[{ icon: "bell-ringing", color: COLORS.danger, title: "Critical emergency reported", sub: "Road accident at Kacyiru — 5 min ago", unread: true }, { icon: "check-circle", color: COLORS.success, title: "Case RPT-2405 resolved", sub: "Fire at Kanombe — 1 hr ago", unread: true }, { icon: "alert-triangle", color: COLORS.warning, title: "New high-priority report", sub: "Theft at Kimironko — 2 hr ago", unread: true }, { icon: "info-circle", color: COLORS.info, title: "Officer assigned to RPT-2403", sub: "Sgt. Habimana assigned — 3 hr ago", unread: false }, { icon: "shield-check", color: COLORS.success, title: "Your account verified", sub: "Welcome to SafeRwanda — yesterday", unread: false }].map((n, i) => (
+      <div key={i} className={`notification-item ${n.unread ? "unread" : ""}`}>
+        <div style={{ width: 32, height: 32, borderRadius: "50%", background: `${n.color}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icon name={n.icon} size={15} color={n.color} />
+        </div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{n.title}</div>
+          <div style={{ fontSize: 11, color: COLORS.textMuted }}>{n.sub}</div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+// ── MAIN APP ─────────────────────────────────────────────
+function App() {
+  const [page, setPage] = useState("home");
+  const [user, setUser] = useState(null);
+  const [reports, setReports] = useState(INITIAL_REPORTS);
+  const [showNotif, setShowNotif] = useState(false);
+
+  return (
+    <>
+      <style>{CSS}</style>
+      <TopBar page={page} setPage={setPage} user={user} notifications={3} setShowNotif={setShowNotif} />
+      {showNotif && <NotificationsPanel reports={reports} />}
+      {showNotif && <div onClick={() => setShowNotif(false)} style={{ position: "fixed", inset: 0, zIndex: 150 }} />}
+      <div onClick={() => showNotif && setShowNotif(false)}>
+        {page === "home" && <HomePage setPage={setPage} />}
+        {page === "login" && <LoginPage setPage={setPage} setUser={setUser} />}
+        {page === "register" && <RegisterPage setPage={setPage} />}
+        {page === "report" && <ReportPage setPage={setPage} reports={reports} setReports={setReports} user={user} />}
+        {page === "track" && <TrackPage reports={reports} user={user} />}
+        {page === "adminDash" && <AdminDashboard reports={reports} setReports={setReports} />}
+        {page === "policeDash" && <PoliceDashboard reports={reports} setReports={setReports} />}
+        {page === "hospitalDash" && <HospitalDashboard reports={reports} />}
+        {page === "contact" && <ContactPage />}
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
