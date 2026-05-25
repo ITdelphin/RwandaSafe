@@ -3,4 +3,5 @@ node_modules/
 *.sqlite
 error.txt
 dist/
+.vercel/
 .DS_Store

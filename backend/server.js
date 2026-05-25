@@ -28,15 +28,19 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-app.get("/api/health", (req, res) => res.json({ status: "OK" }));
+app.get("/api/health", (req, res) => res.json({ status: "OK", db: "Supabase" }));
 
 const PORT = process.env.PORT || 5000;
 
-sequelize.sync({ force: false }).then(() => {
-    console.log("📦 SQLite Database & Sequelize Models Synced");
-    app.listen(PORT, () => {
-        console.log(`🛡️  SafeRwanda secure API running on http://localhost:${PORT}`);
+if (require.main === module) {
+    sequelize.sync({ force: false }).then(() => {
+        console.log("📦 Supabase Database & Sequelize Models Synced");
+        app.listen(PORT, () => {
+            console.log(`🛡️  SafeRwanda secure API running on http://localhost:${PORT}`);
+        });
+    }).catch(err => {
+        console.error("Unable to connect to the database:", err);
     });
-}).catch(err => {
-    console.error("Unable to connect to the database:", err);
-});
+}
+
+module.exports = app;

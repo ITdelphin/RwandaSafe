@@ -23,7 +23,7 @@ const User = sequelize.define("User", {
         type: DataTypes.STRING,
     },
     role: {
-        type: DataTypes.ENUM("Admin", "Police", "Hospital", "Citizen"),
+        type: DataTypes.STRING,
         defaultValue: "Citizen",
     },
     password: {
@@ -34,7 +34,7 @@ const User = sequelize.define("User", {
         type: DataTypes.STRING,
     },
     status: {
-        type: DataTypes.ENUM("Active", "Suspended"),
+        type: DataTypes.STRING,
         defaultValue: "Active",
     },
 });
@@ -64,10 +64,10 @@ const Report = sequelize.define("Report", {
         type: DataTypes.STRING,
     },
     level: {
-        type: DataTypes.ENUM("Low", "Medium", "High", "Critical"),
+        type: DataTypes.STRING,
     },
     status: {
-        type: DataTypes.ENUM("Open", "In Progress", "Pending", "Resolved", "Rejected"),
+        type: DataTypes.STRING,
         defaultValue: "Open",
     },
     reporter: {
