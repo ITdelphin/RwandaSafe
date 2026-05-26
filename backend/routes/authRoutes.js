@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
 // Register
 router.post("/register", async (req, res) => {
     try {
-        const { name, email, phone, national_id, password, district } = req.body;
+        const { name, email, phone, national_id, password, district, role } = req.body;
 
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
@@ -19,6 +19,9 @@ router.post("/register", async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // Normalize role: uppercase first letter (e.g., "citizen" -> "Citizen")
+        const normalizedRole = role ? role.charAt(0).toUpperCase() + role.slice(1) : "Citizen";
+
         const user = await User.create({
             name,
             email,
@@ -26,7 +29,7 @@ router.post("/register", async (req, res) => {
             national_id,
             password: hashedPassword,
             district,
-            role: "Citizen"
+            role: normalizedRole
         });
 
         const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, JWT_SECRET, { expiresIn: "24h" });
