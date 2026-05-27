@@ -94,8 +94,8 @@ function App() {
                     <Route path="/report" element={<ReportPage user={user} />} />
                     <Route path="/track" element={<TrackPage user={user} />} />
                     <Route path="/admin" element={<AdminDashboard />} />
-                    <Route path="/police" element={<PoliceDashboard user={user} />} />
-                    <Route path="/hospital" element={<HospitalDashboard />} />
+                    <Route path="/police" element={<PoliceDashboard user={user} onLogout={handleLogout} />} />
+                    <Route path="/hospital" element={<HospitalDashboard user={user} onLogout={handleLogout} />} />
                     <Route path="/citizen" element={<CitizenDashboard user={user} />} />
                     <Route path="/contact" element={<ContactPage />} />
                 </Routes>

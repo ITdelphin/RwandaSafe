@@ -4,7 +4,7 @@ import { Icon, LevelBadge, StatusBadge } from "../components/Badges";
 import toast from "react-hot-toast";
 import API from "../config/api";
 
-const HospitalDashboard = () => {
+const HospitalDashboard = ({ user, onLogout }) => {
     const [tab, setTab] = useState("alerts");
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -78,10 +78,48 @@ const HospitalDashboard = () => {
                 </div>
 
                 <div className="dashboard-sidebar-footer" style={{ marginTop: "auto", padding: "24px 16px" }}>
-                    <div style={{ background: "#FEF2F2", border: "1px solid #FEE2E2", borderRadius: 16, padding: "16px" }}>
+                    <div style={{ background: "#FEF2F2", border: "1px solid #FEE2E2", borderRadius: 16, padding: "16px", marginBottom: 16 }}>
                         <div style={{ fontSize: 11, fontWeight: 800, color: "#C8102E", marginBottom: 8 }}>EMERGENCY ALERTS</div>
                         <div style={{ fontSize: 24, fontWeight: 900, color: "#C8102E" }}>{medicalReports.filter(r => r.level === "Critical").length}</div>
                         <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 4 }}>Priority cases active</div>
+                    </div>
+
+                    {/* Officer / User card */}
+                    <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 12, padding: "16px 14px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                            <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(145deg, #1E3A8A, #2D5DD6)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15, color: "#fff", boxShadow: "0 3px 10px rgba(30,58,138,0.2)" }}>
+                                {(user?.name || "H")[0]}
+                            </div>
+                            <div>
+                                <div style={{ fontSize: 13, fontWeight: 800, color: "#1E293B" }}>{user?.name || "Medical Officer"}</div>
+                                <div style={{ fontSize: 9, color: "#64748B", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace" }}>
+                                    {user?.role || "Hospital"} UNIT
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Logout Button */}
+                        <button
+                            onClick={() => {
+                                if (window.confirm("Are you sure you want to sign out from CHUK Portal?")) {
+                                    onLogout && onLogout();
+                                }
+                            }}
+                            style={{
+                                width: "100%", padding: "10px",
+                                background: "#FEF2F2",
+                                border: "1.5px solid #FCA5A5",
+                                borderRadius: 10, color: "#DC2626",
+                                fontSize: 13, fontWeight: 700, cursor: "pointer",
+                                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                                transition: "all 0.2s", fontFamily: "'Sora', sans-serif",
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = "#FEE2E2"; e.currentTarget.style.borderColor = "#EF4444"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = "#FEF2F2"; e.currentTarget.style.borderColor = "#FCA5A5"; }}
+                        >
+                            <Icon name="logout" size={16} color="#DC2626" />
+                            Sign Out
+                        </button>
                     </div>
                 </div>
             </div>
