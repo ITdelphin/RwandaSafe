@@ -58,6 +58,6 @@ export const officersApi = {
 };
 
 export const authApi = {
-  requestOtp: (phone: string) => apiClient.post('/auth/request-otp', { phone }),
+  requestOtp: (phone: string) => apiClient.post('/auth/login', { phone }),
   verifyOtp: (phone: string, code: string) => apiClient.post('/auth/verify', { phone, code }),
 };
