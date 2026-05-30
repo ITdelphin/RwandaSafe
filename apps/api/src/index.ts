@@ -8,7 +8,8 @@ if (process.env.DB_PASS && process.env.DB_HOST && process.env.DB_USER) {
   const host = process.env.DB_HOST;
   const port = process.env.DB_PORT || '6543';
   const name = process.env.DB_NAME || 'postgres';
-  process.env.DATABASE_URL = `postgresql://${user}:${pass}@${host}:${port}/${name}?pgbouncer=true&connection_limit=5`;
+  const pgbouncer = port === '6543' ? '&pgbouncer=true' : '';
+  process.env.DATABASE_URL = `postgresql://${user}:${pass}@${host}:${port}/${name}?connection_limit=5${pgbouncer}`;
 }
 
 import http from 'http';
