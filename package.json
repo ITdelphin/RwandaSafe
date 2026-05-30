@@ -2,7 +2,10 @@
   "name": "rwanda-safe",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -12,5 +15,16 @@
   "devDependencies": {
     "turbo": "^2.0.0",
     "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@babel/core": "^7.29.7",
+    "async": "^3.2.6",
+    "express": "^5.2.1",
+    "is-core-module": "^2.16.2",
+    "jsonwebtoken": "^9.0.3",
+    "pure-rand": "^8.4.0",
+    "resolve": "^1.22.12",
+    "winston": "^3.19.0",
+    "zod": "^4.4.3"
   }
 }
