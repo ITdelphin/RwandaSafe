@@ -119,4 +119,24 @@ export const socketEmit = {
     if (!io) return;
     io.to(`user:${userId}`).emit('telemedicine:ready', { sessionUrl });
   },
+
+  unitDispatched: (incidentId: string, data: any) => {
+    if (!io) return;
+    io.to(`incident:${incidentId}`).emit('unit:dispatched', data);
+  },
+
+  unitUpdated: (data: any) => {
+    if (!io) return;
+    io.to('agency:FIRE').emit('unit:updated', data);
+  },
+
+  fireHazmatAlert: (data: any) => {
+    if (!io) return;
+    io.to('agency:FIRE').emit('fire:hazmat_alert', data);
+  },
+
+  patternAlert: (data: any) => {
+    if (!io) return;
+    io.to('agency:RIB').emit('pattern:alert', data);
+  },
 };
