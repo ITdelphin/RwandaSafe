@@ -1,20 +1,24 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { authApi } from '../../lib/apiClient';
 import { useAuthStore } from '../../store/authStore';
 
-const PRIMARY = '#4C1D95';
+const BG_GRADIENT = 'linear-gradient(135deg, #0a0a1a 0%, #2e1065 100%)';
+const HEADER_GRADIENT = 'linear-gradient(135deg, #0a0a1a 0%, #4c1d95 100%)';
+const BTN_GRADIENT = 'linear-gradient(135deg, #4C1D95 0%, #6d28d9 100%)';
+const LINK_COLOR = '#7C3AED';
+const ACCENT_COLOR = '#ddd6fe';
 
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 18, height: 18 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
     </svg>
   ) : (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 18, height: 18 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
     </svg>
   );
@@ -25,130 +29,109 @@ export default function LoginPage() {
   const login = useAuthStore(s => s.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [showPw, setShowPw] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
       const res = await authApi.login(email, password) as any;
       const { accessToken, user } = res.data.data;
-      login(user, accessToken, rememberMe);
+      login(user, accessToken, remember);
       router.push('/dashboard');
     } catch (e: any) {
-      setError(e.response?.data?.message ?? 'Invalid email or password');
+      setError(e.response?.data?.message ?? e.response?.data?.error ?? 'Invalid email or password');
     } finally { setLoading(false); }
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left branded panel */}
-      <div className="hidden lg:flex lg:w-2/5 flex-col items-center justify-center p-12" style={{ backgroundColor: '#0A0A1A' }}>
-        <div className="text-center max-w-xs">
-          <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: PRIMARY }}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px', background: BG_GRADIENT }}>
+      <div style={{ width: '100%', maxWidth: '448px', backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+        {/* Header */}
+        <div style={{ padding: '32px 32px 24px', textAlign: 'center', background: HEADER_GRADIENT }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 32, height: 32, color: '#fff' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-1">Rwanda Safe</h1>
-          <p className="text-lg font-medium mb-1" style={{ color: '#C4B5FD' }}>Rwanda Investigation Bureau</p>
-          <p className="text-sm mb-10" style={{ color: '#DDD6FE' }}>Investigation Portal</p>
-          <div className="space-y-4 text-left">
-            {[
-              { icon: '🔎', text: 'Investigation case management' },
-              { icon: '📡', text: 'Pattern detection & alerts' },
-              { icon: '💬', text: 'Anonymous tipline review' },
-              { icon: '📁', text: 'Secure evidence vault' },
-            ].map(({ icon, text }) => (
-              <div key={text} className="flex items-center gap-3">
-                <span className="text-xl">{icon}</span>
-                <span className="text-sm" style={{ color: '#EDE9FE' }}>{text}</span>
-              </div>
-            ))}
-          </div>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#fff', margin: 0 }}>Rwanda Safe</h1>
+          <p style={{ fontSize: '13px', color: ACCENT_COLOR, marginTop: '4px' }}>Rwanda Investigation Bureau &middot; Investigator Portal</p>
         </div>
-      </div>
 
-      {/* Right form panel */}
-      <div className="flex-1 flex items-center justify-center p-8" style={{ backgroundColor: '#F5F3FF' }}>
-        <div className="w-full max-w-md">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
-            <p className="text-sm text-gray-500">Sign in to the investigation portal</p>
-          </div>
+        {/* Form */}
+        <div style={{ padding: '24px 32px 32px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#1f2937', margin: '0 0 4px' }}>Welcome back</h2>
+          <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Sign in to the investigation portal</p>
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '6px' }}>Email address</label>
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', display: 'flex' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                </div>
+                </span>
                 <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                  className="w-full pl-10 pr-4 py-3 border border-purple-200 rounded-xl bg-white text-sm outline-none focus:ring-2 transition-all"
-                  placeholder="investigator@rib.gov.rw" />
+                  placeholder="investigator@rib.gov.rw"
+                  style={{ width: '100%', boxSizing: 'border-box', paddingLeft: '36px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '12px', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '14px', backgroundColor: '#f9fafb', outline: 'none' }}
+                  onFocus={e => { e.target.style.borderColor = LINK_COLOR; e.target.style.backgroundColor = '#fff'; }}
+                  onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }} />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
-              <div className="relative">
-                <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
-                  className="w-full px-4 py-3 border border-purple-200 rounded-xl bg-white text-sm outline-none focus:ring-2 transition-all pr-12"
-                  placeholder="••••••••" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600">
-                  <EyeIcon open={showPassword} />
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '6px' }}>Password</label>
+              <div style={{ position: 'relative' }}>
+                <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
+                  placeholder="••••••••"
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '12px 44px 12px 16px', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '14px', backgroundColor: '#f9fafb', outline: 'none' }}
+                  onFocus={e => { e.target.style.borderColor = LINK_COLOR; e.target.style.backgroundColor = '#fff'; }}
+                  onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }} />
+                <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, display: 'flex' }}>
+                  <EyeIcon open={showPw} />
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}
-                  className="rounded border-gray-300" />
-                <span className="text-sm text-gray-600">Remember me</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: LINK_COLOR }} />
+                <span style={{ fontSize: '13px', color: '#4b5563' }}>Remember me</span>
               </label>
-              <Link href="/forgot-password" className="text-sm font-medium hover:underline" style={{ color: PRIMARY }}>
-                Forgot password?
-              </Link>
+              <Link href="/forgot-password" style={{ fontSize: '13px', fontWeight: 500, color: LINK_COLOR, textDecoration: 'none' }}>Forgot password?</Link>
             </div>
 
             {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
-                <p className="text-sm text-red-700">{error}</p>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '12px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 16, height: 16, color: '#ef4444', flexShrink: 0, marginTop: 1 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p style={{ fontSize: '13px', color: '#b91c1c', margin: 0 }}>{error}</p>
               </div>
             )}
 
             <button type="submit" disabled={loading || !email || !password}
-              className="w-full py-3 rounded-xl text-white font-semibold text-sm disabled:opacity-50 transition-all hover:opacity-90 active:scale-[0.99]"
-              style={{ backgroundColor: PRIMARY }}>
-              {loading ? 'Signing in...' : 'Sign In'}
+              style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', background: loading ? '#94a3b8' : BTN_GRADIENT, color: '#fff', fontWeight: 600, fontSize: '14px', cursor: loading || !email || !password ? 'not-allowed' : 'pointer', opacity: !email || !password ? 0.6 : 1, boxShadow: '0 4px 12px rgba(76,29,149,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              {loading ? (<><span style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />Signing in...</>) : 'Sign In'}
             </button>
-
-            <div className="relative flex items-center gap-3 my-2">
-              <div className="flex-1 h-px bg-purple-200" />
-              <span className="text-xs text-gray-400">Don&apos;t have an account?</span>
-              <div className="flex-1 h-px bg-purple-200" />
-            </div>
-
-            <div className="text-center">
-              <Link href="/register" className="text-sm font-medium hover:underline" style={{ color: PRIMARY }}>
-                Create an account
-              </Link>
-            </div>
           </form>
 
-          <p className="text-center text-xs text-gray-400 mt-8">
-            Secured by Rwanda Safe &middot; Emergency Response Platform
+          <p style={{ textAlign: 'center', fontSize: '13px', color: '#6b7280', marginTop: '20px' }}>
+            Don&apos;t have an account?{' '}
+            <Link href="/register" style={{ fontWeight: 600, color: LINK_COLOR, textDecoration: 'none' }}>Create one</Link>
           </p>
         </div>
       </div>
+
+      <p style={{ marginTop: '24px', fontSize: '12px', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+        Secured by Rwanda Safe &middot; Emergency Response Platform
+      </p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
