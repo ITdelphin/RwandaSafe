@@ -36,7 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex-1 flex flex-col overflow-hidden">
         {massCasualtyEvent && <MassCasualtyBanner event={massCasualtyEvent} onResolve={() => setMassCasualtyEvent(null)} />}
         <Topbar />
-        <main className="flex-1 overflow-y-auto p-6" style={{ backgroundColor: '#FFF5F5' }}>
+        <main className="flex-1 overflow-y-auto p-6" style={{ backgroundColor: '#f8f9fa' }}>
           {children}
         </main>
       </div>

@@ -1,7 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { elapsedMinutes } from '../../lib/formatters';
-import { PoliceTheme } from '../../constants/theme';
+import { Theme } from '../../constants/theme';
+
+// SLA color thresholds mapped to new Material palette
+const slaGreen  = Theme.secondary;    // #34A853
+const slaYellow = Theme.warning;      // #F9AB00
+const slaOrange = '#E8710A';          // Google Orange
+const slaRed    = Theme.danger;       // #d93025
 
 interface Props {
   createdAt: string;
@@ -25,17 +31,17 @@ export function SLATimer({ createdAt, status, dispatchedAt, compact = false }: P
   if (['DISPATCHED', 'ON_SCENE'].includes(status)) {
     const mins = dispatchedAt ? elapsedMinutes(createdAt) : elapsed;
     return (
-      <span className="text-xs font-medium" style={{ color: PoliceTheme.slaGreen }}>
+      <span className="text-xs font-medium" style={{ color: slaGreen }}>
         ✓ {mins}m
       </span>
     );
   }
 
-  let color = PoliceTheme.slaGreen;
+  let color = slaGreen;
   let pulse = false;
-  if (elapsed >= 15) { color = PoliceTheme.slaRed; pulse = true; }
-  else if (elapsed >= 10) { color = PoliceTheme.slaOrange; }
-  else if (elapsed >= 5) { color = PoliceTheme.slaYellow; }
+  if (elapsed >= 15) { color = slaRed; pulse = true; }
+  else if (elapsed >= 10) { color = slaOrange; }
+  else if (elapsed >= 5) { color = slaYellow; }
 
   const mins = Math.floor(elapsed);
   const secs = Math.floor((elapsed * 60) % 60);
