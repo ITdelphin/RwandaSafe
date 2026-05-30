@@ -87,4 +87,36 @@ export const socketEmit = {
     if (!io) return;
     io.to(`incident:${incidentId}`).emit('message:new', message);
   },
+
+  ambulanceDispatched: (incidentId: string, ambulanceData: any) => {
+    if (!io) return;
+    io.to(`incident:${incidentId}`).emit('ambulance:dispatched', ambulanceData);
+  },
+
+  ambulanceUpdated: (ambulanceData: any) => {
+    if (!io) return;
+    io.to('agency:HOSPITAL').emit('ambulance:updated', ambulanceData);
+  },
+
+  capacityUpdated: (hospitalData: any) => {
+    if (!io) return;
+    io.to('agency:HOSPITAL').emit('capacity:updated', hospitalData);
+  },
+
+  capacityCritical: (hospitalName: string, message: string) => {
+    if (!io) return;
+    io.to('agency:HOSPITAL').emit('capacity:critical', { hospitalName, message });
+  },
+
+  massCasualtyActivated: (eventData: any) => {
+    if (!io) return;
+    io.to('agency:HOSPITAL').emit('mass_casualty:activated', eventData);
+    io.to('agency:POLICE').emit('mass_casualty:activated', eventData);
+    io.to('agency:FIRE').emit('mass_casualty:activated', eventData);
+  },
+
+  telemedicineReady: (userId: string, sessionUrl: string) => {
+    if (!io) return;
+    io.to(`user:${userId}`).emit('telemedicine:ready', { sessionUrl });
+  },
 };
