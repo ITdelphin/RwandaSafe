@@ -1,8 +1,25 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
+import { SplashScreen } from '../components/shared/SplashScreen';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [qc] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 10000 } } }));
-  return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+  const [splashDone, setSplashDone] = useState(false);
+
+  return (
+    <QueryClientProvider client={qc}>
+      {!splashDone && (
+        <SplashScreen
+          onComplete={() => setSplashDone(true)}
+          color="#9334E6"
+          icon="🔍"
+          agencyName="RIB Investigations"
+        />
+      )}
+      <div style={{ opacity: splashDone ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+        {children}
+      </div>
+    </QueryClientProvider>
+  );
 }
