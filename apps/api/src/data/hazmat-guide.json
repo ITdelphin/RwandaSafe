@@ -1,0 +1,167 @@
+[
+  {
+    "id": "LPG",
+    "names": ["LPG", "Liquefied Petroleum Gas", "Propane", "Butane"],
+    "hazardClass": "2.1 Flammable Gas",
+    "hazmatLevel": "LEVEL_3",
+    "protectiveEquipment": ["Full protective clothing", "SCBA", "Heat-resistant gloves"],
+    "fireResponse": "Do not extinguish unless flow can be stopped. Cool surrounding containers with water. Eliminate ignition sources. Allow gas to burn if leak cannot be stopped.",
+    "evacuationRadiusMeters": 500,
+    "waterReactive": false,
+    "notes": "Common in Kigali households for cooking. Cylinders are present in most residential and commercial properties. Risk of BLEVE if cylinders are heated."
+  },
+  {
+    "id": "CHLORINE",
+    "names": ["Chlorine", "Cl2", "Liquid Chlorine"],
+    "hazardClass": "2.3 Toxic Gas",
+    "hazmatLevel": "LEVEL_4",
+    "protectiveEquipment": ["Level A suit", "SCBA", "Chemical-resistant gloves and boots"],
+    "fireResponse": "Do not use water directly on product. Use water spray to absorb vapors. Evacuate downwind area immediately. Notify water treatment authorities.",
+    "evacuationRadiusMeters": 800,
+    "waterReactive": false,
+    "notes": "Used in water treatment plants across Rwanda. Extremely toxic even at low concentrations. Yellow-green gas with pungent odor."
+  },
+  {
+    "id": "PETROL",
+    "names": ["Petrol", "Gasoline", "Fuel", "Unleaded", "Premium"],
+    "hazardClass": "3 Flammable Liquid",
+    "hazmatLevel": "LEVEL_2",
+    "protectiveEquipment": ["Flame-resistant clothing", "SCBA", "Chemical-resistant gloves"],
+    "fireResponse": "Use dry chemical, CO2, or foam. Do not use water jet. Cool nearby containers. Prevent runoff from entering drains or waterways.",
+    "evacuationRadiusMeters": 300,
+    "waterReactive": false,
+    "notes": "Very common at petrol stations throughout Rwanda. Highly flammable vapors can accumulate. Flash point approximately -43°C."
+  },
+  {
+    "id": "DIESEL",
+    "names": ["Diesel", "Gasoil", "Diesel Fuel", "Heavy Fuel"],
+    "hazardClass": "3 Flammable Liquid",
+    "hazmatLevel": "LEVEL_1",
+    "protectiveEquipment": ["Protective clothing", "Gloves", "Eye protection"],
+    "fireResponse": "Use dry chemical, CO2, foam, or sand. Water can be used to cool containers. Contain spill to prevent waterway contamination.",
+    "evacuationRadiusMeters": 150,
+    "waterReactive": false,
+    "notes": "Widely used in vehicles and generators across Rwanda. Less volatile than petrol. Environmental contamination risk is high."
+  },
+  {
+    "id": "PAINT_SOLVENT",
+    "names": ["Paint", "Solvent", "Thinner", "Lacquer", "Varnish", "Acetone"],
+    "hazardClass": "3 Flammable Liquid",
+    "hazmatLevel": "LEVEL_2",
+    "protectiveEquipment": ["Flame-resistant clothing", "Respirator", "Chemical-resistant gloves"],
+    "fireResponse": "Use dry chemical or CO2. Foam may be used. Ventilate area. Prevent vapors from accumulating in low-lying areas.",
+    "evacuationRadiusMeters": 200,
+    "waterReactive": false,
+    "notes": "Found in hardware stores and construction sites. Can produce toxic fumes when burned. Multiple products may be stored together."
+  },
+  {
+    "id": "SULFURIC_ACID",
+    "names": ["Sulfuric Acid", "Battery Acid", "Oil of Vitriol", "H2SO4"],
+    "hazardClass": "8 Corrosive",
+    "hazmatLevel": "LEVEL_3",
+    "protectiveEquipment": ["Level B suit", "SCBA", "Acid-resistant gloves and boots", "Face shield"],
+    "fireResponse": "Do not use water directly — generates heat. Use dry sand or dry chemical. Neutralize with sodium bicarbonate. Prevent runoff contamination.",
+    "evacuationRadiusMeters": 300,
+    "waterReactive": true,
+    "notes": "Found in car batteries, industrial facilities. Highly corrosive. Water contact produces violent reaction and toxic fumes. GBV weapon of choice in some cases."
+  },
+  {
+    "id": "AMMONIA",
+    "names": ["Ammonia", "NH3", "Anhydrous Ammonia", "Aqueous Ammonia"],
+    "hazardClass": "2.3 Toxic Gas",
+    "hazmatLevel": "LEVEL_3",
+    "protectiveEquipment": ["Level A suit", "SCBA", "Chemical-resistant gloves"],
+    "fireResponse": "May explode if confined. Use large quantities of water to absorb vapors. Do not extinguish unless flow can be stopped. Evacuate downwind.",
+    "evacuationRadiusMeters": 600,
+    "waterReactive": false,
+    "notes": "Used in refrigeration systems and agricultural fertilizers. Strong pungent odor. Flammable in high concentrations. Toxic inhalation hazard."
+  },
+  {
+    "id": "HYDROGEN_PEROXIDE",
+    "names": ["Hydrogen Peroxide", "H2O2", "Peroxide"],
+    "hazardClass": "5.1 Oxidizer",
+    "hazmatLevel": "LEVEL_2",
+    "protectiveEquipment": ["Protective clothing", "Face shield", "Chemical-resistant gloves"],
+    "fireResponse": "Use large amounts of water. Decomposes to release oxygen which intensifies fires. Keep away from combustibles. Do not use dry chemical.",
+    "evacuationRadiusMeters": 200,
+    "waterReactive": false,
+    "notes": "Used in medical/pharmaceutical settings and hair salons. High concentrations are explosive. Reacts with organic material."
+  },
+  {
+    "id": "SODIUM_HYDROXIDE",
+    "names": ["Sodium Hydroxide", "Caustic Soda", "Lye", "NaOH"],
+    "hazardClass": "8 Corrosive",
+    "hazmatLevel": "LEVEL_2",
+    "protectiveEquipment": ["Chemical-resistant clothing", "Face shield", "Rubber gloves and boots"],
+    "fireResponse": "Not flammable. Use water to flush spills. Neutralize with dilute acid. Prevent runoff. Generates heat when dissolved in water.",
+    "evacuationRadiusMeters": 100,
+    "waterReactive": true,
+    "notes": "Used in soap making, food processing, and industrial cleaning in Rwanda. Causes severe chemical burns. Solid pellets or concentrated solutions."
+  },
+  {
+    "id": "ACETYLENE",
+    "names": ["Acetylene", "C2H2", "Ethyne", "Welding Gas"],
+    "hazardClass": "2.1 Flammable Gas",
+    "hazmatLevel": "LEVEL_3",
+    "protectiveEquipment": ["Full protective clothing", "SCBA", "Heat-resistant gloves"],
+    "fireResponse": "Do not extinguish unless flow can be stopped. Cool cylinders with water. Extremely shock-sensitive — handle gently. Risk of spontaneous explosion.",
+    "evacuationRadiusMeters": 400,
+    "waterReactive": false,
+    "notes": "Used in welding and cutting operations at workshops across Kigali. Highly unstable at pressures above 103 kPa. Must be stored upright."
+  },
+  {
+    "id": "METHANOL",
+    "names": ["Methanol", "Methyl Alcohol", "Wood Alcohol", "CH3OH"],
+    "hazardClass": "3 Flammable Liquid",
+    "hazmatLevel": "LEVEL_2",
+    "protectiveEquipment": ["Flame-resistant clothing", "SCBA", "Chemical-resistant gloves"],
+    "fireResponse": "Use alcohol-resistant foam or CO2. Water may be ineffective. Methanol burns with an invisible flame. Ventilate area thoroughly.",
+    "evacuationRadiusMeters": 250,
+    "waterReactive": false,
+    "notes": "Used as industrial solvent and fuel additive. Toxic if ingested — causes blindness and death. Sometimes illegally added to illicit alcohol."
+  },
+  {
+    "id": "ETHANOL",
+    "names": ["Ethanol", "Alcohol", "Ethyl Alcohol", "Industrial Alcohol", "Urwagwa base"],
+    "hazardClass": "3 Flammable Liquid",
+    "hazmatLevel": "LEVEL_1",
+    "protectiveEquipment": ["Protective clothing", "Gloves", "Eye protection"],
+    "fireResponse": "Use alcohol-resistant foam, CO2, or dry chemical. Water can dilute but may spread fire. Keep containers cool with water spray.",
+    "evacuationRadiusMeters": 150,
+    "waterReactive": false,
+    "notes": "Common in medical facilities, breweries, and local distilleries in Rwanda. Highly flammable. Flash point 13°C."
+  },
+  {
+    "id": "INDUSTRIAL_OXYGEN",
+    "names": ["Oxygen", "Industrial Oxygen", "O2", "Medical Oxygen"],
+    "hazardClass": "2.2 Non-Flammable Gas (Oxidizer)",
+    "hazmatLevel": "LEVEL_2",
+    "protectiveEquipment": ["Protective clothing", "Eye protection", "No oil-based products near oxygen"],
+    "fireResponse": "Do not extinguish burning oxygen. Remove cylinders from fire area if safe. Cool with water. Oxygen dramatically intensifies all fires.",
+    "evacuationRadiusMeters": 200,
+    "waterReactive": false,
+    "notes": "Used in hospitals, clinics, and welding. Compressed cylinders pose explosion risk if heated. Oil and oxygen contact is extremely dangerous."
+  },
+  {
+    "id": "PESTICIDES",
+    "names": ["Pesticides", "Agrochemicals", "Herbicides", "Insecticides", "Fungicides"],
+    "hazardClass": "6.1 Toxic Substance",
+    "hazmatLevel": "LEVEL_3",
+    "protectiveEquipment": ["Level B suit", "SCBA", "Chemical-resistant gloves and boots"],
+    "fireResponse": "Use water fog, foam, or CO2. Avoid breathing smoke — produces toxic gases. Contain runoff to prevent soil and water contamination. Notify agricultural authorities.",
+    "evacuationRadiusMeters": 400,
+    "waterReactive": false,
+    "notes": "Widely used in Rwandan agriculture (tea, coffee, rice cultivation). Products vary widely in toxicity. Organophosphate pesticides are particularly hazardous."
+  },
+  {
+    "id": "BATTERY_ACID",
+    "names": ["Battery Acid", "Lead Acid", "Electrolyte", "Dilute Sulfuric Acid"],
+    "hazardClass": "8 Corrosive",
+    "hazmatLevel": "LEVEL_2",
+    "protectiveEquipment": ["Acid-resistant gloves", "Face shield", "Protective clothing"],
+    "fireResponse": "Not flammable but battery cases may burn. Use water to flush spills. Neutralize with baking soda. Lead contamination from battery plates.",
+    "evacuationRadiusMeters": 100,
+    "waterReactive": true,
+    "notes": "Found in vehicles and motorcycle batteries throughout Rwanda. Dilute sulfuric acid (~30%). Contact with skin causes burns. Lead contamination hazard."
+  }
+]

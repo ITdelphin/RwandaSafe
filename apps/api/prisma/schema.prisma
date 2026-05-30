@@ -192,6 +192,8 @@ model Agency {
   assignments      Assignment[]
   ambulances       Ambulance[]
   hospitalCapacity HospitalCapacity?
+  fireUnits        FireUnit[]
+  investigations   Investigation[]
 
   @@map("agencies")
 }
@@ -208,10 +210,11 @@ model Officer {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agency         Agency          @relation(fields: [agencyId], references: [id])
-  assignments    Assignment[]
-  shiftHandovers ShiftHandover[]
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency            Agency          @relation(fields: [agencyId], references: [id])
+  assignments       Assignment[]
+  shiftHandovers    ShiftHandover[]
+  ledInvestigations Investigation[]
 
   @@map("officers")
 }
@@ -248,6 +251,8 @@ model Incident {
   forwardLogs   ForwardLog[]
   medicalCase   MedicalCase?
   telemedicineSessions TelemedicineSession[]
+  fireReport    FireReport?
+  investigation Investigation?
 
   @@map("incidents")
 }
@@ -418,6 +423,7 @@ model MedicalCase {
   @@map("medical_cases")
 }
 
+
 model Ambulance {
   id               String          @id @default(uuid())
   agencyId         String          @map("agency_id")
@@ -499,4 +505,235 @@ model TelemedicineSession {
   incident Incident @relation(fields: [incidentId], references: [id])
 
   @@map("telemedicine_sessions")
+}
+
+// ─── FIRE ENUMS ──────────────────────────────────────────────────────────────
+
+enum FireIncidentType {
+  STRUCTURAL_FIRE
+  VEHICLE_FIRE
+  WILDFIRE
+  GAS_LEAK
+  CHEMICAL_SPILL
+  EXPLOSION
+  RESCUE_TRAPPED
+  ELECTRICAL_FIRE
+  OTHER
+}
+
+enum FireUnitStatus {
+  AVAILABLE
+  RESPONDING
+  ON_SCENE
+  RETURNING
+  MAINTENANCE
+  OFF_DUTY
+}
+
+enum HazmatLevel {
+  LEVEL_1
+  LEVEL_2
+  LEVEL_3
+  LEVEL_4
+}
+
+// ─── FIRE MODELS ─────────────────────────────────────────────────────────────
+
+model FireUnit {
+  id             String         @id @default(uuid())
+  agencyId       String         @map("agency_id")
+  callSign       String         @unique @map("call_sign")
+  plateNumber    String?        @unique @map("plate_number")
+  unitType       String
+  status         FireUnitStatus @default(AVAILABLE)
+  crewCount      Int            @default(4) @map("crew_count")
+  currentLat     Float?         @map("current_lat")
+  currentLng     Float?         @map("current_lng")
+  waterCapacityL Int?           @map("water_capacity_l")
+  hasHazmatKit   Boolean        @default(false) @map("has_hazmat_kit")
+  isActive       Boolean        @default(true) @map("is_active")
+  lastUpdated    DateTime       @default(now()) @map("last_updated")
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  agency      Agency       @relation(fields: [agencyId], references: [id])
+  fireReports FireReport[]
+
+  @@map("fire_units")
+}
+
+model FireReport {
+  id                  String           @id @default(uuid())
+  incidentId          String           @unique @map("incident_id")
+  fireType            FireIncidentType @default(STRUCTURAL_FIRE) @map("fire_type")
+  hazmatLevel         HazmatLevel?     @map("hazmat_level")
+  chemicalInvolved    String?          @map("chemical_involved")
+  buildingType        String?          @map("building_type")
+  buildingFloors      Int?             @map("building_floors")
+  estimatedOccupancy  Int?             @map("estimated_occupancy")
+  fireUnitId          String?          @map("fire_unit_id")
+  additionalUnitsIds  String[]         @map("additional_units_ids")
+  dispatchedAt        DateTime?        @map("dispatched_at")
+  arrivedAt           DateTime?        @map("arrived_at")
+  containedAt         DateTime?        @map("contained_at")
+  resolvedAt          DateTime?        @map("resolved_at")
+  windSpeed           Float?           @map("wind_speed")
+  windDirection       String?          @map("wind_direction")
+  weatherCondition    String?          @map("weather_condition")
+  casualties          Int              @default(0)
+  postIncidentReport  String?          @map("post_incident_report")
+  reportSubmittedAt   DateTime?        @map("report_submitted_at")
+  reportSubmittedById String?          @map("report_submitted_by_id")
+  createdAt           DateTime         @default(now()) @map("created_at")
+  updatedAt           DateTime         @updatedAt @map("updated_at")
+
+  incident Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  fireUnit FireUnit? @relation(fields: [fireUnitId], references: [id])
+
+  @@map("fire_reports")
+}
+
+model Hydrant {
+  id            String    @id @default(uuid())
+  latitude      Float
+  longitude     Float
+  district      String?
+  address       String?
+  isOperational Boolean   @default(true) @map("is_operational")
+  lastChecked   DateTime? @map("last_checked")
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@map("hydrants")
+}
+
+// ─── RIB ENUMS ───────────────────────────────────────────────────────────────
+
+enum InvestigationStatus {
+  OPEN
+  ACTIVE
+  SUSPENDED
+  CLOSED_SOLVED
+  CLOSED_UNSOLVED
+  REFERRED
+}
+
+enum EvidenceType {
+  PHOTO
+  VIDEO
+  DOCUMENT
+  AUDIO
+  PHYSICAL_DESCRIPTION
+  WITNESS_STATEMENT
+  OTHER
+}
+
+enum SuspectStatus {
+  PERSON_OF_INTEREST
+  SUSPECT
+  CHARGED
+  ACQUITTED
+  CONVICTED
+}
+
+// ─── RIB MODELS ──────────────────────────────────────────────────────────────
+
+model Investigation {
+  id                  String              @id @default(uuid())
+  caseNumber          String              @unique @map("case_number")
+  incidentId          String?             @unique @map("incident_id")
+  title               String
+  description         String
+  status              InvestigationStatus @default(OPEN)
+  leadInvestigatorId  String?             @map("lead_investigator_id")
+  agencyId            String              @map("agency_id")
+  classificationLevel String              @default("STANDARD") @map("classification_level")
+  isSensitive         Boolean             @default(false) @map("is_sensitive")
+  openedAt            DateTime            @default(now()) @map("opened_at")
+  closedAt            DateTime?           @map("closed_at")
+  closureNote         String?             @map("closure_note")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+
+  incident         Incident?               @relation(fields: [incidentId], references: [id])
+  leadInvestigator Officer?                @relation(fields: [leadInvestigatorId], references: [id])
+  agency           Agency                  @relation(fields: [agencyId], references: [id])
+  suspects         Suspect[]
+  evidence         InvestigationEvidence[]
+  tips             Tip[]
+
+  @@map("investigations")
+}
+
+model Suspect {
+  id              String        @id @default(uuid())
+  investigationId String        @map("investigation_id")
+  alias           String?
+  description     String?
+  age             Int?
+  gender          String?
+  nationality     String?
+  knownAddresses  String[]      @map("known_addresses")
+  status          SuspectStatus @default(PERSON_OF_INTEREST)
+  notes           String?
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  investigation Investigation          @relation(fields: [investigationId], references: [id], onDelete: Cascade)
+  evidence      InvestigationEvidence[]
+
+  @@map("suspects")
+}
+
+model InvestigationEvidence {
+  id              String       @id @default(uuid())
+  investigationId String       @map("investigation_id")
+  suspectId       String?      @map("suspect_id")
+  type            EvidenceType
+  title           String
+  description     String?
+  fileUrl         String?      @map("file_url")
+  filePublicId    String?      @map("file_public_id")
+  collectedAt     DateTime?    @map("collected_at")
+  collectedById   String?      @map("collected_by_id")
+  chainOfCustody  Json?        @map("chain_of_custody")
+  isAdmissible    Boolean      @default(true) @map("is_admissible")
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  investigation Investigation @relation(fields: [investigationId], references: [id], onDelete: Cascade)
+  suspect       Suspect?      @relation(fields: [suspectId], references: [id])
+
+  @@map("investigation_evidence")
+}
+
+model Tip {
+  id              String         @id @default(uuid())
+  investigationId String?        @map("investigation_id")
+  content         String
+  submitterPhone  String?        @map("submitter_phone")
+  isAnonymous     Boolean        @default(true) @map("is_anonymous")
+  isReviewed      Boolean        @default(false) @map("is_reviewed")
+  isCredible      Boolean?       @map("is_credible")
+  reviewedById    String?        @map("reviewed_by_id")
+  reviewNotes     String?        @map("review_notes")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  investigation Investigation? @relation(fields: [investigationId], references: [id])
+
+  @@map("tips")
+}
+
+model PatternAlert {
+  id              String   @id @default(uuid())
+  title           String
+  description     String
+  incidentType    String   @map("incident_type")
+  district        String
+  incidentCount   Int      @map("incident_count")
+  timeWindowHours Int      @map("time_window_hours")
+  incidentIds     String[] @map("incident_ids")
+  isReviewed      Boolean  @default(false) @map("is_reviewed")
+  reviewedById    String?  @map("reviewed_by_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("pattern_alerts")
 }

@@ -16,6 +16,10 @@ import { resourcesRouter } from './modules/resources/resources.router';
 import { medicalRouter } from './modules/medical/medical.router';
 import { ambulanceRouter } from './modules/medical/ambulance.router';
 import { capacityRouter } from './modules/capacity/capacity.router';
+import { fireRouter } from './modules/fire/fire.router';
+import { investigationRouter } from './modules/investigation/investigation.router';
+import { patternRouter } from './modules/investigation/pattern.router';
+import { tiplineRouter } from './modules/tipline/tipline.router';
 
 export const app = express();
 
@@ -70,6 +74,10 @@ app.use('/v1/resources', resourcesRouter);
 app.use('/v1/medical', medicalRouter);
 app.use('/v1/ambulances', ambulanceRouter);
 app.use('/v1/capacity', capacityRouter);
+app.use('/v1/fire', fireRouter);
+app.use('/v1/investigations', investigationRouter);
+app.use('/v1/patterns', patternRouter);
+app.use('/v1/tips', tiplineRouter);
 
 app.use(notFound);
 app.use(errorHandler);
