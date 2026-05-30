@@ -35,13 +35,13 @@ export const authService = {
     const accessToken = jwt.sign(
       { id: user.id, phone: user.phone, role: user.role, isAnonymous: user.isAnonymous },
       env.JWT_SECRET,
-      { expiresIn: env.JWT_EXPIRES_IN }
+      { expiresIn: env.JWT_EXPIRES_IN as any }
     );
 
     const refreshToken = jwt.sign(
       { id: user.id },
       env.JWT_REFRESH_SECRET,
-      { expiresIn: env.JWT_REFRESH_EXPIRES_IN }
+      { expiresIn: env.JWT_REFRESH_EXPIRES_IN as any }
     );
 
     await prisma.refreshToken.create({
@@ -72,7 +72,7 @@ export const authService = {
     const accessToken = jwt.sign(
       { id: stored.user.id, phone: stored.user.phone, role: stored.user.role, isAnonymous: stored.user.isAnonymous },
       env.JWT_SECRET,
-      { expiresIn: env.JWT_EXPIRES_IN }
+      { expiresIn: env.JWT_EXPIRES_IN as any }
     );
 
     return { accessToken };

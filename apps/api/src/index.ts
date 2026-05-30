@@ -11,8 +11,9 @@ initSocket(server);
 
 async function bootstrap() {
   await connectRedis();
-  server.listen(env.API_PORT, () => {
-    logger.info(`Rwanda Safe API running on port ${env.API_PORT}`);
+  const port = Number(process.env.PORT) || env.API_PORT;
+  server.listen(port, () => {
+    logger.info(`Rwanda Safe API running on port ${port}`);
     logger.info(`Environment: ${env.NODE_ENV}`);
   });
 }
