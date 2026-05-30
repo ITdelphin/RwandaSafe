@@ -3,11 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { authApi } from '../../lib/apiClient';
 
-const BG_GRADIENT = 'linear-gradient(135deg, #1a0500 0%, #7c2d12 100%)';
-const HEADER_GRADIENT = 'linear-gradient(135deg, #1a0500 0%, #9a3412 100%)';
-const BTN_GRADIENT = 'linear-gradient(135deg, #EA580C 0%, #c2410c 100%)';
-const LINK_COLOR = '#EA580C';
-const ACCENT_COLOR = '#fed7aa';
+const AGENCY = { name: 'Rwanda Fire Brigade', role: 'Dispatcher Portal', icon: '🚒', color: '#E8710A' };
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -27,75 +23,78 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px', background: BG_GRADIENT }}>
-      <div style={{ width: '100%', maxWidth: '448px', backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
-        <div style={{ padding: '28px 32px 20px', textAlign: 'center', background: HEADER_GRADIENT }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '14px', backgroundColor: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 28, height: 28, color: '#fff' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
-            </svg>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+      <div style={{ width: '100%', maxWidth: '440px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: AGENCY.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '28px', boxShadow: `0 4px 14px ${AGENCY.color}40` }}>
+            {AGENCY.icon}
           </div>
-          <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0 }}>Rwanda Safe</h1>
-          <p style={{ fontSize: '12px', color: ACCENT_COLOR, marginTop: '3px' }}>Rwanda Fire Brigade &middot; Dispatcher Portal</p>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#202124', margin: '0 0 4px' }}>Rwanda Safe</h1>
+          <p style={{ fontSize: '14px', color: '#5f6368', margin: 0 }}>{AGENCY.name} · {AGENCY.role}</p>
         </div>
 
-        <div style={{ padding: '24px 32px 32px' }}>
+        <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '32px', boxShadow: '0 2px 16px rgba(0,0,0,0.08)', border: '1px solid #e8eaed' }}>
           {sent ? (
             <div style={{ textAlign: 'center', padding: '8px 0' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#ffedd5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 28, height: 28, color: LINK_COLOR }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#e8f0fe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <span style={{ fontSize: '28px' }}>📧</span>
               </div>
-              <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 8px' }}>Check your inbox</h2>
-              <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '20px', lineHeight: 1.5 }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#202124', margin: '0 0 8px' }}>Check your inbox</h2>
+              <p style={{ fontSize: '13px', color: '#5f6368', marginBottom: '20px', lineHeight: 1.5 }}>
                 If <strong>{email}</strong> is registered, a reset link has been sent. Check your inbox.
               </p>
-              <Link href="/login" style={{ fontSize: '13px', fontWeight: 600, color: LINK_COLOR, textDecoration: 'none' }}>&larr; Back to sign in</Link>
+              <Link href="/login" style={{ fontSize: '13px', fontWeight: 600, color: AGENCY.color, textDecoration: 'none' }}>
+                ← Back to sign in
+              </Link>
             </div>
           ) : (
             <>
-              <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#1f2937', margin: '0 0 4px' }}>Reset your password</h2>
-              <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Enter your email and we&apos;ll send a reset link</p>
-              <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '6px' }}>Email address</label>
-                  <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', display: 'flex' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </span>
-                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                      placeholder="dispatcher@fire.gov.rw"
-                      style={{ width: '100%', boxSizing: 'border-box', paddingLeft: '36px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '12px', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '14px', backgroundColor: '#f9fafb', outline: 'none' }}
-                      onFocus={e => { e.target.style.borderColor = LINK_COLOR; e.target.style.backgroundColor = '#fff'; }}
-                      onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }} />
-                  </div>
+              <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#202124', margin: '0 0 4px' }}>Reset your password</h2>
+              <p style={{ fontSize: '14px', color: '#5f6368', margin: '0 0 24px' }}>Enter your email and we&apos;ll send a reset link</p>
+
+              <form onSubmit={submit}>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#202124', marginBottom: '6px' }}>Email address</label>
+                  <input
+                    type="email" value={email} onChange={e => setEmail(e.target.value)} required
+                    placeholder="you@rwandasafe.rw"
+                    style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', border: '1px solid #dadce0', borderRadius: '10px', fontSize: '14px', outline: 'none', backgroundColor: '#f8f9fa', color: '#202124' }}
+                    onFocus={e => { e.target.style.borderColor = AGENCY.color; e.target.style.backgroundColor = '#fff'; e.target.style.boxShadow = `0 0 0 3px ${AGENCY.color}15`; }}
+                    onBlur={e => { e.target.style.borderColor = '#dadce0'; e.target.style.backgroundColor = '#f8f9fa'; e.target.style.boxShadow = 'none'; }}
+                  />
                 </div>
+
                 {error && (
-                  <div style={{ padding: '12px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px' }}>
-                    <p style={{ fontSize: '13px', color: '#b91c1c', margin: 0 }}>{error}</p>
+                  <div style={{ backgroundColor: '#fce8e6', border: '1px solid #f5c6c2', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                    <span style={{ color: '#d93025', fontSize: '14px' }}>⚠️</span>
+                    <p style={{ fontSize: '13px', color: '#c5221f', margin: 0 }}>{error}</p>
                   </div>
                 )}
+
                 <button type="submit" disabled={loading || !email}
-                  style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', background: loading ? '#94a3b8' : BTN_GRADIENT, color: '#fff', fontWeight: 600, fontSize: '14px', cursor: loading || !email ? 'not-allowed' : 'pointer', opacity: !email ? 0.6 : 1, boxShadow: '0 4px 12px rgba(234,88,12,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  {loading ? (<><span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />Sending...</>) : 'Send Reset Link'}
+                  style={{ width: '100%', padding: '11px', borderRadius: '10px', border: 'none', backgroundColor: loading || !email ? '#dadce0' : AGENCY.color, color: loading || !email ? '#80868b' : '#ffffff', fontSize: '14px', fontWeight: 600, cursor: loading || !email ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.15s' }}>
+                  {loading ? (
+                    <>
+                      <span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
+                      Sending...
+                    </>
+                  ) : 'Send Reset Link'}
                 </button>
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
               </form>
-              <p style={{ textAlign: 'center', fontSize: '13px', color: '#6b7280', marginTop: '20px' }}>
-                Remembered it?{' '}<Link href="/login" style={{ fontWeight: 600, color: LINK_COLOR, textDecoration: 'none' }}>Sign in</Link>
+
+              <p style={{ textAlign: 'center', fontSize: '13px', color: '#5f6368', marginTop: '20px', marginBottom: 0 }}>
+                Remembered it?{' '}
+                <Link href="/login" style={{ color: AGENCY.color, fontWeight: 500, textDecoration: 'none' }}>Sign in</Link>
               </p>
             </>
           )}
         </div>
-      </div>
 
-      <p style={{ marginTop: '20px', fontSize: '12px', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
-        Secured by Rwanda Safe &middot; Emergency Response Platform
-      </p>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <p style={{ textAlign: 'center', fontSize: '11px', color: '#80868b', marginTop: '20px' }}>
+          🔒 Secured by Rwanda Safe · Emergency Response Platform
+        </p>
+      </div>
     </div>
   );
 }

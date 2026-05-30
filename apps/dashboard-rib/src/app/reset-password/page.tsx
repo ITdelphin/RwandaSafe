@@ -6,29 +6,18 @@ import { authApi } from '../../lib/apiClient';
 
 export const dynamic = 'force-dynamic';
 
-const BG_GRADIENT = 'linear-gradient(135deg, #0a0a1a 0%, #2e1065 100%)';
-const HEADER_GRADIENT = 'linear-gradient(135deg, #0a0a1a 0%, #4c1d95 100%)';
-const BTN_GRADIENT = 'linear-gradient(135deg, #4C1D95 0%, #6d28d9 100%)';
-const LINK_COLOR = '#7C3AED';
-const ACCENT_COLOR = '#ddd6fe';
-
-function EyeIcon({ open }: { open: boolean }) {
-  return open ? (
-    <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 18, height: 18 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-    </svg>
-  ) : (
-    <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 18, height: 18 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-    </svg>
-  );
-}
+const AGENCY = { name: 'Rwanda Investigation Bureau', role: 'Investigation Portal', icon: '🔍', color: '#9334E6' };
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', boxSizing: 'border-box',
-  padding: '12px 16px', border: '1px solid #e5e7eb',
-  borderRadius: '12px', fontSize: '14px', backgroundColor: '#f9fafb', outline: 'none',
+  width: '100%',
+  boxSizing: 'border-box',
+  padding: '10px 14px',
+  border: '1px solid #dadce0',
+  borderRadius: '10px',
+  fontSize: '14px',
+  backgroundColor: '#f8f9fa',
+  color: '#202124',
+  outline: 'none',
 };
 
 function ResetForm() {
@@ -56,90 +45,108 @@ function ResetForm() {
     } finally { setLoading(false); }
   };
 
+  if (success) {
+    return (
+      <div style={{ textAlign: 'center', padding: '8px 0' }}>
+        <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#e6f4ea', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+          <span style={{ fontSize: '28px' }}>✅</span>
+        </div>
+        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#202124', margin: '0 0 8px' }}>Password reset!</h2>
+        <p style={{ fontSize: '13px', color: '#5f6368' }}>Redirecting to login...</p>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ padding: '24px 32px 32px' }}>
-      {success ? (
-        <div style={{ textAlign: 'center', padding: '8px 0' }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 28, height: 28, color: '#16a34a' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 8px' }}>Password reset!</h2>
-          <p style={{ fontSize: '13px', color: '#6b7280' }}>Redirecting to login...</p>
+    <>
+      <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#202124', margin: '0 0 4px' }}>Set new password</h2>
+      <p style={{ fontSize: '14px', color: '#5f6368', margin: '0 0 24px' }}>Choose a strong password for your account</p>
+
+      {!token ? (
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontSize: '13px', color: '#d93025', marginBottom: '12px' }}>Invalid or missing reset token.</p>
+          <Link href="/forgot-password" style={{ fontSize: '13px', fontWeight: 600, color: AGENCY.color, textDecoration: 'none' }}>Request a new link</Link>
         </div>
       ) : (
-        <>
-          <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#1f2937', margin: '0 0 4px' }}>Set new password</h2>
-          <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Choose a strong password for your account</p>
-          {!token ? (
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: '13px', color: '#dc2626', marginBottom: '12px' }}>Invalid or missing reset token.</p>
-              <Link href="/forgot-password" style={{ fontSize: '13px', fontWeight: 600, color: LINK_COLOR, textDecoration: 'none' }}>Request a new link</Link>
-            </div>
-          ) : (
-            <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '5px' }}>New Password</label>
-                <div style={{ position: 'relative' }}>
-                  <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required minLength={8}
-                    placeholder="Min. 8 characters" style={{ ...inputStyle, paddingRight: '44px' }}
-                    onFocus={e => { e.target.style.borderColor = LINK_COLOR; e.target.style.backgroundColor = '#fff'; }}
-                    onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }} />
-                  <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, display: 'flex' }}>
-                    <EyeIcon open={showPw} />
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '5px' }}>Confirm Password</label>
-                <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} required
-                  placeholder="Re-enter new password" style={inputStyle}
-                  onFocus={e => { e.target.style.borderColor = LINK_COLOR; e.target.style.backgroundColor = '#fff'; }}
-                  onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }} />
-                {confirm && password !== confirm && <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>Passwords do not match</p>}
-              </div>
-              {error && (
-                <div style={{ padding: '12px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px' }}>
-                  <p style={{ fontSize: '13px', color: '#b91c1c', margin: 0 }}>{error}</p>
-                </div>
-              )}
-              <button type="submit" disabled={loading || password !== confirm}
-                style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', background: loading ? '#94a3b8' : BTN_GRADIENT, color: '#fff', fontWeight: 600, fontSize: '14px', cursor: loading || password !== confirm ? 'not-allowed' : 'pointer', opacity: password !== confirm ? 0.6 : 1, boxShadow: '0 4px 12px rgba(76,29,149,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                {loading ? (<><span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />Resetting...</>) : 'Reset Password'}
+        <form onSubmit={submit}>
+          <div style={{ marginBottom: '14px' }}>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#202124', marginBottom: '6px' }}>New Password</label>
+            <div style={{ position: 'relative' }}>
+              <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required minLength={8}
+                placeholder="Min. 8 characters"
+                style={{ ...inputStyle, paddingRight: '44px' }}
+                onFocus={e => { e.target.style.borderColor = AGENCY.color; e.target.style.backgroundColor = '#fff'; e.target.style.boxShadow = `0 0 0 3px ${AGENCY.color}15`; }}
+                onBlur={e => { e.target.style.borderColor = '#dadce0'; e.target.style.backgroundColor = '#f8f9fa'; e.target.style.boxShadow = 'none'; }}
+              />
+              <button type="button" onClick={() => setShowPw(!showPw)}
+                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', color: '#5f6368', padding: 0 }}>
+                {showPw ? '🙈' : '👁️'}
               </button>
-            </form>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#202124', marginBottom: '6px' }}>Confirm Password</label>
+            <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} required
+              placeholder="Re-enter new password"
+              style={inputStyle}
+              onFocus={e => { e.target.style.borderColor = AGENCY.color; e.target.style.backgroundColor = '#fff'; e.target.style.boxShadow = `0 0 0 3px ${AGENCY.color}15`; }}
+              onBlur={e => { e.target.style.borderColor = '#dadce0'; e.target.style.backgroundColor = '#f8f9fa'; e.target.style.boxShadow = 'none'; }}
+            />
+            {confirm && password !== confirm && (
+              <p style={{ fontSize: '11px', color: '#d93025', marginTop: '4px', marginBottom: 0 }}>Passwords do not match</p>
+            )}
+          </div>
+
+          {error && (
+            <div style={{ backgroundColor: '#fce8e6', border: '1px solid #f5c6c2', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+              <span style={{ color: '#d93025', fontSize: '14px' }}>⚠️</span>
+              <p style={{ fontSize: '13px', color: '#c5221f', margin: 0 }}>{error}</p>
+            </div>
           )}
-          <p style={{ textAlign: 'center', fontSize: '13px', color: '#6b7280', marginTop: '20px' }}>
-            <Link href="/login" style={{ fontWeight: 600, color: LINK_COLOR, textDecoration: 'none' }}>&larr; Back to login</Link>
+
+          <button type="submit" disabled={loading || password !== confirm || !password}
+            style={{ width: '100%', padding: '11px', borderRadius: '10px', border: 'none', backgroundColor: loading || password !== confirm || !password ? '#dadce0' : AGENCY.color, color: loading || password !== confirm || !password ? '#80868b' : '#ffffff', fontSize: '14px', fontWeight: 600, cursor: loading || password !== confirm || !password ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.15s' }}>
+            {loading ? (
+              <>
+                <span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
+                Resetting...
+              </>
+            ) : 'Reset Password'}
+          </button>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+          <p style={{ textAlign: 'center', fontSize: '13px', color: '#5f6368', marginTop: '20px', marginBottom: 0 }}>
+            <Link href="/login" style={{ color: AGENCY.color, fontWeight: 500, textDecoration: 'none' }}>← Back to login</Link>
           </p>
-        </>
+        </form>
       )}
-    </div>
+    </>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px', background: BG_GRADIENT }}>
-      <div style={{ width: '100%', maxWidth: '448px', backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
-        <div style={{ padding: '28px 32px 20px', textAlign: 'center', background: HEADER_GRADIENT }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '14px', backgroundColor: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 28, height: 28, color: '#fff' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+      <div style={{ width: '100%', maxWidth: '440px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: AGENCY.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '28px', boxShadow: `0 4px 14px ${AGENCY.color}40` }}>
+            {AGENCY.icon}
           </div>
-          <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0 }}>Rwanda Safe</h1>
-          <p style={{ fontSize: '12px', color: ACCENT_COLOR, marginTop: '3px' }}>Rwanda Investigation Bureau &middot; Investigator Portal</p>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#202124', margin: '0 0 4px' }}>Rwanda Safe</h1>
+          <p style={{ fontSize: '14px', color: '#5f6368', margin: 0 }}>{AGENCY.name} · {AGENCY.role}</p>
         </div>
-        <Suspense fallback={<div style={{ padding: '32px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>Loading...</div>}>
-          <ResetForm />
-        </Suspense>
+
+        <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '32px', boxShadow: '0 2px 16px rgba(0,0,0,0.08)', border: '1px solid #e8eaed' }}>
+          <Suspense fallback={<div style={{ padding: '16px', textAlign: 'center', color: '#5f6368', fontSize: '14px' }}>Loading...</div>}>
+            <ResetForm />
+          </Suspense>
+        </div>
+
+        <p style={{ textAlign: 'center', fontSize: '11px', color: '#80868b', marginTop: '20px' }}>
+          🔒 Secured by Rwanda Safe · Emergency Response Platform
+        </p>
       </div>
-      <p style={{ marginTop: '20px', fontSize: '12px', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
-        Secured by Rwanda Safe &middot; Emergency Response Platform
-      </p>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

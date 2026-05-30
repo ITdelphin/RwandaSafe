@@ -1,6 +1,14 @@
 'use client';
 import { useState } from 'react';
-import { HospitalTheme, BLOOD_TYPE_LABELS } from '../../constants/theme';
+import { Theme, BLOOD_TYPE_LABELS } from '../../constants/theme';
+
+// Bed capacity color thresholds mapped to new Material palette
+const HospitalTheme = {
+  bedsGood:     Theme.secondary,    // #34A853
+  bedsWarning:  Theme.warning,      // #F9AB00
+  bedsCritical: Theme.danger,       // #d93025
+  bedsEmpty:    Theme.textSecondary, // #5f6368
+};
 import { UpdateCapacityModal } from './UpdateCapacityModal';
 
 interface Props { hospitals: any[]; myAgencyId?: string; onRefresh: () => void; }
