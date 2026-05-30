@@ -177,9 +177,10 @@ model Officer {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agency      Agency       @relation(fields: [agencyId], references: [id])
-  assignments Assignment[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency         Agency          @relation(fields: [agencyId], references: [id])
+  assignments    Assignment[]
+  shiftHandovers ShiftHandover[]
 
   @@map("officers")
 }
@@ -213,6 +214,7 @@ model Incident {
   notes         CaseNote[]
   statusHistory StatusHistory[]
   feedback      Feedback[]
+  forwardLogs   ForwardLog[]
 
   @@map("incidents")
 }
@@ -326,4 +328,30 @@ model Feedback {
   submittedBy User     @relation(fields: [submittedById], references: [id])
 
   @@map("feedback")
+}
+
+model ShiftHandover {
+  id          String   @id @default(uuid())
+  officerId   String   @map("officer_id")
+  summary     String
+  openCaseIds String[] @map("open_case_ids")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  officer Officer @relation(fields: [officerId], references: [id])
+
+  @@map("shift_handovers")
+}
+
+model ForwardLog {
+  id            String     @id @default(uuid())
+  incidentId    String     @map("incident_id")
+  fromAgency    AgencyType @map("from_agency")
+  toAgency      AgencyType @map("to_agency")
+  forwardedById String     @map("forwarded_by_id")
+  note          String?
+  createdAt     DateTime   @default(now()) @map("created_at")
+
+  incident Incident @relation(fields: [incidentId], references: [id])
+
+  @@map("forward_logs")
 }

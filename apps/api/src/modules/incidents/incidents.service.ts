@@ -6,6 +6,18 @@ import { CreateIncidentInput, UpdateStatusInput, AssignIncidentInput } from './i
 import { IncidentStatus, Role } from '@prisma/client';
 import { socketEmit } from '../../socket/socket';
 
+// Valid forward transitions — no backwards moves
+const STATUS_TRANSITIONS: Record<string, string[]> = {
+  RECEIVED:     ['UNDER_REVIEW', 'CANCELLED'],
+  UNDER_REVIEW: ['ASSIGNED', 'CANCELLED'],
+  ASSIGNED:     ['DISPATCHED', 'CANCELLED'],
+  DISPATCHED:   ['ON_SCENE'],
+  ON_SCENE:     ['RESOLVED'],
+  RESOLVED:     ['CLOSED'],
+  CLOSED:       [],
+  CANCELLED:    [],
+};
+
 const INCIDENT_INCLUDE = {
   reporter: { select: { id: true, name: true, phone: true } },
   media: true,
@@ -145,6 +157,14 @@ export const incidentsService = {
   async updateStatus(incidentId: string, data: UpdateStatusInput, updatedById: string) {
     const incident = await prisma.incident.findUnique({ where: { id: incidentId } });
     if (!incident) throw Object.assign(new Error('Incident not found'), { statusCode: 404 });
+
+    const allowed = STATUS_TRANSITIONS[incident.status] ?? [];
+    if (!allowed.includes(data.status)) {
+      throw Object.assign(
+        new Error(`Cannot transition from ${incident.status} to ${data.status}`),
+        { statusCode: 400 },
+      );
+    }
 
     const updated = await prisma.incident.update({
       where: { id: incidentId },
