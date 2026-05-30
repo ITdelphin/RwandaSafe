@@ -51,7 +51,14 @@ export const dashboardController = {
 
   async getOfficers(req: Request, res: Response) {
     try {
-      const agencyId = (req as any).agency?.id;
+      let agencyId = (req as any).agency?.id;
+      // SUPER_ADMIN: look up agency by type from query param
+      if (!agencyId && req.query.agencyType) {
+        const agency = await prisma.agency.findFirst({
+          where: { type: req.query.agencyType as AgencyType, isActive: true },
+        });
+        agencyId = agency?.id;
+      }
       if (!agencyId) return sendError(res, 'Agency not found', 400);
       const officers = await dashboardService.getOnDutyOfficers(agencyId);
       return sendSuccess(res, officers);
