@@ -13,6 +13,9 @@ import { deleteMediaRouter } from './modules/media/deleteRouter';
 import { dashboardRouter } from './modules/dashboard/dashboard.router';
 import { officersRouter } from './modules/officers/officers.router';
 import { resourcesRouter } from './modules/resources/resources.router';
+import { medicalRouter } from './modules/medical/medical.router';
+import { ambulanceRouter } from './modules/medical/ambulance.router';
+import { capacityRouter } from './modules/capacity/capacity.router';
 
 export const app = express();
 
@@ -64,6 +67,9 @@ app.use('/v1/media', deleteMediaRouter);
 app.use('/v1/dashboard', dashboardRouter);
 app.use('/v1/officers', officersRouter);
 app.use('/v1/resources', resourcesRouter);
+app.use('/v1/medical', medicalRouter);
+app.use('/v1/ambulances', ambulanceRouter);
+app.use('/v1/capacity', capacityRouter);
 
 app.use(notFound);
 app.use(errorHandler);
