@@ -47,6 +47,8 @@ function ReportFormContent() {
       description: '',
       latitude: -1.9441,
       longitude: 30.0619,
+      address: '',
+      district: '',
       isAnonymous: false,
     },
   });
