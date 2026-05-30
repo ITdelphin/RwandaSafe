@@ -14,7 +14,7 @@ export function TelemedicinePanel({ incidentId, citizenUserId, existingSession }
   const start = async () => {
     setLoading(true);
     try {
-      const r = await medicalApi.telemedicine(incidentId, { citizenUserId });
+      const r: any = await medicalApi.telemedicine(incidentId, { citizenUserId });
       setSession(r.data.data);
     } finally { setLoading(false); }
   };

@@ -120,20 +120,23 @@ enum BloodType {
 // ─── MODELS ──────────────────────────────────────────────────────────────────
 
 model User {
-  id            String    @id @default(uuid())
-  phone         String    @unique
-  name          String?
-  nidaId        String?   @unique @map("nida_id")
-  role          Role      @default(CITIZEN)
-  isVerified    Boolean   @default(false) @map("is_verified")
-  isAnonymous   Boolean   @default(false) @map("is_anonymous")
-  isActive      Boolean   @default(true) @map("is_active")
-  passwordHash  String?   @map("password_hash")
-  fcmToken      String?   @map("fcm_token")
-  preferredLang String    @default("en") @map("preferred_lang")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  lastLoginAt   DateTime? @map("last_login_at")
+  id                   String    @id @default(uuid())
+  phone                String?   @unique
+  email                String?   @unique
+  name                 String?
+  nidaId               String?   @unique @map("nida_id")
+  role                 Role      @default(CITIZEN)
+  isVerified           Boolean   @default(false) @map("is_verified")
+  isAnonymous          Boolean   @default(false) @map("is_anonymous")
+  isActive             Boolean   @default(true) @map("is_active")
+  passwordHash         String?   @map("password_hash")
+  passwordResetToken   String?   @map("password_reset_token")
+  passwordResetExpires DateTime? @map("password_reset_expires")
+  fcmToken             String?   @map("fcm_token")
+  preferredLang        String    @default("en") @map("preferred_lang")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  lastLoginAt          DateTime? @map("last_login_at")
 
   incidents     Incident[]      @relation("ReporterIncidents")
   caseNotes     CaseNote[]

@@ -26,6 +26,12 @@ const envSchema = z.object({
   DASHBOARD_ADMIN_URL: z.string().default('http://localhost:3005'),
   OTP_EXPIRES_MINUTES: z.coerce.number().default(5),
   OTP_MAX_ATTEMPTS: z.coerce.number().default(5),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().default('noreply@rwandasafe.rw'),
+  APP_URL: z.string().default('https://rwanda-safe-admin.vercel.app'),
 });
 
 export const env = envSchema.parse(process.env);

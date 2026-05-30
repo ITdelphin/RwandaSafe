@@ -13,7 +13,7 @@ export default function OfficersPage() {
   const qc = useQueryClient();
 
   const toggle = useMutation({
-    mutationFn: (id: string) => officersApi.toggleDuty(id),
+    mutationFn: (id: string): any => officersApi.toggleDuty(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['all-officers'] });
       qc.invalidateQueries({ queryKey: ['on-duty-officers'] });

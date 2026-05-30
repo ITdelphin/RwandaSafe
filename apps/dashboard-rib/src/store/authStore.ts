@@ -4,7 +4,8 @@ import { connectSocket, disconnectSocket } from '../lib/socket';
 
 interface Officer {
   id: string;
-  phone: string;
+  email?: string;
+  phone?: string;
   name?: string;
   role: string;
 }
@@ -13,7 +14,7 @@ interface AuthState {
   user: Officer | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (user: Officer, token: string) => void;
+  login: (user: Officer, token: string, remember?: boolean) => void;
   logout: () => void;
   hydrate: () => void;
 }
@@ -23,10 +24,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   token: null,
   isAuthenticated: false,
 
-  login: (user, token) => {
+  login: (user, token, remember = true) => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('rib_access_token', token);
-      localStorage.setItem('rib_user', JSON.stringify(user));
+      const storage = remember ? localStorage : sessionStorage;
+      storage.setItem('rib_access_token', token);
+      storage.setItem('rib_user', JSON.stringify(user));
     }
     connectSocket(token);
     set({ user, token, isAuthenticated: true });
@@ -36,6 +38,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window !== 'undefined') {
       localStorage.removeItem('rib_access_token');
       localStorage.removeItem('rib_user');
+      sessionStorage.removeItem('rib_access_token');
+      sessionStorage.removeItem('rib_user');
     }
     disconnectSocket();
     set({ user: null, token: null, isAuthenticated: false });
@@ -43,8 +47,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   hydrate: () => {
     if (typeof window === 'undefined') return;
-    const token = localStorage.getItem('rib_access_token');
-    const userStr = localStorage.getItem('rib_user');
+    const token = localStorage.getItem('rib_access_token') || sessionStorage.getItem('rib_access_token');
+    const userStr = localStorage.getItem('rib_user') || sessionStorage.getItem('rib_user');
     if (token && userStr) {
       try {
         const user = JSON.parse(userStr);

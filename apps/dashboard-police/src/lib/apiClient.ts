@@ -58,6 +58,11 @@ export const officersApi = {
 };
 
 export const authApi = {
-  requestOtp: (phone: string) => apiClient.post('/auth/login', { phone }),
-  verifyOtp: (phone: string, code: string) => apiClient.post('/auth/verify', { phone, code }),
+  login: (email: string, password: string) => apiClient.post('/auth/login', { email, password }),
+  register: (data: any) => apiClient.post('/auth/register', data),
+  forgotPassword: (email: string) => apiClient.post('/auth/forgot-password', { email }),
+  resetPassword: (token: string, password: string) => apiClient.post('/auth/reset-password', { token, password }),
+  // Keep OTP for citizen
+  requestOtp: (phone: string) => apiClient.post('/auth/otp/request', { phone }),
+  verifyOtp: (phone: string, code: string) => apiClient.post('/auth/otp/verify', { phone, code }),
 };

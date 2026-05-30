@@ -9,7 +9,7 @@ export default function CapacityPage() {
   const { hospitals, isLoading, refetch } = useHospitalCapacity();
   const { data: blood = [] } = useQuery({
     queryKey: ['blood-bank'],
-    queryFn: () => medicalApi.getBloodBank().then(r => r.data.data ?? []),
+    queryFn: () => medicalApi.getBloodBank().then((r: any) => r.data.data ?? []),
     refetchInterval: 60000,
   });
 

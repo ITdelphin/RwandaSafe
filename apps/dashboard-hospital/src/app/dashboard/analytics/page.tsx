@@ -18,13 +18,13 @@ export default function AnalyticsPage() {
 
   const { data: stats } = useQuery({
     queryKey: ['analytics-stats', range],
-    queryFn: () => dashboardApi.getStats('POLICE').then(r => r.data.data),
+    queryFn: () => dashboardApi.getStats('POLICE').then((r: any) => r.data.data),
     refetchInterval: 60000,
   });
 
   const { data: incidents = [] } = useQuery({
     queryKey: ['analytics-incidents', range, typeFilter],
-    queryFn: () => dashboardApi.getIncidents({ agencyType: 'POLICE', limit: 200, type: typeFilter || undefined }).then(r => {
+    queryFn: () => dashboardApi.getIncidents({ agencyType: 'POLICE', limit: 200, type: typeFilter || undefined }).then((r: any) => {
       const d = r.data.data;
       return Array.isArray(d) ? d : d?.data ?? [];
     }),

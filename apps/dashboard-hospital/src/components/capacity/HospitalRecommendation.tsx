@@ -10,11 +10,11 @@ export function HospitalRecommendation({ incidentId, onAssigned }: Props) {
 
   const { data: recs = [], isLoading } = useQuery({
     queryKey: ['hospital-recs', incidentId],
-    queryFn: () => medicalApi.recommend(incidentId).then(r => r.data.data ?? []),
+    queryFn: () => medicalApi.recommend(incidentId).then((r: any) => r.data.data ?? []),
   });
 
   const assign = useMutation({
-    mutationFn: (hospitalId: string) => medicalApi.assignHospital(incidentId, { hospitalId }),
+    mutationFn: (hospitalId: string): any => medicalApi.assignHospital(incidentId, { hospitalId }),
     onSuccess: onAssigned,
   });
 
