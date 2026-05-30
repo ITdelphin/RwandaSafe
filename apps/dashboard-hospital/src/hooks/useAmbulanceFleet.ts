@@ -7,7 +7,7 @@ export function useAmbulanceFleet() {
   const qc = useQueryClient();
   const query = useQuery({
     queryKey: ['ambulances'],
-    queryFn: () => ambulanceApi.list().then(r => r.data.data ?? []),
+    queryFn: () => ambulanceApi.list().then((r: any) => r.data.data ?? []),
     refetchInterval: 30000,
   });
 

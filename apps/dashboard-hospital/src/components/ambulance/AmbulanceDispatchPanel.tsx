@@ -13,7 +13,7 @@ export function AmbulanceDispatchPanel({ incidentId, medicalCase, onRefresh }: P
   const qc = useQueryClient();
 
   const updateStatus = useMutation({
-    mutationFn: (status: string) => medicalApi.updateAmbulanceStatus(medicalCase?.ambulanceId, { status }),
+    mutationFn: (status: string): any => medicalApi.updateAmbulanceStatus(medicalCase?.ambulanceId, { status }),
     onSuccess: onRefresh,
   });
 

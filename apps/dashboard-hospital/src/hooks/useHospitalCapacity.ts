@@ -7,7 +7,7 @@ export function useHospitalCapacity() {
   const qc = useQueryClient();
   const query = useQuery({
     queryKey: ['capacity'],
-    queryFn: () => capacityApi.getAll().then(r => r.data.data ?? []),
+    queryFn: () => capacityApi.getAll().then((r: any) => r.data.data ?? []),
     refetchInterval: 120000,
   });
 

@@ -17,12 +17,12 @@ export default function HandoverPage() {
 
   const { data: handoverData } = useQuery({
     queryKey: ['latest-handover'],
-    queryFn: () => dashboardApi.getLatestHandover().then(r => r.data.data),
+    queryFn: () => dashboardApi.getLatestHandover().then((r: any) => r.data.data),
   });
 
   const { data: openCases = [] } = useQuery({
     queryKey: ['my-open-cases'],
-    queryFn: () => dashboardApi.getIncidents({ agencyType: 'POLICE', status: 'ASSIGNED', limit: 50 }).then(r => {
+    queryFn: () => dashboardApi.getIncidents({ agencyType: 'POLICE', status: 'ASSIGNED', limit: 50 }).then((r: any) => {
       const d = r.data.data;
       return Array.isArray(d) ? d : d?.data ?? [];
     }),

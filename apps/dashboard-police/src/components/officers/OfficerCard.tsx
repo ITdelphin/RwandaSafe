@@ -13,7 +13,7 @@ const statusDot: Record<string, string> = {
 export function OfficerCard({ officer, compact = false }: Props) {
   const qc = useQueryClient();
   const toggle = useMutation({
-    mutationFn: () => officersApi.toggleDuty(officer.id),
+    mutationFn: (): any => officersApi.toggleDuty(officer.id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['all-officers'] }),
   });
 

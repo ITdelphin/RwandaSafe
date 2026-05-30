@@ -6,8 +6,8 @@ export const apiClient = axios.create({ baseURL: API_BASE_URL, withCredentials: 
 
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('hospital_access_token');
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    const token = localStorage?.getItem('hospital_access_token');
+    if (token && config.headers) config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
@@ -66,8 +66,13 @@ export const capacityApi = {
 };
 
 export const authApi = {
-  requestOtp: (phone: string) => apiClient.post('/auth/login', { phone }),
-  verifyOtp: (phone: string, code: string) => apiClient.post('/auth/verify', { phone, code }),
+  login: (email: string, password: string) => apiClient.post('/auth/login', { email, password }),
+  register: (data: any) => apiClient.post('/auth/register', data),
+  forgotPassword: (email: string) => apiClient.post('/auth/forgot-password', { email }),
+  resetPassword: (token: string, password: string) => apiClient.post('/auth/reset-password', { token, password }),
+  // Keep OTP for citizen
+  requestOtp: (phone: string) => apiClient.post('/auth/otp/request', { phone }),
+  verifyOtp: (phone: string, code: string) => apiClient.post('/auth/otp/verify', { phone, code }),
 };
 
 export const officersApi = {

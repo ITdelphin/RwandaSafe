@@ -23,7 +23,7 @@ export function useIncidentFeed(agencyType = 'POLICE') {
 
   const query = useQuery({
     queryKey: ['incidents', agencyType, filters],
-    queryFn: () => dashboardApi.getIncidents({ ...filters, agencyType }).then(r => r.data.data),
+    queryFn: () => dashboardApi.getIncidents({ ...filters, agencyType }).then((r: any) => r.data.data),
     refetchInterval: 30000,
   });
 

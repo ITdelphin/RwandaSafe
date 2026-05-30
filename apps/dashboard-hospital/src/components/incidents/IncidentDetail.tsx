@@ -28,7 +28,7 @@ export function IncidentDetail({ incidentId, onClose }: Props) {
 
   const { data: incident, isLoading } = useQuery({
     queryKey: ['incident', incidentId],
-    queryFn: () => incidentsApi.getById(incidentId).then(r => r.data.data),
+    queryFn: () => incidentsApi.getById(incidentId).then((r: any) => r.data.data),
     enabled: !!incidentId,
   });
 

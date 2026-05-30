@@ -14,8 +14,8 @@ import { timeAgo } from '../../lib/formatters';
 import Link from 'next/link';
 
 export default function HospitalDashboard() {
-  const { data: stats } = useQuery({ queryKey: ['stats'], queryFn: () => dashboardApi.getStats('HOSPITAL').then(r => r.data.data) });
-  const { data: blood } = useQuery({ queryKey: ['blood-bank'], queryFn: () => medicalApi.getBloodBank().then(r => r.data.data ?? []), refetchInterval: 60000 });
+  const { data: stats } = useQuery({ queryKey: ['stats'], queryFn: () => dashboardApi.getStats('HOSPITAL').then((r: any) => r.data.data) });
+  const { data: blood } = useQuery({ queryKey: ['blood-bank'], queryFn: () => medicalApi.getBloodBank().then((r: any) => r.data.data ?? []), refetchInterval: 60000 });
   const { data: feed, isLoading } = useIncidentFeed('HOSPITAL');
   const { ambulances, availableCount } = useAmbulanceFleet();
   const { totalBedsAvailable } = useHospitalCapacity();

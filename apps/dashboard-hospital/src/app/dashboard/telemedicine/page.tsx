@@ -6,12 +6,14 @@ import { formatDate } from '../../../lib/formatters';
 import { EmptyState } from '../../../components/shared/EmptyState';
 
 export default function TelemedicinePage() {
-  const { data: sessions = [], isLoading, refetch } = useQuery({
+  const { data: rawSessions, isLoading, refetch } = useQuery({
     queryKey: ['telemedicine-sessions'],
-    queryFn: () => apiClient.get('/medical/sessions').then(r => r.data.data ?? []).catch(() => []),
+    queryFn: async (): Promise<any[]> => {
+      try { return (await (apiClient.get('/medical/sessions') as any)).data?.data ?? []; } catch { return []; }
+    },
     refetchInterval: 30000,
   });
-
+  const sessions: any[] = rawSessions ?? [];
   const active = sessions.filter((s: any) => ['PENDING','ACTIVE'].includes(s.status));
   const past = sessions.filter((s: any) => ['ENDED','CANCELLED'].includes(s.status));
 

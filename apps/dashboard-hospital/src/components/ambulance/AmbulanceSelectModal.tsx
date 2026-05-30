@@ -13,7 +13,7 @@ export function AmbulanceSelectModal({ incidentId, onClose, onSuccess }: Props) 
 
   const { data: ambulances = [] } = useQuery({
     queryKey: ['ambulances-all'],
-    queryFn: () => ambulanceApi.list().then(r => r.data.data ?? []),
+    queryFn: () => ambulanceApi.list().then((r: any) => r.data.data ?? []),
   });
 
   const handleDispatch = async () => {
