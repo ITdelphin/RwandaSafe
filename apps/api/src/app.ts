@@ -10,6 +10,9 @@ import { authRouter } from './modules/auth/auth.router';
 import { incidentsRouter } from './modules/incidents/incidents.router';
 import { mediaRouter } from './modules/media/media.router';
 import { deleteMediaRouter } from './modules/media/deleteRouter';
+import { dashboardRouter } from './modules/dashboard/dashboard.router';
+import { officersRouter } from './modules/officers/officers.router';
+import { resourcesRouter } from './modules/resources/resources.router';
 
 export const app = express();
 
@@ -55,6 +58,9 @@ app.use('/v1/auth', authRouter);
 app.use('/v1/incidents', incidentsRouter);
 app.use('/v1/incidents', mediaRouter);
 app.use('/v1/media', deleteMediaRouter);
+app.use('/v1/dashboard', dashboardRouter);
+app.use('/v1/officers', officersRouter);
+app.use('/v1/resources', resourcesRouter);
 
 app.use(notFound);
 app.use(errorHandler);
