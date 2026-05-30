@@ -1,0 +1,142 @@
+name: Rwanda Safe CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ─── RUN TESTS ────────────────────────────────────────────
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: rwanda_safe_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: cd apps/api && npx prisma generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rwanda_safe_test
+
+      - name: Run migrations
+        run: cd apps/api && npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rwanda_safe_test
+
+      - name: Run API tests
+        run: cd apps/api && npm test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rwanda_safe_test
+          JWT_SECRET: test_secret_minimum_32_characters_long
+          JWT_REFRESH_SECRET: test_refresh_secret_32_characters
+
+      - name: Type check shared types
+        run: npm run build --workspace=packages/shared-types
+
+  # ─── DEPLOY API TO RAILWAY (main branch only) ─────────────
+  deploy-api:
+    name: Deploy API to Railway
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy API
+        run: cd apps/api && railway up --service api --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  # ─── DEPLOY FRONTENDS TO VERCEL (main branch only) ────────
+  deploy-vercel:
+    name: Deploy to Vercel
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy citizen portal
+        run: |
+          cd apps/web-citizen
+          npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }} \
+            --scope=delphinproject
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy police dashboard
+        run: |
+          cd apps/dashboard-police
+          npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }} \
+            --scope=delphinproject
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy hospital dashboard
+        run: |
+          cd apps/dashboard-hospital
+          npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }} \
+            --scope=delphinproject
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy fire dashboard
+        run: |
+          cd apps/dashboard-fire
+          npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }} \
+            --scope=delphinproject
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy RIB dashboard
+        run: |
+          cd apps/dashboard-rib
+          npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }} \
+            --scope=delphinproject
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy admin dashboard
+        run: |
+          cd apps/dashboard-admin
+          npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }} \
+            --scope=delphinproject
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

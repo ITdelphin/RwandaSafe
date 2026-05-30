@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Rwanda Safe",
+    "slug": "rwanda-safe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1B5E82"
+    },
+    "scheme": "rwandasafe",
+    "plugins": [
+      "expo-router",
+      "expo-location",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#1B5E82"
+        }
+      ]
+    ],
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1B5E82"
+      },
+      "package": "rw.gov.rwanda_safe"
+    },
+    "ios": {
+      "bundleIdentifier": "rw.gov.rwandasafe",
+      "supportsTablet": false
+    }
+  }
+}
