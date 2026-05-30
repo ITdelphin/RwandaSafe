@@ -16,6 +16,9 @@ import { resourcesRouter } from './modules/resources/resources.router';
 
 export const app = express();
 
+// Trust Railway/Vercel reverse proxy
+app.set('trust proxy', 1);
+
 app.use(helmet());
 app.use(cors({
   origin: [
