@@ -44,21 +44,24 @@ export async function verifyOtp(userId: string, code: string): Promise<boolean> 
 }
 
 export async function sendOtpSms(phone: string, code: string): Promise<void> {
-  if (env.NODE_ENV === 'development') {
-    console.log(`[DEV] OTP for ${phone}: ${code}`);
+  // Always log OTP for debugging (visible in Railway logs)
+  console.log(`[OTP] ${phone}: ${code}`);
+
+  if (!env.AT_API_KEY || env.AT_API_KEY === 'your_africas_talking_api_key' || !env.AT_USERNAME || env.AT_USERNAME === 'your_username') {
+    console.warn("Africa's Talking credentials not configured — OTP logged above");
     return;
   }
 
-  if (!env.AT_API_KEY || !env.AT_USERNAME) {
-    console.warn("Africa's Talking credentials not configured, skipping SMS");
-    return;
+  try {
+    const AfricasTalking = require('africastalking');
+    const at = AfricasTalking({ apiKey: env.AT_API_KEY, username: env.AT_USERNAME });
+    await at.SMS.send({
+      to: [phone],
+      message: `Your Rwanda Safe verification code is: ${code}. Valid for ${env.OTP_EXPIRES_MINUTES} minutes. Do not share this code.`,
+      from: env.AT_SENDER_ID,
+    });
+  } catch (err) {
+    console.error('SMS send failed (OTP still valid — check logs above):', err);
+    // Don't throw — OTP is created in DB, user can get code from logs/support
   }
-
-  const AfricasTalking = require('africastalking');
-  const at = AfricasTalking({ apiKey: env.AT_API_KEY, username: env.AT_USERNAME });
-  await at.SMS.send({
-    to: [phone],
-    message: `Your Rwanda Safe verification code is: ${code}. Valid for ${env.OTP_EXPIRES_MINUTES} minutes. Do not share this code.`,
-    from: env.AT_SENDER_ID,
-  });
 }
