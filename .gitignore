@@ -43,3 +43,8 @@ prisma/migrations/dev/
 
 # Testing
 coverage/
+
+# Misc
+*.sqlite
+error.txt
+.vercel/
