@@ -1,41 +1,70 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { authApi } from '../../lib/apiClient';
 
-const PRIMARY = '#1B5E82';
+const BG_GRADIENT = 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)';
+const HEADER_GRADIENT = 'linear-gradient(135deg, #0D1B2A 0%, #1B5E82 100%)';
+const BTN_GRADIENT = 'linear-gradient(135deg, #1B5E82 0%, #1565C0 100%)';
+const LINK_COLOR = '#1B5E82';
+const ACCENT_COLOR = '#93C5FD';
 const AGENCY_TYPE = 'POLICE';
 
-function getPasswordStrength(password: string): { score: number; label: string; color: string } {
+function getStrength(pw: string): { score: number; label: string; color: string } {
   let score = 0;
-  if (password.length >= 8) score++;
-  if (password.length >= 12) score++;
-  if (/[A-Z]/.test(password)) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (/[^A-Za-z0-9]/.test(password)) score++;
-  if (score <= 1) return { score, label: 'Weak', color: '#EF4444' };
-  if (score <= 3) return { score, label: 'Medium', color: '#F59E0B' };
-  return { score, label: 'Strong', color: '#22C55E' };
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  if (score <= 1) return { score, label: 'Weak', color: '#ef4444' };
+  if (score <= 3) return { score, label: 'Medium', color: '#f59e0b' };
+  return { score, label: 'Strong', color: '#22c55e' };
 }
+
+function EyeIcon({ open }: { open: boolean }) {
+  return open ? (
+    <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 18, height: 18 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  ) : (
+    <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 18, height: 18 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+    </svg>
+  );
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  boxSizing: 'border-box',
+  padding: '12px 16px',
+  border: '1px solid #e5e7eb',
+  borderRadius: '12px',
+  fontSize: '14px',
+  backgroundColor: '#f9fafb',
+  outline: 'none',
+  transition: 'border-color 0.15s',
+};
 
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [phone, setPhone] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const strength = getPasswordStrength(password);
+  const strength = getStrength(password);
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword) { setError('Passwords do not match'); return; }
+    if (password !== confirm) { setError('Passwords do not match'); return; }
     setError(''); setLoading(true);
     try {
       await authApi.register({ name, email, password, phone: phone || undefined, agencyType: AGENCY_TYPE });
@@ -46,115 +75,187 @@ export default function RegisterPage() {
     } finally { setLoading(false); }
   };
 
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center max-w-sm mx-auto p-8">
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Account Created!</h2>
-          <p className="text-gray-500 text-sm">Redirecting to login...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: PRIMARY }}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '16px',
+      background: BG_GRADIENT,
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '448px',
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+        overflow: 'hidden',
+      }}>
+        {/* Header */}
+        <div style={{ padding: '28px 32px 20px', textAlign: 'center', background: HEADER_GRADIENT }}>
+          <div style={{
+            width: '56px', height: '56px', borderRadius: '14px',
+            backgroundColor: 'rgba(255,255,255,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 12px',
+          }}>
+            <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 28, height: 28, color: '#fff' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Create your account</h2>
-          <p className="text-sm text-gray-500 mt-1">Rwanda National Police Officer Portal</p>
+          <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0 }}>Rwanda Safe</h1>
+          <p style={{ fontSize: '12px', color: ACCENT_COLOR, marginTop: '3px' }}>Rwanda National Police &middot; Officer Portal</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <form onSubmit={handleRegister} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} required minLength={2}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500"
-                placeholder="Officer Jean Bosco" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500"
-                placeholder="officer@police.gov.rw" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
-              <div className="relative">
-                <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required minLength={8}
-                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500"
-                  placeholder="Min. 8 characters" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showPassword
-                      ? "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                      : "M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"} />
-                  </svg>
-                </button>
+        {/* Body */}
+        <div style={{ padding: '24px 32px 32px' }}>
+          {success ? (
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <div style={{
+                width: '56px', height: '56px', borderRadius: '50%',
+                backgroundColor: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 28, height: 28, color: '#16a34a' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
               </div>
-              {password && (
-                <div className="mt-2">
-                  <div className="flex gap-1 mb-1">
-                    {[1,2,3,4,5].map(i => (
-                      <div key={i} className="flex-1 h-1 rounded-full transition-all"
-                        style={{ backgroundColor: i <= strength.score ? strength.color : '#E5E7EB' }} />
-                    ))}
-                  </div>
-                  <p className="text-xs" style={{ color: strength.color }}>{strength.label} password</p>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 8px' }}>Account Created!</h2>
+              <p style={{ fontSize: '13px', color: '#6b7280' }}>Redirecting to login...</p>
+            </div>
+          ) : (
+            <>
+              <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#1f2937', margin: '0 0 4px' }}>Create your account</h2>
+              <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '20px' }}>Register as a Police officer</p>
+
+              <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {/* Name */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '5px' }}>Full Name</label>
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} required minLength={2}
+                    placeholder="Officer Jean Bosco"
+                    style={inputStyle}
+                    onFocus={e => { e.target.style.borderColor = LINK_COLOR; e.target.style.backgroundColor = '#fff'; }}
+                    onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }}
+                  />
                 </div>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password</label>
-              <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500"
-                placeholder="Re-enter your password" />
-              {confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone <span className="text-gray-400 font-normal">(optional)</span></label>
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500"
-                placeholder="+250 7XX XXX XXX" />
-            </div>
 
-            {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
+                {/* Email */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '5px' }}>Email address</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
+                    placeholder="officer@police.gov.rw"
+                    style={inputStyle}
+                    onFocus={e => { e.target.style.borderColor = LINK_COLOR; e.target.style.backgroundColor = '#fff'; }}
+                    onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }}
+                  />
+                </div>
 
-            <button type="submit" disabled={loading || password !== confirmPassword}
-              className="w-full py-3 rounded-xl text-white font-semibold text-sm disabled:opacity-50 transition-all hover:opacity-90 mt-2"
-              style={{ backgroundColor: PRIMARY }}>
-              {loading ? 'Creating account...' : 'Create Account'}
-            </button>
-          </form>
+                {/* Password */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '5px' }}>Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required minLength={8}
+                      placeholder="Min. 8 characters"
+                      style={{ ...inputStyle, paddingRight: '44px' }}
+                      onFocus={e => { e.target.style.borderColor = LINK_COLOR; e.target.style.backgroundColor = '#fff'; }}
+                      onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }}
+                    />
+                    <button type="button" onClick={() => setShowPw(!showPw)} style={{
+                      position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, display: 'flex',
+                    }}>
+                      <EyeIcon open={showPw} />
+                    </button>
+                  </div>
+                  {password && (
+                    <div style={{ marginTop: '8px' }}>
+                      <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                        {[1,2,3,4,5].map(i => (
+                          <div key={i} style={{
+                            flex: 1, height: '4px', borderRadius: '2px',
+                            backgroundColor: i <= strength.score ? strength.color : '#e5e7eb',
+                            transition: 'background-color 0.2s',
+                          }} />
+                        ))}
+                      </div>
+                      <p style={{ fontSize: '11px', color: strength.color }}>{strength.label} password</p>
+                    </div>
+                  )}
+                </div>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Already have an account?{' '}
-            <Link href="/login" className="font-medium hover:underline" style={{ color: PRIMARY }}>Sign in</Link>
-          </p>
+                {/* Confirm */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '5px' }}>Confirm Password</label>
+                  <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} required
+                    placeholder="Re-enter your password"
+                    style={inputStyle}
+                    onFocus={e => { e.target.style.borderColor = LINK_COLOR; e.target.style.backgroundColor = '#fff'; }}
+                    onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }}
+                  />
+                  {confirm && password !== confirm && (
+                    <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>Passwords do not match</p>
+                  )}
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '5px' }}>
+                    Phone <span style={{ fontWeight: 400, color: '#9ca3af' }}>(optional)</span>
+                  </label>
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                    placeholder="+250 7XX XXX XXX"
+                    style={inputStyle}
+                    onFocus={e => { e.target.style.borderColor = LINK_COLOR; e.target.style.backgroundColor = '#fff'; }}
+                    onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }}
+                  />
+                </div>
+
+                {error && (
+                  <div style={{
+                    padding: '12px', backgroundColor: '#fef2f2', border: '1px solid #fecaca',
+                    borderRadius: '12px',
+                  }}>
+                    <p style={{ fontSize: '13px', color: '#b91c1c', margin: 0 }}>{error}</p>
+                  </div>
+                )}
+
+                <button type="submit" disabled={loading || password !== confirm}
+                  style={{
+                    width: '100%', padding: '13px', borderRadius: '12px', border: 'none',
+                    background: loading ? '#94a3b8' : BTN_GRADIENT,
+                    color: '#fff', fontWeight: 600, fontSize: '14px',
+                    cursor: loading || password !== confirm ? 'not-allowed' : 'pointer',
+                    opacity: password !== confirm ? 0.6 : 1,
+                    boxShadow: '0 4px 12px rgba(27,94,130,0.4)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  }}
+                >
+                  {loading ? (
+                    <>
+                      <span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                      Creating account...
+                    </>
+                  ) : 'Create Account'}
+                </button>
+              </form>
+
+              <p style={{ textAlign: 'center', fontSize: '13px', color: '#6b7280', marginTop: '16px' }}>
+                Already have an account?{' '}
+                <Link href="/login" style={{ fontWeight: 600, color: LINK_COLOR, textDecoration: 'none' }}>Sign in</Link>
+              </p>
+            </>
+          )}
         </div>
-
-        <p className="text-center text-xs text-gray-400 mt-6">
-          Secured by Rwanda Safe &middot; Emergency Response Platform
-        </p>
       </div>
+
+      <p style={{ marginTop: '20px', fontSize: '12px', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+        Secured by Rwanda Safe &middot; Emergency Response Platform
+      </p>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

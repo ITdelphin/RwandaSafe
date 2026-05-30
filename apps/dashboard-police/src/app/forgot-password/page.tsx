@@ -3,7 +3,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { authApi } from '../../lib/apiClient';
 
-const PRIMARY = '#1B5E82';
+const BG_GRADIENT = 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)';
+const HEADER_GRADIENT = 'linear-gradient(135deg, #0D1B2A 0%, #1B5E82 100%)';
+const BTN_GRADIENT = 'linear-gradient(135deg, #1B5E82 0%, #1565C0 100%)';
+const LINK_COLOR = '#1B5E82';
+const ACCENT_COLOR = '#93C5FD';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -11,7 +15,7 @@ export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
@@ -22,66 +26,130 @@ export default function ForgotPasswordPage() {
     } finally { setLoading(false); }
   };
 
-  if (sent) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center max-w-sm w-full">
-          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" style={{ color: PRIMARY }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '16px',
+      background: BG_GRADIENT,
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '448px',
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+        overflow: 'hidden',
+      }}>
+        {/* Header */}
+        <div style={{ padding: '28px 32px 20px', textAlign: 'center', background: HEADER_GRADIENT }}>
+          <div style={{
+            width: '56px', height: '56px', borderRadius: '14px',
+            backgroundColor: 'rgba(255,255,255,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 12px',
+          }}>
+            <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 28, height: 28, color: '#fff' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Check your email</h2>
-          <p className="text-sm text-gray-500 mb-6">If <strong>{email}</strong> is registered, you will receive a password reset link shortly.</p>
-          <Link href="/login" className="text-sm font-medium hover:underline" style={{ color: PRIMARY }}>Back to login</Link>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Reset your password</h2>
-          <p className="text-sm text-gray-500 mt-1">Enter your email and we will send a reset link</p>
+          <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0 }}>Rwanda Safe</h1>
+          <p style={{ fontSize: '12px', color: ACCENT_COLOR, marginTop: '3px' }}>Rwanda National Police &middot; Officer Portal</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500"
-                  placeholder="officer@police.gov.rw" />
+        {/* Body */}
+        <div style={{ padding: '24px 32px 32px' }}>
+          {sent ? (
+            <div style={{ textAlign: 'center', padding: '8px 0' }}>
+              <div style={{
+                width: '56px', height: '56px', borderRadius: '50%',
+                backgroundColor: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 28, height: 28, color: LINK_COLOR }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
               </div>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 8px' }}>Check your inbox</h2>
+              <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '20px', lineHeight: 1.5 }}>
+                If <strong>{email}</strong> is registered, a reset link has been sent. Check your inbox.
+              </p>
+              <Link href="/login" style={{ fontSize: '13px', fontWeight: 600, color: LINK_COLOR, textDecoration: 'none' }}>
+                &larr; Back to sign in
+              </Link>
             </div>
+          ) : (
+            <>
+              <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#1f2937', margin: '0 0 4px' }}>Reset your password</h2>
+              <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Enter your email and we&apos;ll send a reset link</p>
 
-            {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
+              <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '6px' }}>Email address</label>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', display: 'flex' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </span>
+                    <input
+                      type="email" value={email} onChange={e => setEmail(e.target.value)} required
+                      placeholder="officer@police.gov.rw"
+                      style={{
+                        width: '100%', boxSizing: 'border-box',
+                        paddingLeft: '36px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '12px',
+                        border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '14px',
+                        backgroundColor: '#f9fafb', outline: 'none',
+                      }}
+                      onFocus={e => { e.target.style.borderColor = LINK_COLOR; e.target.style.backgroundColor = '#fff'; }}
+                      onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }}
+                    />
+                  </div>
+                </div>
 
-            <button type="submit" disabled={loading || !email}
-              className="w-full py-3 rounded-xl text-white font-semibold text-sm disabled:opacity-50 transition-all hover:opacity-90"
-              style={{ backgroundColor: PRIMARY }}>
-              {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
-          </form>
+                {error && (
+                  <div style={{ padding: '12px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px' }}>
+                    <p style={{ fontSize: '13px', color: '#b91c1c', margin: 0 }}>{error}</p>
+                  </div>
+                )}
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Remembered your password?{' '}
-            <Link href="/login" className="font-medium hover:underline" style={{ color: PRIMARY }}>Sign in</Link>
-          </p>
+                <button type="submit" disabled={loading || !email}
+                  style={{
+                    width: '100%', padding: '13px', borderRadius: '12px', border: 'none',
+                    background: loading ? '#94a3b8' : BTN_GRADIENT,
+                    color: '#fff', fontWeight: 600, fontSize: '14px',
+                    cursor: loading || !email ? 'not-allowed' : 'pointer',
+                    opacity: !email ? 0.6 : 1,
+                    boxShadow: '0 4px 12px rgba(27,94,130,0.4)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  }}
+                >
+                  {loading ? (
+                    <>
+                      <span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                      Sending...
+                    </>
+                  ) : 'Send Reset Link'}
+                </button>
+              </form>
+
+              <p style={{ textAlign: 'center', fontSize: '13px', color: '#6b7280', marginTop: '20px' }}>
+                Remembered it?{' '}
+                <Link href="/login" style={{ fontWeight: 600, color: LINK_COLOR, textDecoration: 'none' }}>Sign in</Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
+
+      <p style={{ marginTop: '20px', fontSize: '12px', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+        Secured by Rwanda Safe &middot; Emergency Response Platform
+      </p>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
