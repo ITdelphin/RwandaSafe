@@ -13,6 +13,7 @@
     "@rwanda-safe/shared-utils": "*",
     "@tanstack/react-query": "^5.40.0",
     "axios": "^1.7.2",
+    "caniuse-lite": "^1.0.30001797",
     "lucide-react": "^1.17.0",
     "next": "^14.2.0",
     "react": "^18.3.0",

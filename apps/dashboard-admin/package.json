@@ -8,18 +8,20 @@
     "start": "next start -p 3005"
   },
   "dependencies": {
+    "@rwanda-safe/shared-types": "*",
+    "@rwanda-safe/shared-utils": "*",
+    "@tanstack/react-query": "^5.101.0",
     "next": "^14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "@rwanda-safe/shared-types": "*",
-    "@rwanda-safe/shared-utils": "*"
+    "react-hot-toast": "^2.6.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/react": "^18.3.0",
     "@types/node": "^20.14.0",
-    "tailwindcss": "^3.4.0",
+    "@types/react": "^18.3.0",
     "autoprefixer": "^10.4.0",
-    "postcss": "^8.4.0"
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.4.0"
   }
 }
