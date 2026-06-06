@@ -50,7 +50,7 @@ export function OfficerCard({ officer, compact = false }: Props) {
         </div>
       </div>
       <div className="text-xs text-gray-500 mb-3">
-        {cases === 0 ? '✅ Available' : `${cases} open case${cases !== 1 ? 's' : ''}`}
+        {cases === 0 ? 'Available' : `${cases} open case${cases !== 1 ? 's' : ''}`}
       </div>
       <button onClick={() => toggle.mutate()}
         className={`w-full text-xs py-1.5 rounded-lg font-medium border transition-colors ${officer.isOnDuty ? 'border-red-200 text-red-600 hover:bg-red-50' : 'border-green-200 text-green-600 hover:bg-green-50'}`}>

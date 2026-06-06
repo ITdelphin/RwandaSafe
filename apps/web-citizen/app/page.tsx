@@ -1,14 +1,15 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Car, AlertOctagon, HeartPulse, Flame, Siren, Shield, Ambulance } from 'lucide-react';
 import { Navbar } from '../src/components/Navbar';
 
 const QUICK_ACTIONS = [
-  { type: 'ACCIDENT',          label: 'Report Accident',   icon: '🚗', color: '#FF6F00' },
-  { type: 'CRIME',             label: 'Report Crime',      icon: '🚨', color: '#283593' },
-  { type: 'MEDICAL_EMERGENCY', label: 'Medical Emergency', icon: '🏥', color: '#C62828' },
-  { type: 'FIRE',              label: 'Fire / Hazard',     icon: '🔥', color: '#BF360C' },
-];
+  { type: 'ACCIDENT',          label: 'Report Accident',   icon: <Car size={32} />,          color: '#FF6F00' },
+  { type: 'CRIME',             label: 'Report Crime',      icon: <AlertOctagon size={32} />,  color: '#283593' },
+  { type: 'MEDICAL_EMERGENCY', label: 'Medical Emergency', icon: <HeartPulse size={32} />,    color: '#C62828' },
+  { type: 'FIRE',              label: 'Fire / Hazard',     icon: <Flame size={32} />,         color: '#BF360C' },
+] as const;
 
 export default function LandingPage() {
   const router = useRouter();
@@ -24,9 +25,9 @@ export default function LandingPage() {
         <p className="text-blue-200 text-lg mb-10">Your safety is our priority</p>
         <button
           onClick={() => router.push('/report')}
-          className="bg-red-600 hover:bg-red-700 text-white text-2xl font-bold px-12 py-5 rounded-2xl shadow-xl transition-transform active:scale-95"
+          className="bg-red-600 hover:bg-red-700 text-white text-2xl font-bold px-12 py-5 rounded-2xl shadow-xl transition-transform active:scale-95 flex items-center gap-2 mx-auto"
         >
-          🆘 SOS — Report Now
+          <Siren size={28} /> SOS — Report Now
         </button>
       </section>
 
@@ -40,7 +41,7 @@ export default function LandingPage() {
               onClick={() => router.push(`/report?type=${a.type}`)}
               className="bg-white rounded-xl p-5 border border-gray-100 hover:border-blue-300 hover:shadow-md transition-all text-left"
             >
-              <span className="text-3xl block mb-2">{a.icon}</span>
+              <span className="block mb-2" style={{ color: a.color }}>{a.icon}</span>
               <span className="text-sm font-semibold text-gray-700">{a.label}</span>
             </button>
           ))}
@@ -71,9 +72,9 @@ export default function LandingPage() {
       {/* Emergency Strip */}
       <footer className="bg-gray-800 text-white py-6 text-center">
         <div className="flex justify-center gap-8 text-sm font-semibold">
-          <a href="tel:112" className="hover:text-red-300">🚔 Police: 112</a>
-          <a href="tel:912" className="hover:text-red-300">🚑 Ambulance: 912</a>
-          <a href="tel:111" className="hover:text-red-300">🚒 Fire: 111</a>
+          <a href="tel:112" className="hover:text-red-300 flex items-center gap-1"><Shield size={16} /> Police: 112</a>
+          <a href="tel:912" className="hover:text-red-300 flex items-center gap-1"><Ambulance size={16} /> Ambulance: 912</a>
+          <a href="tel:111" className="hover:text-red-300 flex items-center gap-1"><Flame size={16} /> Fire: 111</a>
         </div>
         <p className="text-gray-400 text-xs mt-4">© 2026 Rwanda Safe — Ministry of Internal Security</p>
       </footer>

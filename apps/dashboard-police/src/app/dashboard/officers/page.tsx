@@ -5,6 +5,7 @@ import { useOnDutyOfficers, useAllOfficers } from '../../../hooks/useOfficers';
 import { OfficerCard } from '../../../components/officers/OfficerCard';
 import { EmptyState } from '../../../components/shared/EmptyState';
 import { officersApi } from '../../../lib/apiClient';
+import { Users } from 'lucide-react';
 
 export default function OfficersPage() {
   const [search, setSearch] = useState('');
@@ -28,7 +29,7 @@ export default function OfficersPage() {
       <section>
         <h2 className="text-sm font-semibold text-gray-600 mb-3">On Duty ({onDuty.length})</h2>
         {onDuty.length === 0 ? (
-          <EmptyState message="No officers currently on duty" icon="👮" />
+          <EmptyState message="No officers currently on duty" icon={<Users size={48} className="text-gray-300" />} />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
             {onDuty.map((o: any) => <OfficerCard key={o.id} officer={o} />)}
@@ -48,7 +49,7 @@ export default function OfficersPage() {
           {isLoading ? (
             <div className="p-8 text-center text-gray-400 text-sm">Loading...</div>
           ) : all.length === 0 ? (
-            <EmptyState message="No officers found" />
+            <EmptyState message="No officers found" icon={<Users size={48} className="text-gray-300" />} />
           ) : (
             <table className="w-full">
               <thead>

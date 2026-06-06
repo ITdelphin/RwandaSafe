@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { Siren } from 'lucide-react';
 import { useIncidentFeed } from '../../../hooks/useIncidentFeed';
 import { IncidentRow } from '../../../components/incidents/IncidentRow';
 import { IncidentFilters } from '../../../components/incidents/IncidentFilters';
@@ -26,7 +27,10 @@ export default function IncidentsPage() {
 
       {newCount > 0 && (
         <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl flex items-center justify-between mb-4 text-sm">
-          <span>🚨 {newCount} new incident{newCount > 1 ? 's' : ''} received</span>
+          <span className="flex items-center gap-2">
+            <Siren size={16} />
+            {newCount} new incident{newCount > 1 ? 's' : ''} received
+          </span>
           <button onClick={resetNewCount} className="text-xs underline">Dismiss</button>
         </div>
       )}

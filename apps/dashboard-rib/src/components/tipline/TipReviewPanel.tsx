@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { formatDate } from '../../lib/formatters';
 
 interface Props {
@@ -48,10 +49,13 @@ export function TipReviewPanel({ tips = [], onReview }: Props) {
               )}
             </div>
             {tip.isReviewed && (
-              <span className={`text-xs px-2 py-0.5 rounded font-medium ${
+              <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium ${
                 tip.isCredible ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
               }`}>
-                {tip.isCredible ? '✅ Credible' : '❌ Not Credible'}
+                {tip.isCredible
+                  ? <><CheckCircle2 size={12} /> Credible</>
+                  : <><XCircle size={12} /> Not Credible</>
+                }
               </span>
             )}
           </div>
@@ -71,14 +75,14 @@ export function TipReviewPanel({ tips = [], onReview }: Props) {
                 disabled={reviewing === tip.id}
                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
               >
-                ✅ Credible
+                <CheckCircle2 size={12} /> Credible
               </button>
               <button
                 onClick={() => handleReview(tip.id, false)}
                 disabled={reviewing === tip.id}
                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 disabled:opacity-50"
               >
-                ❌ Not Credible
+                <XCircle size={12} /> Not Credible
               </button>
               {reviewing === tip.id && <span className="text-xs text-gray-400 self-center">Saving...</span>}
             </div>

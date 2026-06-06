@@ -1,5 +1,5 @@
 const express = require("express");
-const { Report, Evidence, ReportUpdate, User } = require("../models");
+const { Report, Evidence, ReportUpdate, User, AuditLog } = require("../models");
 const { auth, authorize } = require("../middleware/auth");
 const multer = require("multer");
 const path = require("path");
@@ -37,22 +37,35 @@ router.post("/", auth, upload.array("evidenceFiles", 5), async (req, res) => {
 
         if (req.files && req.files.length > 0) {
             for (const file of req.files) {
-                const fileName = `${reportId}/${Date.now()}-${file.originalname}`;
+                const fileName = `${Date.now()}-${file.originalname}`;
+                let publicUrl = "";
 
-                // Upload to Supabase Storage
-                const { data, error } = await supabase.storage
-                    .from("evidence")
-                    .upload(fileName, file.buffer, {
-                        contentType: file.mimetype,
-                        upsert: false
-                    });
+                if (supabase) {
+                    const filePath = `${reportId}/${fileName}`;
+                    const { data, error } = await supabase.storage
+                        .from("evidence")
+                        .upload(filePath, file.buffer, {
+                            contentType: file.mimetype,
+                            upsert: false
+                        });
 
-                if (error) throw error;
+                    if (!error) {
+                        const { data: { publicUrl: url } } = supabase.storage
+                            .from("evidence")
+                            .getPublicUrl(filePath);
+                        publicUrl = url;
+                    }
+                }
 
-                // Get Public URL
-                const { data: { publicUrl } } = supabase.storage
-                    .from("evidence")
-                    .getPublicUrl(fileName);
+                // Local Fallback if Supabase fails or is missing
+                if (!publicUrl) {
+                    const fs = require("fs");
+                    const uploadDir = path.join(__dirname, "../uploads", reportId);
+                    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+                    const localPath = path.join(uploadDir, fileName);
+                    fs.writeFileSync(localPath, file.buffer);
+                    publicUrl = `/uploads/${reportId}/${fileName}`;
+                }
 
                 await Evidence.create({
                     filename: file.originalname,
@@ -68,6 +81,9 @@ router.post("/", auth, upload.array("evidenceFiles", 5), async (req, res) => {
             time: new Date().toISOString(),
             ReportId: reportId
         });
+
+        // Emit real-time event to police and medical units
+        req.io.emit("new_report", newReport);
 
         res.status(201).json({ id: reportId, message: "Report logged successfully" });
     } catch (error) {
@@ -102,6 +118,17 @@ router.post("/sos", auth, async (req, res) => {
             msg: "SOS Signal Received - Police Units Dispatched",
             time: new Date().toISOString(),
             ReportId: reportId
+        });
+
+        // Emit real-time panic signal
+        req.io.emit("sos_signal", newReport);
+
+        // Record Audit Log
+        await AuditLog.create({
+            action: "SOS Triggered",
+            actor: req.user.name,
+            target: reportId,
+            type: "Danger"
         });
 
         res.status(201).json({ id: reportId, message: "SOS Dispatched" });
@@ -163,6 +190,17 @@ router.patch("/:id/status", auth, async (req, res) => {
             msg: `Status changed to ${status} by ${req.user.name}`,
             time: new Date().toISOString(),
             ReportId: report.id
+        });
+
+        // Emit live update
+        req.io.emit("report_update", { id: report.id, status, officer });
+
+        // Record Audit Log
+        await AuditLog.create({
+            action: "Status Update",
+            actor: req.user.name,
+            target: `${report.id} -> ${status}`,
+            type: status === "Resolved" ? "Security" : "Info"
         });
 
         res.json(report);

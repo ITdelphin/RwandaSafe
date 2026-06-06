@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { X, Lock, MessageCircle } from 'lucide-react';
 import { incidentsApi } from '../../lib/apiClient';
 import { SeverityBadge } from '../shared/SeverityBadge';
 import { StatusBadge } from '../shared/StatusBadge';
@@ -67,7 +68,7 @@ export function IncidentDetail({ incidentId, onClose }: Props) {
               </>
             )}
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none ml-4">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-4"><X size={20} /></button>
         </div>
 
         {/* Body */}
@@ -147,7 +148,7 @@ export function IncidentDetail({ incidentId, onClose }: Props) {
                   {(['notes', 'chat'] as const).map(t => (
                     <button key={t} onClick={() => setTab(t)}
                       className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${tab === t ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-gray-100'}`}>
-                      {t === 'notes' ? '🔒 Internal Notes' : '💬 Citizen Messages'}
+                      {t === 'notes' ? <><Lock size={12} className="inline mr-1" />Internal Notes</> : <><MessageCircle size={12} className="inline mr-1" />Citizen Messages</>}
                     </button>
                   ))}
                 </div>

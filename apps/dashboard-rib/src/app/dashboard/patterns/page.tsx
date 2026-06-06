@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { Network, CheckCircle2, RefreshCw, MapPin } from 'lucide-react';
 import { patternApi, investigationApi } from '../../../lib/apiClient';
 import { EmptyState } from '../../../components/shared/EmptyState';
 import { formatDate } from '../../../lib/formatters';
@@ -82,16 +83,18 @@ export default function PatternsPage() {
         <button
           onClick={handleRunDetection}
           disabled={running}
-          className="px-4 py-2 text-sm text-white rounded-xl font-semibold disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 text-sm text-white rounded-xl font-semibold disabled:opacity-50"
           style={{ backgroundColor: '#4C1D95' }}
         >
-          {running ? '⏳ Running...' : '▶ Run Pattern Detection'}
+          <RefreshCw size={14} className={running ? 'animate-spin' : ''} />
+          {running ? 'Running...' : 'Run Pattern Detection'}
         </button>
       </div>
 
       {runSuccess && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm font-medium">
-          ✅ Pattern detection completed. New alerts have been generated.
+        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm font-medium">
+          <CheckCircle2 size={16} />
+          Pattern detection completed. New alerts have been generated.
         </div>
       )}
 
@@ -121,7 +124,7 @@ export default function PatternsPage() {
             </div>
 
             {unreviewed.length === 0 ? (
-              <EmptyState message="No active pattern alerts" icon="📡" />
+              <EmptyState message="No active pattern alerts" icon={<Network size={40} />} />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {unreviewed.map((alert: any) => (
@@ -131,8 +134,9 @@ export default function PatternsPage() {
                         <div className="text-sm font-bold text-gray-900">
                           {alert.type?.replace(/_/g, ' ') ?? 'Unknown Pattern'}
                         </div>
-                        <div className="text-xs text-gray-500 mt-0.5">
-                          📍 {alert.district ?? 'Multiple districts'} · {alert.incidentCount ?? alert.count ?? 0} incidents
+                        <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                          <MapPin size={11} />
+                          {alert.district ?? 'Multiple districts'} · {alert.incidentCount ?? alert.count ?? 0} incidents
                         </div>
                       </div>
                       <span className="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-red-500 mt-1" />

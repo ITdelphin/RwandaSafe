@@ -45,7 +45,7 @@ export function AssignModal({ incidentId, trackingCode, onClose, onSuccess }: Pr
             {officers.map((o: any) => (
               <option key={o.id} value={o.id}>
                 {o.badgeNumber ? `[${o.badgeNumber}] ` : ''}{o.user?.name ?? 'Officer'} — {o.openCasesCount ?? 0} open cases
-                {(o.openCasesCount ?? 0) >= 3 ? ' ⚠️' : ''}
+                {(o.openCasesCount ?? 0) >= 3 ? ' [high load]' : ''}
               </option>
             ))}
           </select>

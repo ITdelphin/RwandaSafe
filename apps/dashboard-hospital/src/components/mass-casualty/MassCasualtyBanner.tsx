@@ -1,4 +1,5 @@
 'use client';
+import { AlertOctagon } from 'lucide-react';
 
 interface Props { event: any; onResolve?: () => void; }
 
@@ -7,7 +8,7 @@ export function MassCasualtyBanner({ event, onResolve }: Props) {
   return (
     <div className="w-full bg-red-600 text-white px-6 py-3 flex items-center justify-between animate-pulse">
       <div className="flex items-center gap-3">
-        <span className="text-xl">⚠️</span>
+        <AlertOctagon size={20} />
         <div>
           <span className="font-bold text-sm">MASS CASUALTY EVENT ACTIVE</span>
           <span className="mx-2">—</span>

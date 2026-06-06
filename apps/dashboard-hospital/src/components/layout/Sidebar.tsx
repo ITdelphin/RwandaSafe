@@ -1,19 +1,32 @@
 'use client';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
+import {
+  Stethoscope,
+  LayoutDashboard,
+  Siren,
+  Radio,
+  Building2,
+  Map,
+  Video,
+  BarChart2,
+  ArrowLeftRight,
+  LogOut,
+} from 'lucide-react';
 
-const AGENCY = { icon: '🚑', label: 'SAMU', accent: '#34A853' };
+const AGENCY = { icon: <Stethoscope size={18} color="white" />, label: 'SAMU', accent: '#34A853' };
 
-const NAV = [
-  { href: '/dashboard',              label: 'Overview',    icon: '🏠' },
-  { href: '/dashboard/incidents',    label: 'Cases',       icon: '🏥' },
-  { href: '/dashboard/dispatch',     label: 'Dispatch',    icon: '🚑' },
-  { href: '/dashboard/capacity',     label: 'Capacity',    icon: '🛏️' },
-  { href: '/dashboard/map',          label: 'Live Map',    icon: '🗺️' },
-  { href: '/dashboard/telemedicine', label: 'Telemedicine',icon: '💻' },
-  { href: '/dashboard/analytics',    label: 'Analytics',   icon: '📊' },
-  { href: '/dashboard/handover',     label: 'Handover',    icon: '🔄' },
+const NAV: { href: string; label: string; icon: React.ReactNode }[] = [
+  { href: '/dashboard',              label: 'Overview',     icon: <LayoutDashboard size={18} /> },
+  { href: '/dashboard/incidents',    label: 'Cases',        icon: <Siren size={18} /> },
+  { href: '/dashboard/dispatch',     label: 'Dispatch',     icon: <Radio size={18} /> },
+  { href: '/dashboard/capacity',     label: 'Capacity',     icon: <Building2 size={18} /> },
+  { href: '/dashboard/map',          label: 'Live Map',     icon: <Map size={18} /> },
+  { href: '/dashboard/telemedicine', label: 'Telemedicine', icon: <Video size={18} /> },
+  { href: '/dashboard/analytics',    label: 'Analytics',    icon: <BarChart2 size={18} /> },
+  { href: '/dashboard/handover',     label: 'Handover',     icon: <ArrowLeftRight size={18} /> },
 ];
 
 export function Sidebar() {
@@ -27,7 +40,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-5 py-4" style={{ borderBottom: '1px solid #e8eaed' }}>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-base font-bold"
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: AGENCY.accent }}>
             {AGENCY.icon}
           </div>
@@ -49,7 +62,7 @@ export function Sidebar() {
                 backgroundColor: active ? '#e8f0fe' : 'transparent',
                 color: active ? AGENCY.accent : '#5f6368',
               }}>
-              <span className="text-base">{item.icon}</span>
+              <span className="flex-shrink-0">{item.icon}</span>
               <span>{item.label}</span>
               {active && <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: AGENCY.accent }} />}
             </Link>
@@ -70,8 +83,9 @@ export function Sidebar() {
           </div>
         </div>
         <button onClick={logout}
-          className="w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-red-50"
+          className="w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-red-50 flex items-center gap-2"
           style={{ color: '#d93025' }}>
+          <LogOut size={14} />
           Sign out
         </button>
       </div>

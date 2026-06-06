@@ -93,7 +93,7 @@ function App() {
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/report" element={<ReportPage user={user} />} />
                     <Route path="/track" element={<TrackPage user={user} />} />
-                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin" element={<AdminDashboard user={user} onLogout={handleLogout} />} />
                     <Route path="/police" element={<PoliceDashboard user={user} onLogout={handleLogout} />} />
                     <Route path="/hospital" element={<HospitalDashboard user={user} onLogout={handleLogout} />} />
                     <Route path="/citizen" element={<CitizenDashboard user={user} />} />

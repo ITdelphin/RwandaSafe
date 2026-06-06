@@ -1,4 +1,5 @@
 'use client';
+import { Zap, Wind } from 'lucide-react';
 import { AMBULANCE_COLORS } from '../../constants/theme';
 import { timeAgo } from '../../lib/formatters';
 
@@ -14,10 +15,18 @@ export function AmbulanceFleetPanel({ ambulances, onSelect }: Props) {
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
       {/* Ticker */}
       <div className="flex gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-medium">
-        <span className="text-green-600">🟢 Available: {available}</span>
-        <span className="text-yellow-600">🟡 Dispatched: {dispatched}</span>
-        <span className="text-red-600">🔴 On Scene: {onScene}</span>
-        <span className="text-purple-600">🟣 Transporting: {transporting}</span>
+        <span className="flex items-center gap-1 text-green-600">
+          <span className="w-2 h-2 rounded-full bg-green-500 inline-block" /> Available: {available}
+        </span>
+        <span className="flex items-center gap-1 text-yellow-600">
+          <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" /> Dispatched: {dispatched}
+        </span>
+        <span className="flex items-center gap-1 text-red-600">
+          <span className="w-2 h-2 rounded-full bg-red-500 inline-block" /> On Scene: {onScene}
+        </span>
+        <span className="flex items-center gap-1 text-purple-600">
+          <span className="w-2 h-2 rounded-full bg-purple-500 inline-block" /> Transporting: {transporting}
+        </span>
       </div>
       <div className="divide-y divide-gray-50">
         {ambulances.map(a => {
@@ -33,8 +42,8 @@ export function AmbulanceFleetPanel({ ambulances, onSelect }: Props) {
                 </div>
               </div>
               <div className="flex gap-2 text-xs text-gray-400">
-                {a.hasDefibrillator && <span>⚡</span>}
-                {a.hasOxygen && <span>💨</span>}
+                {a.hasDefibrillator && <span title="Defibrillator"><Zap size={14} /></span>}
+                {a.hasOxygen && <span title="Oxygen"><Wind size={14} /></span>}
               </div>
             </div>
           );

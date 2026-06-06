@@ -11,6 +11,15 @@ import { IncidentDetail } from '../../components/incidents/IncidentDetail';
 import { OfficerCard } from '../../components/officers/OfficerCard';
 import { EmptyState } from '../../components/shared/EmptyState';
 import Link from 'next/link';
+import {
+  FolderOpen,
+  AlertTriangle,
+  Inbox,
+  CheckCircle2,
+  Clock,
+  Siren,
+  Users,
+} from 'lucide-react';
 
 export default function DashboardPage() {
   const { data: stats } = useDashboardStats();
@@ -25,18 +34,21 @@ export default function DashboardPage() {
       {/* New incident toast */}
       {newCount > 0 && (
         <div className="bg-blue-600 text-white px-4 py-3 rounded-xl flex items-center justify-between shadow-lg">
-          <span className="text-sm font-medium">🚨 {newCount} new incident{newCount > 1 ? 's' : ''} received</span>
+          <span className="text-sm font-medium flex items-center gap-2">
+            <Siren size={16} />
+            {newCount} new incident{newCount > 1 ? 's' : ''} received
+          </span>
           <button onClick={resetNewCount} className="text-xs underline opacity-80 hover:opacity-100">Dismiss</button>
         </div>
       )}
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
-        <StatCard label="Open Cases" value={stats?.openCases ?? '—'} color="#1B5E82" icon="📂" />
-        <StatCard label="Critical Open" value={stats?.criticalOpen ?? '—'} color="#D32F2F" icon="🚨" />
-        <StatCard label="Received Today" value={stats?.totalToday ?? '—'} color="#7B1FA2" icon="📥" />
-        <StatCard label="Resolved Today" value={stats?.resolvedToday ?? '—'} color="#22C55E" icon="✅" />
-        <StatCard label="Avg Response" value={stats?.avgResponseTimeMinutes != null ? `${stats.avgResponseTimeMinutes}m` : '—'} color="#F57C00" icon="⏱️" />
+        <StatCard label="Open Cases"     value={stats?.openCases ?? '—'}                                                                    color="#1B5E82" icon={<FolderOpen size={24} />} />
+        <StatCard label="Critical Open"  value={stats?.criticalOpen ?? '—'}                                                                  color="#D32F2F" icon={<AlertTriangle size={24} />} />
+        <StatCard label="Received Today" value={stats?.totalToday ?? '—'}                                                                    color="#7B1FA2" icon={<Inbox size={24} />} />
+        <StatCard label="Resolved Today" value={stats?.resolvedToday ?? '—'}                                                                 color="#22C55E" icon={<CheckCircle2 size={24} />} />
+        <StatCard label="Avg Response"   value={stats?.avgResponseTimeMinutes != null ? `${stats.avgResponseTimeMinutes}m` : '—'} color="#F57C00" icon={<Clock size={24} />} />
       </div>
 
       {/* Live Feed + Officers */}
@@ -53,7 +65,7 @@ export default function DashboardPage() {
           {feedLoading ? (
             <div className="p-8 text-center text-gray-400 text-sm">Loading...</div>
           ) : incidents.length === 0 ? (
-            <EmptyState message="No incidents yet" icon="✅" />
+            <EmptyState message="No incidents yet" icon={<CheckCircle2 size={48} className="text-gray-300" />} />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -75,7 +87,7 @@ export default function DashboardPage() {
           </div>
           <div className="px-4 py-2 divide-y divide-gray-50">
             {officers.length === 0 ? (
-              <EmptyState message="No officers on duty" icon="👮" />
+              <EmptyState message="No officers on duty" icon={<Users size={48} className="text-gray-300" />} />
             ) : (
               officers.map((o: any) => <OfficerCard key={o.id} officer={o} compact />)
             )}

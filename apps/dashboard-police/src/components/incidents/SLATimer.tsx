@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { elapsedMinutes } from '../../lib/formatters';
 import { Theme } from '../../constants/theme';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 // SLA color thresholds mapped to new Material palette
 const slaGreen  = Theme.secondary;    // #34A853
@@ -31,8 +32,9 @@ export function SLATimer({ createdAt, status, dispatchedAt, compact = false }: P
   if (['DISPATCHED', 'ON_SCENE'].includes(status)) {
     const mins = dispatchedAt ? elapsedMinutes(createdAt) : elapsed;
     return (
-      <span className="text-xs font-medium" style={{ color: slaGreen }}>
-        ✓ {mins}m
+      <span className="inline-flex items-center gap-1 text-xs font-medium" style={{ color: slaGreen }}>
+        <CheckCircle2 size={12} />
+        {mins}m
       </span>
     );
   }
@@ -52,7 +54,7 @@ export function SLATimer({ createdAt, status, dispatchedAt, compact = false }: P
       style={{ color }}
     >
       {compact ? `${mins}m` : `${mins}:${String(secs).padStart(2, '0')}`}
-      {elapsed >= 15 && !compact && <span className="text-[10px]">⚠</span>}
+      {elapsed >= 15 && !compact && <AlertTriangle size={10} />}
     </span>
   );
 }

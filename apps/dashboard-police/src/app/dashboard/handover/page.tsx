@@ -7,6 +7,7 @@ import { useAuthStore } from '../../../store/authStore';
 import { StatusBadge } from '../../../components/shared/StatusBadge';
 import { SeverityBadge } from '../../../components/shared/SeverityBadge';
 import { EmptyState } from '../../../components/shared/EmptyState';
+import { CheckCircle2 } from 'lucide-react';
 
 export default function HandoverPage() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function HandoverPage() {
   if (success) {
     return (
       <div className="flex flex-col items-center justify-center h-96">
-        <div className="text-5xl mb-4">✅</div>
+        <CheckCircle2 size={56} className="text-green-500 mb-4" />
         <h2 className="text-xl font-bold text-gray-900 mb-2">Handover Complete</h2>
         <p className="text-sm text-gray-500">You are now off duty. Redirecting to login...</p>
       </div>
@@ -59,7 +60,7 @@ export default function HandoverPage() {
           <h2 className="text-sm font-semibold text-gray-700">Your Open Cases ({openCases.length})</h2>
         </div>
         {openCases.length === 0 ? (
-          <EmptyState message="No open cases assigned to you" icon="✅" />
+          <EmptyState message="No open cases assigned to you" icon={<CheckCircle2 size={48} className="text-gray-300" />} />
         ) : (
           <div className="divide-y divide-gray-50">
             {openCases.map((inc: any) => (

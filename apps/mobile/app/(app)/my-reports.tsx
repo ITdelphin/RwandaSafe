@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView, ActivityIndicator, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { IncidentCard } from '../../src/components/IncidentCard';
 import { useIncidents } from '../../src/hooks/useIncidents';
 import { Colors } from '../../src/constants/colors';
@@ -31,7 +32,7 @@ export default function MyReportsScreen() {
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.primary} />}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyIcon}>📋</Text>
+              <Ionicons name="document-text-outline" size={48} color={Colors.textMuted} style={styles.emptyIcon} />
               <Text style={styles.emptyText}>No reports yet. Stay safe!</Text>
             </View>
           }
@@ -47,6 +48,6 @@ const styles = StyleSheet.create({
   header: { padding: 16 },
   title: { fontSize: 22, fontWeight: 'bold', color: Colors.textPrimary },
   empty: { alignItems: 'center', marginTop: 80 },
-  emptyIcon: { fontSize: 48, marginBottom: 16 },
+  emptyIcon: { marginBottom: 16 },
   emptyText: { fontSize: 16, color: Colors.textSecondary },
 });

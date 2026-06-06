@@ -2,10 +2,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Stethoscope, Eye, EyeOff, AlertCircle, Lock } from 'lucide-react';
 import { authApi } from '../../lib/apiClient';
 import { useAuthStore } from '../../store/authStore';
 
-const AGENCY = { name: 'King Faisal Hospital SAMU', role: 'Medical Portal', icon: '🚑', color: '#34A853' };
+const AGENCY = { name: 'King Faisal Hospital SAMU', role: 'Medical Portal', color: '#34A853' };
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,8 +36,8 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: '440px' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: AGENCY.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '28px', boxShadow: `0 4px 14px ${AGENCY.color}40` }}>
-            {AGENCY.icon}
+          <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: AGENCY.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: `0 4px 14px ${AGENCY.color}40` }}>
+            <Stethoscope size={28} color="white" />
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#202124', margin: '0 0 4px' }}>Rwanda Safe</h1>
           <p style={{ fontSize: '14px', color: '#5f6368', margin: 0 }}>{AGENCY.name} · {AGENCY.role}</p>
@@ -74,8 +75,8 @@ export default function LoginPage() {
                   onBlur={e => { e.target.style.borderColor = '#dadce0'; e.target.style.backgroundColor = '#f8f9fa'; e.target.style.boxShadow = 'none'; }}
                 />
                 <button type="button" onClick={() => setShowPw(!showPw)}
-                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', color: '#5f6368', padding: 0 }}>
-                  {showPw ? '🙈' : '👁️'}
+                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#5f6368', padding: 0, display: 'flex', alignItems: 'center' }}>
+                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
@@ -95,7 +96,7 @@ export default function LoginPage() {
             {/* Error */}
             {error && (
               <div style={{ backgroundColor: '#fce8e6', border: '1px solid #f5c6c2', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                <span style={{ color: '#d93025', fontSize: '14px' }}>⚠️</span>
+                <AlertCircle size={14} style={{ color: '#d93025', flexShrink: 0, marginTop: '1px' }} />
                 <p style={{ fontSize: '13px', color: '#c5221f', margin: 0 }}>{error}</p>
               </div>
             )}
@@ -120,7 +121,7 @@ export default function LoginPage() {
         </div>
 
         <p style={{ textAlign: 'center', fontSize: '11px', color: '#80868b', marginTop: '20px' }}>
-          🔒 Secured by Rwanda Safe · Emergency Response Platform
+          <Lock size={11} className="inline" /> Secured by Rwanda Safe · Emergency Response Platform
         </p>
       </div>
     </div>

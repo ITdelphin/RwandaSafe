@@ -45,7 +45,7 @@ export function AmbulanceSelectModal({ incidentId, onClose, onSuccess }: Props) 
               <div className="flex-1">
                 <div className="text-sm font-bold text-gray-800">{a.callSign}</div>
                 <div className="text-xs text-gray-500">
-                  {a.hasDefibrillator ? '⚡ Defib' : ''} {a.hasOxygen ? '💨 O₂' : ''} · Crew: {a.crewCount}
+                  {a.hasDefibrillator ? 'Defib' : ''}{a.hasDefibrillator && a.hasOxygen ? ' · ' : ''}{a.hasOxygen ? 'O₂' : ''}{(a.hasDefibrillator || a.hasOxygen) ? ' · ' : ''}Crew: {a.crewCount}
                 </div>
               </div>
               <span className="text-xs font-medium text-green-600">Available</span>

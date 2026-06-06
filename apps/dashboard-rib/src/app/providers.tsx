@@ -1,6 +1,7 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Search } from 'lucide-react';
 import { SplashScreen } from '../components/shared/SplashScreen';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -13,7 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <SplashScreen
           onComplete={() => setSplashDone(true)}
           color="#9334E6"
-          icon="🔍"
+          icon={<Search size={44} color="white" />}
           agencyName="RIB Investigations"
         />
       )}

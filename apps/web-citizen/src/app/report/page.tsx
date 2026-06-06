@@ -4,20 +4,33 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  Car,
+  HeartPulse,
+  AlertOctagon,
+  Flame,
+  AlertTriangle,
+  ClipboardList,
+  Search,
+  Wind,
+  AlertCircle,
+  MapPin,
+  Paperclip,
+} from 'lucide-react';
 import { incidentsApi } from '../../lib/apiClient';
 import { Navbar } from '../../components/Navbar';
 
 const INCIDENT_TYPES = [
-  { key: 'ACCIDENT',          label: 'Accident',         icon: '🚗' },
-  { key: 'MEDICAL_EMERGENCY', label: 'Medical Emergency',icon: '🏥' },
-  { key: 'CRIME',             label: 'Crime',            icon: '🚨' },
-  { key: 'FIRE',              label: 'Fire',             icon: '🔥' },
-  { key: 'GBV',               label: 'GBV',              icon: '⚠️' },
-  { key: 'CORRUPTION',        label: 'Corruption',       icon: '📋' },
-  { key: 'MISSING_PERSON',    label: 'Missing Person',   icon: '🔍' },
-  { key: 'NATURAL_DISASTER',  label: 'Natural Disaster', icon: '🌪️' },
-  { key: 'OTHER',             label: 'Other',            icon: '❗' },
-];
+  { key: 'ACCIDENT',          label: 'Accident',         icon: <Car size={24} /> },
+  { key: 'MEDICAL_EMERGENCY', label: 'Medical Emergency',icon: <HeartPulse size={24} /> },
+  { key: 'CRIME',             label: 'Crime',            icon: <AlertOctagon size={24} /> },
+  { key: 'FIRE',              label: 'Fire',             icon: <Flame size={24} /> },
+  { key: 'GBV',               label: 'GBV',              icon: <AlertTriangle size={24} /> },
+  { key: 'CORRUPTION',        label: 'Corruption',       icon: <ClipboardList size={24} /> },
+  { key: 'MISSING_PERSON',    label: 'Missing Person',   icon: <Search size={24} /> },
+  { key: 'NATURAL_DISASTER',  label: 'Natural Disaster', icon: <Wind size={24} /> },
+  { key: 'OTHER',             label: 'Other',            icon: <AlertCircle size={24} /> },
+] as const;
 
 const SEVERITY = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 
@@ -97,7 +110,7 @@ function ReportFormContent() {
                       onClick={() => setValue('type', t.key)}
                       className={`p-3 rounded-xl border-2 text-center transition-all ${selectedType === t.key ? 'border-blue-700 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
                     >
-                      <span className="text-2xl block">{t.icon}</span>
+                      <span className="flex justify-center mb-1 text-gray-600">{t.icon}</span>
                       <span className="text-xs font-medium text-gray-700 mt-1 block">{t.label}</span>
                     </button>
                   ))}
@@ -143,7 +156,9 @@ function ReportFormContent() {
           {step === 1 && (
             <div className="bg-white rounded-2xl p-6 shadow-sm space-y-5">
               <div className="bg-blue-50 p-4 rounded-xl">
-                <p className="text-sm font-medium text-blue-800">📍 GPS coordinates will be captured automatically</p>
+                <p className="text-sm font-medium text-blue-800 flex items-center gap-2">
+                  <MapPin size={16} /> GPS coordinates will be captured automatically
+                </p>
                 <button type="button" className="text-xs text-blue-600 mt-1 underline"
                   onClick={() => navigator.geolocation?.getCurrentPosition((p) => { setValue('latitude', p.coords.latitude); setValue('longitude', p.coords.longitude); })}>
                   Use my current location
@@ -178,7 +193,11 @@ function ReportFormContent() {
                 </div>
                 {files.length > 0 && (
                   <ul className="mt-3 space-y-1">
-                    {files.map((f, i) => <li key={i} className="text-xs text-gray-600">📎 {f.name}</li>)}
+                    {files.map((f, i) => (
+                      <li key={i} className="text-xs text-gray-600 flex items-center gap-1">
+                        <Paperclip size={12} /> {f.name}
+                      </li>
+                    ))}
                   </ul>
                 )}
               </div>

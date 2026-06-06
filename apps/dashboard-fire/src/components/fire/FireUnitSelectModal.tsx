@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { X, AlertTriangle, Truck } from 'lucide-react';
 import { fireApi } from '../../lib/apiClient';
 import { UNIT_COLORS } from '../../constants/theme';
 
@@ -51,13 +52,16 @@ export function FireUnitSelectModal({ incidentId, fireType, onClose, onSuccess }
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h3 className="font-bold text-gray-900">Dispatch Fire Units</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <X size={20} />
+            </button>
           </div>
 
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
             {isChemical && !hasHazmat && selected.length > 0 && (
-              <div className="mb-3 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2 text-xs font-semibold text-amber-800">
-                ⚠️ Warning: No hazmat-equipped unit selected for chemical/gas incident
+              <div className="mb-3 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2 flex items-center gap-2 text-xs font-semibold text-amber-800">
+                <AlertTriangle size={14} />
+                Warning: No hazmat-equipped unit selected for chemical/gas incident
               </div>
             )}
 
@@ -82,6 +86,7 @@ export function FireUnitSelectModal({ incidentId, fireType, onClose, onSuccess }
                         onChange={() => toggle(unit.id)}
                         className="accent-orange-500"
                       />
+                      <Truck size={16} className={isSelected ? 'text-orange-600' : 'text-gray-400'} />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-sm text-gray-900">{unit.callSign ?? unit.id}</span>

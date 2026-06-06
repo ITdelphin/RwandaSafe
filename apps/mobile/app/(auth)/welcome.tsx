@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useSettingsStore } from '../../src/store/settingsStore';
 import { useAuthStore } from '../../src/store/authStore';
 import { Colors } from '../../src/constants/colors';
@@ -19,7 +20,7 @@ export default function WelcomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.hero}>
-        <Text style={styles.logo}>🛡️</Text>
+        <Ionicons name="shield-checkmark" size={72} color={Colors.primary} style={styles.logo} />
         <Text style={styles.title}>{t('app_name')}</Text>
         <Text style={styles.tagline}>{t('tagline')}</Text>
       </View>
@@ -60,7 +61,7 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background, justifyContent: 'space-between', padding: 24 },
   hero: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  logo: { fontSize: 72, marginBottom: 16 },
+  logo: { marginBottom: 16 },
   title: { fontSize: 32, fontWeight: 'bold', color: Colors.primary, marginBottom: 8 },
   tagline: { fontSize: 16, color: Colors.textSecondary, textAlign: 'center' },
   langSection: { marginBottom: 32 },

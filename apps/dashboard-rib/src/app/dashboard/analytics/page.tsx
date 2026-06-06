@@ -1,6 +1,14 @@
 'use client';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import {
+  FolderOpen,
+  AlertTriangle,
+  Inbox,
+  CheckCircle2,
+  Clock,
+  X,
+} from 'lucide-react';
 import { dashboardApi } from '../../../lib/apiClient';
 import { StatCard } from '../../../components/stats/StatCard';
 import { TrendChart } from '../../../components/stats/TrendChart';
@@ -68,11 +76,11 @@ export default function AnalyticsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
-        <StatCard label="Open Cases" value={stats?.openCases ?? '—'} color="#1B5E82" icon="📂" />
-        <StatCard label="Critical Open" value={stats?.criticalOpen ?? '—'} color="#D32F2F" icon="🚨" />
-        <StatCard label="Received Today" value={stats?.totalToday ?? '—'} color="#7B1FA2" icon="📥" />
-        <StatCard label="Resolved Today" value={stats?.resolvedToday ?? '—'} color="#22C55E" icon="✅" />
-        <StatCard label="Avg Response" value={stats?.avgResponseTimeMinutes != null ? `${stats.avgResponseTimeMinutes}m` : '—'} color="#F57C00" icon="⏱️" />
+        <StatCard label="Open Cases" value={stats?.openCases ?? '—'} color="#1B5E82" icon={<FolderOpen size={24} />} />
+        <StatCard label="Critical Open" value={stats?.criticalOpen ?? '—'} color="#D32F2F" icon={<AlertTriangle size={24} />} />
+        <StatCard label="Received Today" value={stats?.totalToday ?? '—'} color="#7B1FA2" icon={<Inbox size={24} />} />
+        <StatCard label="Resolved Today" value={stats?.resolvedToday ?? '—'} color="#22C55E" icon={<CheckCircle2 size={24} />} />
+        <StatCard label="Avg Response" value={stats?.avgResponseTimeMinutes != null ? `${stats.avgResponseTimeMinutes}m` : '—'} color="#F57C00" icon={<Clock size={24} />} />
       </div>
 
       {/* Trend + Type */}
@@ -127,7 +135,11 @@ export default function AnalyticsPage() {
             Incidents {typeFilter ? `— ${typeFilter}` : ''} ({incidents.length})
           </h3>
           <div className="flex gap-2">
-            {typeFilter && <button onClick={() => setTypeFilter('')} className="text-xs text-gray-500 hover:text-gray-700">Clear filter ✕</button>}
+            {typeFilter && (
+              <button onClick={() => setTypeFilter('')} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700">
+                Clear filter <X size={12} />
+              </button>
+            )}
             <button onClick={handleExport} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700">Export CSV</button>
           </div>
         </div>

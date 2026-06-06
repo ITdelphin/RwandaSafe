@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Video, CheckCircle2 } from 'lucide-react';
 import { medicalApi } from '../../lib/apiClient';
 import { timeAgo } from '../../lib/formatters';
 
@@ -25,9 +26,10 @@ export function TelemedicinePanel({ incidentId, citizenUserId, existingSession }
         <h3 className="text-xs font-bold text-blue-700 uppercase mb-2">Telemedicine</h3>
         <p className="text-xs text-gray-500 mb-3">Start a video consultation for non-critical cases.</p>
         <button onClick={start} disabled={loading}
-          className="w-full text-xs text-white py-2 rounded-lg font-medium disabled:opacity-50"
+          className="w-full text-xs text-white py-2 rounded-lg font-medium disabled:opacity-50 flex items-center justify-center gap-1.5"
           style={{ backgroundColor: '#1B5E82' }}>
-          {loading ? 'Starting...' : '💻 Start Telemedicine Session'}
+          <Video size={14} />
+          {loading ? 'Starting...' : 'Start Telemedicine Session'}
         </button>
       </div>
     );
@@ -45,13 +47,15 @@ export function TelemedicinePanel({ incidentId, citizenUserId, existingSession }
              'Session ended'}
           </span>
         </div>
-        <p className="text-xs text-gray-500">✅ Citizen notified via push notification</p>
+        <p className="text-xs text-gray-500 flex items-center gap-1">
+          <CheckCircle2 size={12} className="text-green-600" /> Citizen notified via push notification
+        </p>
       </div>
       {session.sessionUrl && (
         <a href={session.sessionUrl} target="_blank" rel="noreferrer"
-          className="block w-full text-center text-xs text-white py-2 rounded-lg font-medium"
+          className="flex items-center justify-center gap-1.5 w-full text-center text-xs text-white py-2 rounded-lg font-medium"
           style={{ backgroundColor: '#1B5E82' }}>
-          🎥 Open Video Call
+          <Video size={14} /> Open Video Call
         </a>
       )}
     </div>

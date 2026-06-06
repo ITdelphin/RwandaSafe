@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import { elapsedMinutes } from '../../lib/formatters';
 const SLA = { green: '#22C55E', yellow: '#F59E0B', orange: '#F97316', red: '#EF4444' };
 
@@ -25,8 +26,8 @@ export function SLATimer({ createdAt, status, dispatchedAt, compact = false }: P
   if (['DISPATCHED', 'ON_SCENE'].includes(status)) {
     const mins = dispatchedAt ? elapsedMinutes(createdAt) : elapsed;
     return (
-      <span className="text-xs font-medium" style={{ color: SLA.green }}>
-        ✓ {mins}m
+      <span className="inline-flex items-center gap-1 text-xs font-medium" style={{ color: SLA.green }}>
+        <CheckCircle2 size={12} /> {mins}m
       </span>
     );
   }
@@ -46,7 +47,7 @@ export function SLATimer({ createdAt, status, dispatchedAt, compact = false }: P
       style={{ color }}
     >
       {compact ? `${mins}m` : `${mins}:${String(secs).padStart(2, '0')}`}
-      {elapsed >= 15 && !compact && <span className="text-[10px]">⚠</span>}
+      {elapsed >= 15 && !compact && <AlertTriangle size={10} />}
     </span>
   );
 }

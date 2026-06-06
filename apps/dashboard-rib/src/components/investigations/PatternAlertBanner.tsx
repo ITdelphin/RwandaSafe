@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { AlertOctagon } from 'lucide-react';
 
 interface Props {
   patternCount: number;
@@ -11,8 +12,9 @@ export function PatternAlertBanner({ patternCount }: Props) {
   return (
     <div className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium"
       style={{ backgroundColor: '#FEF3C7', border: '1px solid #F59E0B', color: '#92400E' }}>
-      <span>
-        ⚠️ {patternCount} new pattern alert{patternCount > 1 ? 's' : ''} detected
+      <span className="flex items-center gap-2">
+        <AlertOctagon size={16} />
+        {patternCount} new pattern alert{patternCount > 1 ? 's' : ''} detected
       </span>
       <Link
         href="/dashboard/patterns"

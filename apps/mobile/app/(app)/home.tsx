@@ -3,6 +3,7 @@ import {
   View, Text, TouchableOpacity, StyleSheet, SafeAreaView,
   ScrollView, Modal, Alert, ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SOSButton } from '../../src/components/SOSButton';
 import { OfflineBanner } from '../../src/components/OfflineBanner';
@@ -11,18 +12,20 @@ import { useLocation } from '../../src/hooks/useLocation';
 import { useCreateIncident } from '../../src/hooks/useIncidents';
 import { Colors } from '../../src/constants/colors';
 
-const QUICK_ACTIONS = [
-  { type: 'ACCIDENT',          label: 'Report Accident',   icon: '🚗', color: Colors.accident },
-  { type: 'CRIME',             label: 'Report Crime',      icon: '🚨', color: Colors.crime },
-  { type: 'MEDICAL_EMERGENCY', label: 'Medical Emergency', icon: '🏥', color: Colors.medical },
-  { type: 'FIRE',              label: 'Fire / Hazard',     icon: '🔥', color: Colors.fire },
+type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+const QUICK_ACTIONS: { type: string; label: string; icon: IoniconName; color: string }[] = [
+  { type: 'ACCIDENT',          label: 'Report Accident',   icon: 'car-outline',   color: Colors.accident },
+  { type: 'CRIME',             label: 'Report Crime',      icon: 'alert-circle',  color: Colors.crime },
+  { type: 'MEDICAL_EMERGENCY', label: 'Medical Emergency', icon: 'medkit',        color: Colors.medical },
+  { type: 'FIRE',              label: 'Fire / Hazard',     icon: 'flame',         color: Colors.fire },
 ];
 
-const SOS_TYPES = [
-  { type: 'CRIME',             label: 'Police',   icon: '👮' },
-  { type: 'MEDICAL_EMERGENCY', label: 'Medical',  icon: '🏥' },
-  { type: 'FIRE',              label: 'Fire',     icon: '🔥' },
-  { type: 'OTHER',             label: 'Other',    icon: '❗' },
+const SOS_TYPES: { type: string; label: string; icon: IoniconName }[] = [
+  { type: 'CRIME',             label: 'Police',   icon: 'shield-checkmark' },
+  { type: 'MEDICAL_EMERGENCY', label: 'Medical',  icon: 'medkit' },
+  { type: 'FIRE',              label: 'Fire',     icon: 'flame' },
+  { type: 'OTHER',             label: 'Other',    icon: 'alert' },
 ];
 
 export default function HomeScreen() {
@@ -56,8 +59,13 @@ export default function HomeScreen() {
       <OfflineBanner />
 
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>🛡️ Rwanda Safe</Text>
-        <TouchableOpacity><Text style={styles.bell}>🔔</Text></TouchableOpacity>
+        <View style={styles.headerTitleRow}>
+          <Ionicons name="shield-checkmark" size={22} color={Colors.primary} />
+          <Text style={styles.headerTitle}> Rwanda Safe</Text>
+        </View>
+        <TouchableOpacity>
+          <Ionicons name="notifications-outline" size={24} color={Colors.textPrimary} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -74,7 +82,7 @@ export default function HomeScreen() {
               style={[styles.card, { borderLeftColor: action.color }]}
               onPress={() => router.push({ pathname: '/(app)/report', params: { type: action.type } })}
             >
-              <Text style={styles.cardIcon}>{action.icon}</Text>
+              <Ionicons name={action.icon} size={28} color={action.color} style={styles.cardIcon} />
               <Text style={styles.cardLabel}>{action.label}</Text>
             </TouchableOpacity>
           ))}
@@ -87,7 +95,7 @@ export default function HomeScreen() {
             <Text style={styles.modalTitle}>Select emergency type</Text>
             {SOS_TYPES.map((t) => (
               <TouchableOpacity key={t.type} style={styles.sosOption} onPress={() => handleSOS(t.type)}>
-                <Text style={styles.sosOptionIcon}>{t.icon}</Text>
+                <Ionicons name={t.icon} size={24} color={Colors.emergency} style={styles.sosOptionIcon} />
                 <Text style={styles.sosOptionLabel}>{t.label}</Text>
               </TouchableOpacity>
             ))}
@@ -111,8 +119,8 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
+  headerTitleRow: { flexDirection: 'row', alignItems: 'center' },
   headerTitle: { fontSize: 20, fontWeight: 'bold', color: Colors.primary },
-  bell: { fontSize: 22 },
   scroll: { padding: 16, alignItems: 'center' },
   sosSection: { alignItems: 'center', marginVertical: 32 },
   sosHint: { fontSize: 14, color: Colors.textSecondary, marginBottom: 16 },
@@ -123,13 +131,13 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 3, elevation: 2,
   },
-  cardIcon: { fontSize: 28, marginBottom: 8 },
+  cardIcon: { marginBottom: 8 },
   cardLabel: { fontSize: 13, fontWeight: '600', color: Colors.textPrimary },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalSheet: { backgroundColor: Colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24 },
   modalTitle: { fontSize: 18, fontWeight: 'bold', color: Colors.textPrimary, marginBottom: 20, textAlign: 'center' },
   sosOption: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  sosOptionIcon: { fontSize: 24, marginRight: 16 },
+  sosOptionIcon: { marginRight: 16 },
   sosOptionLabel: { fontSize: 16, color: Colors.textPrimary, fontWeight: '500' },
   cancelBtn: { marginTop: 16, paddingVertical: 14, alignItems: 'center' },
   cancelText: { fontSize: 16, color: Colors.textSecondary },

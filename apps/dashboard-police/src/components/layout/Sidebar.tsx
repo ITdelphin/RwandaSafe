@@ -1,17 +1,28 @@
 'use client';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
+import {
+  Shield,
+  LayoutDashboard,
+  Siren,
+  Map,
+  Users,
+  BarChart2,
+  ArrowLeftRight,
+  LogOut,
+} from 'lucide-react';
 
-const AGENCY = { icon: '🛡️', label: 'Police', accent: '#1a73e8' };
+const AGENCY = { label: 'Police', accent: '#1a73e8' };
 
-const NAV = [
-  { href: '/dashboard',           label: 'Overview',   icon: '🏠' },
-  { href: '/dashboard/incidents', label: 'Incidents',  icon: '🚨' },
-  { href: '/dashboard/map',       label: 'Live Map',   icon: '🗺️' },
-  { href: '/dashboard/officers',  label: 'Officers',   icon: '👮' },
-  { href: '/dashboard/analytics', label: 'Analytics',  icon: '📊' },
-  { href: '/dashboard/handover',  label: 'Handover',   icon: '🔄' },
+const NAV: { href: string; label: string; icon: React.ReactNode }[] = [
+  { href: '/dashboard',           label: 'Overview',   icon: <LayoutDashboard size={18} /> },
+  { href: '/dashboard/incidents', label: 'Incidents',  icon: <Siren size={18} /> },
+  { href: '/dashboard/map',       label: 'Live Map',   icon: <Map size={18} /> },
+  { href: '/dashboard/officers',  label: 'Officers',   icon: <Users size={18} /> },
+  { href: '/dashboard/analytics', label: 'Analytics',  icon: <BarChart2 size={18} /> },
+  { href: '/dashboard/handover',  label: 'Handover',   icon: <ArrowLeftRight size={18} /> },
 ];
 
 export function Sidebar() {
@@ -25,9 +36,9 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-5 py-4" style={{ borderBottom: '1px solid #e8eaed' }}>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-base font-bold"
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white"
             style={{ backgroundColor: AGENCY.accent }}>
-            {AGENCY.icon}
+            <Shield size={20} />
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: '#202124' }}>Rwanda Safe</div>
@@ -47,7 +58,7 @@ export function Sidebar() {
                 backgroundColor: active ? '#e8f0fe' : 'transparent',
                 color: active ? AGENCY.accent : '#5f6368',
               }}>
-              <span className="text-base">{item.icon}</span>
+              {item.icon}
               <span>{item.label}</span>
               {active && <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: AGENCY.accent }} />}
             </Link>
@@ -68,8 +79,9 @@ export function Sidebar() {
           </div>
         </div>
         <button onClick={logout}
-          className="w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-red-50"
+          className="w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-red-50 flex items-center gap-2"
           style={{ color: '#d93025' }}>
+          <LogOut size={14} />
           Sign out
         </button>
       </div>

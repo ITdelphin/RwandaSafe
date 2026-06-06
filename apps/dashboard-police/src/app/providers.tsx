@@ -2,6 +2,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { SplashScreen } from '../components/shared/SplashScreen';
+import { Shield } from 'lucide-react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [qc] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 10000 } } }));
@@ -13,7 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <SplashScreen
           onComplete={() => setSplashDone(true)}
           color="#1a73e8"
-          icon="🛡️"
+          icon={<Shield size={44} color="white" />}
           agencyName="Police"
         />
       )}

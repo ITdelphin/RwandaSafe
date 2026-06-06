@@ -57,3 +57,7 @@ export const authApi = {
 export const alertsApi = {
   getActive: () => apiClient.get('/alerts/active'),
 };
+
+export const statsApi = {
+  getPublic: () => apiClient.get('/stats'),
+};

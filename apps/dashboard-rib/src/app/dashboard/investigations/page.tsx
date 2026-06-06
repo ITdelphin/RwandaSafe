@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { Lock, X } from 'lucide-react';
 import { investigationApi } from '../../../lib/apiClient';
 import { INVESTIGATION_STATUS_COLORS } from '../../../constants/theme';
 import { formatDate, timeAgo } from '../../../lib/formatters';
@@ -119,7 +120,7 @@ export default function InvestigationsPage() {
         {isLoading ? (
           <div className="p-12 text-center text-gray-400">Loading...</div>
         ) : investigations.length === 0 ? (
-          <EmptyState message="No investigations match your filters" icon="🔍" />
+          <EmptyState message="No investigations match your filters" />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -149,7 +150,7 @@ export default function InvestigationsPage() {
                           <span className="font-mono text-xs font-bold text-purple-700">
                             {inv.caseNumber ?? inv.id?.slice(0, 8)}
                           </span>
-                          {inv.isSensitive && <span className="text-xs">🔒</span>}
+                          {inv.isSensitive && <Lock size={10} className="text-gray-400" />}
                         </div>
                       </td>
                       <td className="py-3 px-4 max-w-[200px]">
@@ -189,7 +190,9 @@ export default function InvestigationsPage() {
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-gray-900">New Investigation</h2>
-              <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+              <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
             </div>
 
             <div className="space-y-4">

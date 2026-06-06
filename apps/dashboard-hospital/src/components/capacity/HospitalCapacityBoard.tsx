@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import { Theme, BLOOD_TYPE_LABELS } from '../../constants/theme';
 
 // Bed capacity color thresholds mapped to new Material palette
@@ -27,9 +28,10 @@ function BedBar({ avail, total }: { avail: number; total: number }) {
 }
 
 function BloodDot({ units }: { units: number }) {
-  const color = units >= 5 ? '#22C55E' : units >= 2 ? '#F59E0B' : units > 0 ? '#EF4444' : '#94A3B8';
-  const icon = units >= 5 ? '✅' : units >= 2 ? '⚠️' : units > 0 ? '❌' : '—';
-  return <span style={{ color }} className="text-xs">{icon}</span>;
+  if (units >= 5) return <CheckCircle2 size={12} className="text-green-500" />;
+  if (units >= 2) return <AlertTriangle size={12} className="text-yellow-500" />;
+  if (units > 0) return <XCircle size={12} className="text-red-500" />;
+  return <span className="text-xs text-gray-400">—</span>;
 }
 
 export function HospitalCapacityBoard({ hospitals, myAgencyId, onRefresh }: Props) {
@@ -46,8 +48,10 @@ export function HospitalCapacityBoard({ hospitals, myAgencyId, onRefresh }: Prop
               <p className="text-xs text-gray-500">{h.agency?.district}</p>
             </div>
             <div className="flex items-center gap-3">
-              <span className={`text-xs font-medium px-2 py-1 rounded-full ${h.isAcceptingPatients ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                {h.isAcceptingPatients ? '✅ Accepting' : '❌ Not Accepting'}
+              <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${h.isAcceptingPatients ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                {h.isAcceptingPatients
+                  ? <><CheckCircle2 size={12} /> Accepting</>
+                  : <><XCircle size={12} /> Not Accepting</>}
               </span>
               {(myAgencyId === h.agencyId || !myAgencyId) && (
                 <button onClick={() => setEditId(h.agencyId)}
@@ -84,12 +88,16 @@ export function HospitalCapacityBoard({ hospitals, myAgencyId, onRefresh }: Prop
             </div>
           </div>
           <div className="flex gap-4 text-xs text-gray-500">
-            <span>{h.surgeonOnCall ? '✅' : '❌'} Surgeon</span>
-            <span>{h.neurologistOnCall ? '✅' : '❌'} Neurologist</span>
-            <span>{h.cardiologistOnCall ? '✅' : '❌'} Cardiologist</span>
-            <span>{h.pediatricianOnCall ? '✅' : '❌'} Pediatrician</span>
+            <span className="flex items-center gap-1">{h.surgeonOnCall ? <CheckCircle2 size={12} className="text-green-600" /> : <XCircle size={12} className="text-red-500" />} Surgeon</span>
+            <span className="flex items-center gap-1">{h.neurologistOnCall ? <CheckCircle2 size={12} className="text-green-600" /> : <XCircle size={12} className="text-red-500" />} Neurologist</span>
+            <span className="flex items-center gap-1">{h.cardiologistOnCall ? <CheckCircle2 size={12} className="text-green-600" /> : <XCircle size={12} className="text-red-500" />} Cardiologist</span>
+            <span className="flex items-center gap-1">{h.pediatricianOnCall ? <CheckCircle2 size={12} className="text-green-600" /> : <XCircle size={12} className="text-red-500" />} Pediatrician</span>
           </div>
-          {h.statusMessage && <p className="text-xs text-orange-600 mt-2 italic">⚠️ {h.statusMessage}</p>}
+          {h.statusMessage && (
+            <p className="text-xs text-orange-600 mt-2 italic flex items-center gap-1">
+              <AlertTriangle size={12} /> {h.statusMessage}
+            </p>
+          )}
         </div>
       ))}
       {editId && editHospital && (

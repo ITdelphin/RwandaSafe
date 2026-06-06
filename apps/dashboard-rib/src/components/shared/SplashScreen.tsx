@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 interface Props {
   onComplete: () => void;
   color?: string;
-  icon?: string;
+  icon?: React.ReactNode;
   agencyName?: string;
 }
 
-export function SplashScreen({ onComplete, color = '#1a73e8', icon = '🛡️', agencyName = 'Police' }: Props) {
+export function SplashScreen({ onComplete, color = '#1a73e8', icon, agencyName = 'Police' }: Props) {
   const [phase, setPhase] = useState<'in' | 'hold' | 'out'>('in');
   const [progress, setProgress] = useState(0);
 
@@ -57,7 +57,7 @@ export function SplashScreen({ onComplete, color = '#1a73e8', icon = '🛡️', 
         <div style={{
           width: '96px', height: '96px', borderRadius: '28px',
           backgroundColor: color, display: 'flex', alignItems: 'center',
-          justifyContent: 'center', fontSize: '44px',
+          justifyContent: 'center',
           boxShadow: `0 8px 32px ${color}40`,
         }}>
           {icon}

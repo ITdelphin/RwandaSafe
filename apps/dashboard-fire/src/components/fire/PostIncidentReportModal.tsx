@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { X, CheckCircle2, ClipboardList } from 'lucide-react';
 import { fireApi } from '../../lib/apiClient';
 import { FIRE_TYPE_ICONS } from '../../constants/theme';
 
@@ -61,13 +62,20 @@ export function PostIncidentReportModal({ incidentId, fireReport, onClose, onSuc
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="font-bold text-gray-900">Post-Incident Report</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+            <div className="flex items-center gap-2">
+              <ClipboardList size={18} className="text-orange-600" />
+              <h3 className="font-bold text-gray-900">Post-Incident Report</h3>
+            </div>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <X size={20} />
+            </button>
           </div>
 
           {submitted ? (
             <div className="px-6 py-10 text-center">
-              <div className="text-4xl mb-3">✅</div>
+              <div className="flex justify-center mb-3">
+                <CheckCircle2 size={48} className="text-green-500" />
+              </div>
               <div className="font-semibold text-gray-800 mb-1">Report Submitted</div>
               <p className="text-sm text-gray-500 mb-6">Your post-incident report has been recorded.</p>
               <button
@@ -84,7 +92,7 @@ export function PostIncidentReportModal({ incidentId, fireReport, onClose, onSuc
                 <div className="bg-orange-50 rounded-lg px-3 py-2 text-xs">
                   <span className="text-gray-500">Fire Type: </span>
                   <span className="font-semibold text-orange-800">
-                    {FIRE_TYPE_ICONS[fireType]} {fireType.replace(/_/g, ' ')}
+                    {FIRE_TYPE_ICONS[fireType] ?? fireType.replace(/_/g, ' ')}
                   </span>
                 </div>
               )}

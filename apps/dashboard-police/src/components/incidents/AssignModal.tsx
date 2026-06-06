@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useOnDutyOfficers } from '../../hooks/useOfficers';
 import { incidentsApi } from '../../lib/apiClient';
+import { AlertTriangle } from 'lucide-react';
 
 interface Props {
   incidentId: string;
@@ -45,7 +46,7 @@ export function AssignModal({ incidentId, trackingCode, onClose, onSuccess }: Pr
             {officers.map((o: any) => (
               <option key={o.id} value={o.id}>
                 {o.badgeNumber ? `[${o.badgeNumber}] ` : ''}{o.user?.name ?? 'Officer'} — {o.openCasesCount ?? 0} open cases
-                {(o.openCasesCount ?? 0) >= 3 ? ' ⚠️' : ''}
+                {(o.openCasesCount ?? 0) >= 3 ? ' (high load)' : ''}
               </option>
             ))}
           </select>
@@ -58,7 +59,12 @@ export function AssignModal({ incidentId, trackingCode, onClose, onSuccess }: Pr
             placeholder="Any instructions for the officer?" />
         </div>
 
-        {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
+        {error && (
+          <p className="text-sm text-red-500 mb-3 flex items-center gap-1">
+            <AlertTriangle size={14} />
+            {error}
+          </p>
+        )}
 
         <div className="flex gap-3 justify-end">
           <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50">Cancel</button>

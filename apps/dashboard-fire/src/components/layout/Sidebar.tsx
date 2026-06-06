@@ -1,19 +1,31 @@
 'use client';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
+import {
+  Flame,
+  LayoutDashboard,
+  Siren,
+  Map,
+  Users,
+  BarChart2,
+  ArrowLeftRight,
+  FileText,
+  Radio,
+} from 'lucide-react';
 
-const AGENCY = { icon: '🚒', label: 'Fire Brigade', accent: '#E8710A' };
+const AGENCY = { icon: <Flame size={20} />, label: 'Fire Brigade', accent: '#E8710A' };
 
 const NAV = [
-  { href: '/dashboard',           label: 'Overview',     icon: '🏠' },
-  { href: '/dashboard/incidents', label: 'Incidents',    icon: '🚨' },
-  { href: '/dashboard/dispatch',  label: 'Dispatch',     icon: '🚒' },
-  { href: '/dashboard/hazmat',    label: 'Hazmat Guide', icon: '☣️' },
-  { href: '/dashboard/reports',   label: 'Reports',      icon: '📋' },
-  { href: '/dashboard/map',       label: 'Map',          icon: '🗺️' },
-  { href: '/dashboard/analytics', label: 'Analytics',    icon: '📊' },
-  { href: '/dashboard/handover',  label: 'Handover',     icon: '🔄' },
+  { href: '/dashboard',           label: 'Overview',       icon: <LayoutDashboard size={18} /> },
+  { href: '/dashboard/incidents', label: 'Incidents',      icon: <Siren size={18} /> },
+  { href: '/dashboard/dispatch',  label: 'Dispatch',       icon: <Radio size={18} /> },
+  { href: '/dashboard/map',       label: 'Map',            icon: <Map size={18} /> },
+  { href: '/dashboard/officers',  label: 'Officers/Units', icon: <Users size={18} /> },
+  { href: '/dashboard/analytics', label: 'Analytics',      icon: <BarChart2 size={18} /> },
+  { href: '/dashboard/handover',  label: 'Handover',       icon: <ArrowLeftRight size={18} /> },
+  { href: '/dashboard/reports',   label: 'Reports',        icon: <FileText size={18} /> },
 ];
 
 export function Sidebar() {
@@ -27,7 +39,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-5 py-4" style={{ borderBottom: '1px solid #e8eaed' }}>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-base font-bold"
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white"
             style={{ backgroundColor: AGENCY.accent }}>
             {AGENCY.icon}
           </div>
@@ -49,7 +61,7 @@ export function Sidebar() {
                 backgroundColor: active ? '#e8f0fe' : 'transparent',
                 color: active ? AGENCY.accent : '#5f6368',
               }}>
-              <span className="text-base">{item.icon}</span>
+              <span className="flex-shrink-0">{item.icon}</span>
               <span>{item.label}</span>
               {active && <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: AGENCY.accent }} />}
             </Link>

@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Users } from 'lucide-react';
 import { useOnDutyOfficers, useAllOfficers } from '../../../hooks/useOfficers';
 import { OfficerCard } from '../../../components/officers/OfficerCard';
 import { EmptyState } from '../../../components/shared/EmptyState';
@@ -28,7 +29,7 @@ export default function OfficersPage() {
       <section>
         <h2 className="text-sm font-semibold text-gray-600 mb-3">On Duty ({onDuty.length})</h2>
         {onDuty.length === 0 ? (
-          <EmptyState message="No officers currently on duty" icon="👮" />
+          <EmptyState message="No officers currently on duty" icon={<Users size={48} />} />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
             {onDuty.map((o: any) => <OfficerCard key={o.id} officer={o} />)}

@@ -2,17 +2,28 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
+import {
+  Search,
+  LayoutDashboard,
+  FolderSearch,
+  Lightbulb,
+  Network,
+  Map,
+  BarChart2,
+  ArrowLeftRight,
+  LogOut,
+} from 'lucide-react';
 
-const AGENCY = { icon: '🔍', label: 'RIB', accent: '#9334E6' };
+const AGENCY = { label: 'RIB', accent: '#9334E6' };
 
 const NAV = [
-  { href: '/dashboard',                label: 'Overview',       icon: '🏠' },
-  { href: '/dashboard/investigations', label: 'Investigations', icon: '🔎' },
-  { href: '/dashboard/tips',           label: 'Tips',           icon: '💬' },
-  { href: '/dashboard/patterns',       label: 'Patterns',       icon: '📡' },
-  { href: '/dashboard/map',            label: 'Map',            icon: '🗺️' },
-  { href: '/dashboard/analytics',      label: 'Analytics',      icon: '📊' },
-  { href: '/dashboard/handover',       label: 'Handover',       icon: '🔄' },
+  { href: '/dashboard',                label: 'Overview',       icon: <LayoutDashboard size={18} /> },
+  { href: '/dashboard/investigations', label: 'Investigations', icon: <FolderSearch size={18} /> },
+  { href: '/dashboard/tips',           label: 'Tips',           icon: <Lightbulb size={18} /> },
+  { href: '/dashboard/patterns',       label: 'Patterns',       icon: <Network size={18} /> },
+  { href: '/dashboard/map',            label: 'Map',            icon: <Map size={18} /> },
+  { href: '/dashboard/analytics',      label: 'Analytics',      icon: <BarChart2 size={18} /> },
+  { href: '/dashboard/handover',       label: 'Handover',       icon: <ArrowLeftRight size={18} /> },
 ];
 
 export function Sidebar() {
@@ -26,9 +37,9 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-5 py-4" style={{ borderBottom: '1px solid #e8eaed' }}>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-base font-bold"
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white flex-shrink-0"
             style={{ backgroundColor: AGENCY.accent }}>
-            {AGENCY.icon}
+            <Search size={18} />
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: '#202124' }}>Rwanda Safe</div>
@@ -48,7 +59,7 @@ export function Sidebar() {
                 backgroundColor: active ? '#e8f0fe' : 'transparent',
                 color: active ? AGENCY.accent : '#5f6368',
               }}>
-              <span className="text-base">{item.icon}</span>
+              <span className="flex-shrink-0">{item.icon}</span>
               <span>{item.label}</span>
               {active && <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: AGENCY.accent }} />}
             </Link>
@@ -69,8 +80,9 @@ export function Sidebar() {
           </div>
         </div>
         <button onClick={logout}
-          className="w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-red-50"
+          className="w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-red-50 flex items-center gap-2"
           style={{ color: '#d93025' }}>
+          <LogOut size={14} />
           Sign out
         </button>
       </div>

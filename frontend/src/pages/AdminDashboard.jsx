@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { COLORS, EMERGENCY_TYPES } from "../config/constants";
-import { Icon, LevelBadge, StatusBadge } from "../components/Badges";
-import toast from "react-hot-toast";
-import API from "../config/api";
+import { io } from "socket.io-client";
+
+const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const AdminDashboard = () => {
     const [tab, setTab] = useState("overview");
@@ -12,11 +10,32 @@ const AdminDashboard = () => {
     const [statsData, setStatsData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [auditLogs, setAuditLogs] = useState([]);
+    const socketRef = useRef(null);
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 15000);
-        return () => clearInterval(interval);
+
+        socketRef.current = io(SOCKET_URL);
+        socketRef.current.on("connect", () => {
+            console.log("🛡️ Admin Secure Connection Established");
+        });
+
+        socketRef.current.on("new_report", (report) => {
+            setReports(prev => [report, ...prev]);
+        });
+
+        socketRef.current.on("sos_signal", (report) => {
+            setReports(prev => [report, ...prev]);
+            toast.error("🚨 SOS PANIC SIGNAL DETECTED", { duration: 10000 });
+        });
+
+        socketRef.current.on("report_update", ({ id, status }) => {
+            setReports(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+        });
+
+        return () => {
+            if (socketRef.current) socketRef.current.disconnect();
+        };
     }, [tab]);
 
     const fetchData = async () => {
@@ -63,39 +82,41 @@ const AdminDashboard = () => {
     return (
         <div className="dashboard-container">
             {/* Sidebar - NEW LIGHT VERSION */}
-            <div className="dashboard-sidebar" style={{ background: "#FFFFFF", padding: "16px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 40, padding: "0 12px" }}>
-                    <div style={{ width: 40, height: 40, background: "#F1F5F9", border: "1px solid #E2E8F0", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🇷🇼</div>
+            <aside className="dashboard-sidebar" style={{ background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 100%)", borderRight: "1px solid #E2E8F0" }}>
+                <div className="dashboard-sidebar-header" style={{ padding: "32px 24px", borderBottom: "1px solid #F1F5F9", display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ width: 44, height: 44, background: "rgba(30,58,138,0.05)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(30,58,138,0.1)" }}>
+                        <Icon name="shield-check" size={24} color="#1E3A8A" />
+                    </div>
                     <div>
-                        <div style={{ fontWeight: 800, fontSize: 16, color: "#0F172A" }}>SafeRwanda</div>
-                        <div style={{ fontSize: 10, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Admin Authority</div>
+                        <div style={{ fontWeight: 900, fontSize: 18, letterSpacing: -0.5, color: "#0F172A" }}>SafeRwanda</div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", letterSpacing: 2, textTransform: "uppercase" }}>Admin Authority</div>
                     </div>
                 </div>
 
-                <div className="dashboard-sidebar-nav" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    {tabs.map(t => (
+                <div className="dashboard-sidebar-nav" style={{ padding: "32px 16px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                    {tabs.map((t) => (
                         <button
                             key={t.id}
-                            onClick={() => setTab(t.id)}
                             className={`sidebar-link ${tab === t.id ? "active" : ""}`}
+                            onClick={() => setTab(t.id)}
+                            style={{ color: tab === t.id ? "#1E3A8A" : "#64748B", fontWeight: tab === t.id ? 800 : 600 }}
                         >
-                            <Icon name={t.icon} size={18} color={tab === t.id ? "#1E3A8A" : "#64748B"} />
+                            <Icon name={t.icon} size={18} />
                             {t.label}
                         </button>
                     ))}
                 </div>
 
-                <div className="dashboard-sidebar-footer" style={{ marginTop: "auto", paddingTop: 40 }}>
-                    <div style={{ padding: "20px", background: "#F8FAFC", borderRadius: 16, border: "1px solid #F1F5F9" }}>
-                        <div style={{ fontSize: 11, color: "#94A3B8", marginBottom: 12, fontWeight: 700 }}>SYSTEM STATUS</div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                            <div className="pulse-green" style={{ width: 8, height: 8, background: "#1E3A8A", borderRadius: "50%" }} />
-                            <span style={{ fontSize: 12, fontWeight: 700, color: "#1E3A8A" }}>All Services Online</span>
+                <div className="dashboard-sidebar-footer" style={{ padding: 24, borderTop: "1px solid #F1F5F9" }}>
+                    <div style={{ padding: "16px", background: "#F8FAFC", borderRadius: 16, border: "1px solid #F1F5F9" }}>
+                        <div style={{ fontSize: 10, fontWeight: 800, color: "#94A3B8", marginBottom: 12, letterSpacing: 1 }}>SYSTEM STATUS</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10B981", boxShadow: "0 0 10px #10B981" }} />
+                            <span style={{ fontSize: 11, fontWeight: 800, color: "#0F172A" }}>Network Secured</span>
                         </div>
-                        <div style={{ fontSize: 10, color: "#94A3B8" }}>Version 2.1.0-Professional</div>
                     </div>
                 </div>
-            </div>
+            </aside>
 
             {/* Main */}
             <div className="dashboard-main dashboard-content">
@@ -159,17 +180,17 @@ const AdminDashboard = () => {
                 <div className="slide-in">
                     {tab === "overview" && (
                         <>
-                            <div className="grid-4" style={{ marginBottom: 32 }}>
+                            <div className="grid-4" style={{ marginBottom: 32, gap: 24 }}>
                                 {stats.map(s => (
-                                    <div key={s.label} className="card" style={{ padding: 24 }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-                                            <div style={{ width: 44, height: 44, borderRadius: 12, background: `${s.color}10`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                <Icon name={s.icon} size={22} color={s.color} />
+                                    <div key={s.label} className="stat-card" style={{ padding: 28 }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+                                            <div style={{ width: 48, height: 48, borderRadius: 14, background: `${s.color}10`, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${s.color}20` }}>
+                                                <Icon name={s.icon} size={24} color={s.color} />
                                             </div>
-                                            <div style={{ fontSize: 11, fontWeight: 700, color: "#10B981" }}>+4.2% ↑</div>
+                                            <div style={{ fontSize: 11, fontWeight: 800, color: "#10B981", background: "rgba(16,185,129,0.1)", padding: "4px 8px", borderRadius: 8 }}>+4.2%</div>
                                         </div>
-                                        <div style={{ fontSize: 28, fontWeight: 800, color: "#1E293B" }}>{s.val}</div>
-                                        <div style={{ fontSize: 12, color: "#64748B", fontWeight: 700, marginTop: 4 }}>{s.label}</div>
+                                        <div style={{ fontSize: 32, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>{s.val}</div>
+                                        <div style={{ fontSize: 12, color: "#64748B", fontWeight: 700, marginTop: 4, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
                                     </div>
                                 ))}
                             </div>

@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Ambulance } from 'lucide-react';
 import { AmbulanceSelectModal } from './AmbulanceSelectModal';
 import { medicalApi } from '../../lib/apiClient';
 import { AMBULANCE_COLORS, AMBULANCE_TRANSITIONS } from '../../constants/theme';
@@ -25,7 +26,7 @@ export function AmbulanceDispatchPanel({ incidentId, medicalCase, onRefresh }: P
         <button onClick={() => setShowSelect(true)}
           className="text-xs text-white px-3 py-2 rounded-lg w-full font-medium"
           style={{ backgroundColor: '#C62828' }}>
-          🚑 Dispatch Ambulance
+          <span className="inline-flex items-center gap-1.5"><Ambulance size={14} /> Dispatch Ambulance</span>
         </button>
         {showSelect && <AmbulanceSelectModal incidentId={incidentId} onClose={() => setShowSelect(false)} onSuccess={onRefresh} />}
       </div>

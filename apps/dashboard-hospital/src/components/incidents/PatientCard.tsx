@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { TriageBadge } from './TriageBadge';
 import { TriageModal } from './TriageModal';
 import { BLOOD_TYPE_LABELS } from '../../constants/theme';
@@ -36,8 +37,20 @@ export function PatientCard({ incidentId, medicalCase, onRefresh }: Props) {
             </div>
           )}
           <div className="flex gap-3 text-xs text-gray-500">
-            {medicalCase.isConscious !== null && <span>Conscious: {medicalCase.isConscious ? '✅' : '❌'}</span>}
-            {medicalCase.isBreathing !== null && <span>Breathing: {medicalCase.isBreathing ? '✅' : '❌'}</span>}
+            {medicalCase.isConscious !== null && (
+              <span className="flex items-center gap-1">
+                Conscious: {medicalCase.isConscious
+                  ? <CheckCircle2 size={12} className="text-green-600" />
+                  : <XCircle size={12} className="text-red-600" />}
+              </span>
+            )}
+            {medicalCase.isBreathing !== null && (
+              <span className="flex items-center gap-1">
+                Breathing: {medicalCase.isBreathing
+                  ? <CheckCircle2 size={12} className="text-green-600" />
+                  : <XCircle size={12} className="text-red-600" />}
+              </span>
+            )}
           </div>
         </div>
       ) : (

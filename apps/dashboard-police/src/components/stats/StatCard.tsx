@@ -1,8 +1,10 @@
+import React from 'react';
+
 interface Props {
   label: string;
   value: string | number;
   color?: string;
-  icon?: string;
+  icon?: React.ReactNode;
   sub?: string;
 }
 
@@ -12,8 +14,8 @@ export function StatCard({ label, value, color = '#1a73e8', icon, sub }: Props) 
     <div className="bg-white rounded-2xl p-5 flex items-center gap-4"
       style={{ border: '1px solid #e8eaed', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
       {icon && (
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-          style={{ backgroundColor: bgColor }}>
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: bgColor, color }}>
           {icon}
         </div>
       )}

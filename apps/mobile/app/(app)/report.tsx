@@ -3,6 +3,7 @@ import {
   View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView,
   TextInput, Switch, ActivityIndicator, Alert,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useLocation } from '../../src/hooks/useLocation';
 import { useIncidentStore } from '../../src/store/incidentStore';
@@ -75,8 +76,9 @@ export default function ReportScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => step > 0 ? setStep(s => s - 1) : router.back()}>
-          <Text style={styles.back}>← {step > 0 ? 'Back' : 'Cancel'}</Text>
+        <TouchableOpacity style={styles.backBtn} onPress={() => step > 0 ? setStep(s => s - 1) : router.back()}>
+          <Ionicons name="arrow-back" size={18} color={Colors.primary} />
+          <Text style={styles.back}> {step > 0 ? 'Back' : 'Cancel'}</Text>
         </TouchableOpacity>
         <Text style={styles.stepLabel}>Step {step + 1} of 3</Text>
       </View>
@@ -130,7 +132,7 @@ function Step1({ draft, updateDraft, onNext }: any) {
             style={[styles.typeBtn, draft.type === t.key && { borderColor: t.color, backgroundColor: t.color + '15' }]}
             onPress={() => updateDraft({ type: t.key })}
           >
-            <Text style={styles.typeBtnIcon}>{t.icon}</Text>
+            <Ionicons name={t.icon as any} size={24} color={t.color} style={styles.typeBtnIcon} />
             <Text style={styles.typeBtnLabel}>{t.label}</Text>
           </TouchableOpacity>
         ))}
@@ -174,7 +176,7 @@ function Step1({ draft, updateDraft, onNext }: any) {
       )}
 
       <TouchableOpacity style={[styles.nextBtn, !canNext && styles.nextBtnDisabled]} onPress={onNext} disabled={!canNext}>
-        <Text style={styles.nextBtnText}>Next →</Text>
+        <Text style={styles.nextBtnText}>Next</Text>
       </TouchableOpacity>
     </View>
   );
@@ -189,13 +191,16 @@ function Step2({ draft, updateDraft, latitude, longitude, requestLocation, onNex
       <Text style={styles.stepTitle}>Where?</Text>
 
       <View style={styles.locationBox}>
-        <Text style={styles.locationText}>
-          {draft.latitude
-            ? `📍 ${draft.latitude.toFixed(5)}, ${draft.longitude?.toFixed(5)}`
-            : latitude
-            ? `📍 ${latitude.toFixed(5)}, ${longitude?.toFixed(5)}`
-            : '📍 Location not detected'}
-        </Text>
+        <View style={styles.locationTextRow}>
+          <Ionicons name="location-outline" size={14} color={Colors.textPrimary} />
+          <Text style={styles.locationText}>
+            {draft.latitude
+              ? ` ${draft.latitude.toFixed(5)}, ${draft.longitude?.toFixed(5)}`
+              : latitude
+              ? ` ${latitude.toFixed(5)}, ${longitude?.toFixed(5)}`
+              : ' Location not detected'}
+          </Text>
+        </View>
         <TouchableOpacity
           style={styles.locationBtn}
           onPress={() => {
@@ -233,7 +238,7 @@ function Step2({ draft, updateDraft, latitude, longitude, requestLocation, onNex
       )}
 
       <TouchableOpacity style={[styles.nextBtn, !canNext && styles.nextBtnDisabled]} onPress={() => { if (!draft.latitude && latitude) updateDraft({ latitude, longitude }); onNext(); }} disabled={!canNext}>
-        <Text style={styles.nextBtnText}>Next →</Text>
+        <Text style={styles.nextBtnText}>Next</Text>
       </TouchableOpacity>
     </View>
   );
@@ -260,6 +265,7 @@ function Step3({ draft, updateDraft, onSubmit, loading }: any) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
+  backBtn: { flexDirection: 'row', alignItems: 'center' },
   back: { color: Colors.primary, fontSize: 16 },
   stepLabel: { fontSize: 13, color: Colors.textSecondary },
   progress: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 8 },
@@ -272,7 +278,7 @@ const styles = StyleSheet.create({
     width: '30%', alignItems: 'center', padding: 12, borderRadius: 12,
     borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.surface,
   },
-  typeBtnIcon: { fontSize: 24, marginBottom: 4 },
+  typeBtnIcon: { marginBottom: 4 },
   typeBtnLabel: { fontSize: 11, color: Colors.textPrimary, textAlign: 'center' },
   fieldLabel: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, marginTop: 16, marginBottom: 8 },
   severityRow: { flexDirection: 'row', gap: 8 },
@@ -296,7 +302,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface, borderWidth: 1.5, borderColor: Colors.border,
     borderRadius: 12, padding: 16, marginBottom: 16,
   },
-  locationText: { fontSize: 14, color: Colors.textPrimary, marginBottom: 12 },
+  locationTextRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  locationText: { fontSize: 14, color: Colors.textPrimary },
   locationBtn: { backgroundColor: Colors.primary + '15', padding: 10, borderRadius: 8, alignItems: 'center' },
   locationBtnText: { color: Colors.primary, fontWeight: '600' },
   districtList: { maxHeight: 200, backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 8, marginTop: 4 },

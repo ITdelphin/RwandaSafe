@@ -1,5 +1,5 @@
 const express = require("express");
-const { Broadcast, User } = require("../models");
+const { Broadcast, User, AuditLog } = require("../models");
 const { auth, authorize } = require("../middleware/auth");
 
 const router = express.Router();
@@ -28,6 +28,18 @@ router.post("/", auth, authorize("Admin"), async (req, res) => {
             time: new Date().toISOString(),
             senderId: req.user.id,
         });
+
+        // Record Audit Log
+        await AuditLog.create({
+            action: `Broadcast: ${type}`,
+            actor: req.user.name,
+            target: "All Citizens",
+            type: type === "Urgent" ? "Danger" : "Security"
+        });
+
+        // Emit real-time safety alert to all citizens
+        req.io.emit("safety_broadcast", broadcast);
+
         res.status(201).json(broadcast);
     } catch (error) {
         console.error(error);

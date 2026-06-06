@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ClipboardList } from 'lucide-react';
 import { incidentsApi } from '../../lib/apiClient';
 import { IncidentCard } from '../../components/IncidentCard';
 import { Navbar } from '../../components/Navbar';
@@ -28,7 +29,7 @@ export default function MyReportsPage() {
           <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-blue-800 border-t-transparent rounded-full animate-spin" /></div>
         ) : incidents.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-4xl mb-4">📋</p>
+            <div className="flex justify-center mb-4 text-gray-300"><ClipboardList size={48} /></div>
             <p className="text-gray-500">No reports yet. Stay safe!</p>
           </div>
         ) : (

@@ -2,6 +2,13 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import {
+  FolderOpen,
+  Search,
+  Lightbulb,
+  Network,
+  CheckCircle2,
+} from 'lucide-react';
 import { investigationApi, patternApi, tiplineApi } from '../../lib/apiClient';
 import { StatCard } from '../../components/stats/StatCard';
 import { InvestigationCard } from '../../components/investigations/InvestigationCard';
@@ -55,11 +62,11 @@ export default function DashboardPage() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
-        <StatCard label="Open Investigations" value={openInvestigations} color="#3B82F6" icon="📂" />
-        <StatCard label="Active Investigations" value={activeInvestigations} color="#8B5CF6" icon="🔎" />
-        <StatCard label="Unreviewed Tips" value={unreviewedTips} color="#F59E0B" icon="💬" />
-        <StatCard label="Pattern Alerts" value={newPatterns} color="#EF4444" icon="📡" />
-        <StatCard label="Closed This Month" value={closedThisMonth} color="#22C55E" icon="✅" />
+        <StatCard label="Open Investigations" value={openInvestigations} color="#3B82F6" icon={<FolderOpen size={24} />} />
+        <StatCard label="Active Investigations" value={activeInvestigations} color="#8B5CF6" icon={<Search size={24} />} />
+        <StatCard label="Unreviewed Tips" value={unreviewedTips} color="#F59E0B" icon={<Lightbulb size={24} />} />
+        <StatCard label="Pattern Alerts" value={newPatterns} color="#EF4444" icon={<Network size={24} />} />
+        <StatCard label="Closed This Month" value={closedThisMonth} color="#22C55E" icon={<CheckCircle2 size={24} />} />
       </div>
 
       {/* Recent Investigations + Pattern Alerts */}
@@ -71,7 +78,7 @@ export default function DashboardPage() {
             <Link href="/dashboard/investigations" className="text-xs text-purple-600 hover:underline">View All →</Link>
           </div>
           {investigations.length === 0 ? (
-            <EmptyState message="No investigations yet" icon="🔍" />
+            <EmptyState message="No investigations yet" icon={<Search size={40} />} />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {investigations.slice(0, 8).map((inv: any) => (
@@ -89,7 +96,7 @@ export default function DashboardPage() {
           </div>
           <div className="divide-y divide-gray-50">
             {patterns.length === 0 ? (
-              <EmptyState message="No pattern alerts" icon="📡" />
+              <EmptyState message="No pattern alerts" icon={<Network size={40} />} />
             ) : (
               patterns.slice(0, 6).map((p: any) => (
                 <div key={p.id} className="px-4 py-3">

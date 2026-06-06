@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, StatusBadge, LevelBadge } from "../components/Badges";
 import toast from "react-hot-toast";
 import API from "../config/api";
+import { io } from "socket.io-client";
+
+const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const CitizenDashboard = ({ user }) => {
     const navigate = useNavigate();
@@ -10,6 +13,10 @@ const CitizenDashboard = ({ user }) => {
     const [broadcasts, setBroadcasts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("Overview");
+    const [sosHolding, setSosHolding] = useState(false);
+    const [sosProgress, setSosProgress] = useState(0);
+    const socketRef = useRef(null);
+    const sosTimerRef = useRef(null);
 
     useEffect(() => {
         if (!user) {
@@ -18,6 +25,35 @@ const CitizenDashboard = ({ user }) => {
         }
         fetchMyReports();
         fetchBroadcasts();
+
+        // Socket.io Connection
+        socketRef.current = io(SOCKET_URL);
+        socketRef.current.on("connect", () => {
+            console.log("📡 Connected to Emergency Network");
+            socketRef.current.emit("join", `citizen_${user.id}`);
+        });
+
+        socketRef.current.on("safety_broadcast", (broadcast) => {
+            setBroadcasts(prev => [broadcast, ...prev]);
+            toast((t) => (
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                    <div style={{ fontSize: 24 }}>📢</div>
+                    <div>
+                        <div style={{ fontWeight: 800, color: "#C8102E" }}>OFFICIAL ALERT</div>
+                        <div style={{ fontSize: 13, color: "#1E293B" }}>{broadcast.message}</div>
+                    </div>
+                </div>
+            ), { duration: 6000, position: "top-right" });
+        });
+
+        socketRef.current.on("report_update", ({ id, status }) => {
+            setReports(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+            toast.success(`Report #${id} status updated to ${status}`, { icon: "🛡️" });
+        });
+
+        return () => {
+            if (socketRef.current) socketRef.current.disconnect();
+        };
     }, [user, navigate]);
 
     const fetchBroadcasts = async () => {
@@ -32,8 +68,7 @@ const CitizenDashboard = ({ user }) => {
     const fetchMyReports = async () => {
         try {
             const res = await API.get("/reports");
-            // Filter only reports created by this citizen
-            const myReports = res.data.filter(r => r.reporter === user.name);
+            const myReports = res.data.filter(r => r.reporterId === user.id || r.reporter === user.name);
             setReports(myReports);
         } catch (err) {
             console.error(err);
@@ -46,26 +81,56 @@ const CitizenDashboard = ({ user }) => {
         localStorage.removeItem("saferwanda_token");
         localStorage.removeItem("saferwanda_user");
         navigate("/");
-        window.location.reload(); // Refresh state
+        window.location.reload();
     };
 
-    const handleSOS = async () => {
+    const submitSOS = async (coords = { lat: 0, lng: 0 }) => {
         try {
             toast.loading("Transmitting SOS Signal...", { id: "sos" });
             const res = await API.post("/reports/sos", {
-                location: user.district + " Area (Citizen Profile)",
-                lat: 0, // In a real app, use navigator.geolocation
-                lng: 0
+                location: user.district + " District (Verified Citizen Profile)",
+                lat: coords.lat,
+                lng: coords.lng
             });
             toast.success("🚨 SOS DISPATCHED: Authorities have been alerted to your exact location.", {
                 id: "sos",
                 duration: 8000,
                 iconTheme: { primary: "#C8102E", secondary: "#fff" }
             });
-            fetchMyReports(); // Refresh list to show SOS report
+            fetchMyReports();
         } catch (err) {
             toast.error("SOS transmission failed. Please call 112 directly.", { id: "sos" });
         }
+    };
+
+    const startSOS = () => {
+        setSosHolding(true);
+        setSosProgress(0);
+        let progress = 0;
+        sosTimerRef.current = setInterval(() => {
+            progress += 5;
+            setSosProgress(progress);
+            if (progress >= 100) {
+                clearInterval(sosTimerRef.current);
+                setSosHolding(false);
+                setSosProgress(0);
+                // Trigger SOS with Geolocation
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => submitSOS({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                        () => submitSOS() // Fallback
+                    );
+                } else {
+                    submitSOS();
+                }
+            }
+        }, 50);
+    };
+
+    const cancelSOS = () => {
+        clearInterval(sosTimerRef.current);
+        setSosHolding(false);
+        setSosProgress(0);
     };
 
 
@@ -73,35 +138,24 @@ const CitizenDashboard = ({ user }) => {
         <div className="dashboard-container">
             {/* Sidebar */}
             <div className="dashboard-sidebar" style={{ background: "#1E3A8A", color: "#FFFFFF" }}>
-                <div className="dashboard-sidebar-header" style={{ padding: "32px 24px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 36, height: 36, background: "#FFFFFF", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <Icon name="shield-check" size={20} color="#C8102E" />
+                <div className="dashboard-sidebar-header" style={{ padding: "32px 24px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ width: 44, height: 44, background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.2)" }}>
+                        <Icon name="shield-check" size={24} color="#FFFFFF" />
                     </div>
                     <div>
-                        <div style={{ fontWeight: 900, fontSize: 18, letterSpacing: -0.5 }}>SafeRwanda</div>
-                        <div style={{ fontSize: 9, fontWeight: 700, opacity: 0.7, letterSpacing: 1.5, textTransform: "uppercase" }}>Citizen Portal</div>
+                        <div style={{ fontWeight: 900, fontSize: 20, letterSpacing: -0.5, color: "#FFFFFF" }}>SafeRwanda</div>
+                        <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.6, letterSpacing: 2, textTransform: "uppercase" }}>Citizen Authority</div>
                     </div>
                 </div>
 
-                <div className="dashboard-sidebar-nav" style={{ padding: "32px 16px", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="dashboard-sidebar-nav" style={{ padding: "32px 16px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
                     {["Overview", "My Reports", "File New Report", "Safety Center"].map((tab) => (
-                        <div
+                        <button
                             key={tab}
+                            className={`sidebar-link ${activeTab === tab ? "active" : ""}`}
                             onClick={() => {
                                 if (tab === "File New Report") navigate("/report");
                                 else setActiveTab(tab);
-                            }}
-                            style={{
-                                padding: "12px 16px",
-                                borderRadius: 12,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 12,
-                                cursor: "pointer",
-                                transition: "all 0.2s",
-                                background: activeTab === tab ? "rgba(255,255,255,0.1)" : "transparent",
-                                color: activeTab === tab ? "#FFFFFF" : "rgba(255,255,255,0.7)",
-                                fontWeight: activeTab === tab ? 800 : 600,
                             }}
                         >
                             <Icon
@@ -109,7 +163,7 @@ const CitizenDashboard = ({ user }) => {
                                 size={18}
                             />
                             {tab}
-                        </div>
+                        </button>
                     ))}
                 </div>
 
@@ -150,102 +204,139 @@ const CitizenDashboard = ({ user }) => {
                     {activeTab === "Overview" && (
                         <div className="slide-in">
                             {/* Top Tier: SOS and Broadcasts */}
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 24, marginBottom: 24 }}>
-                                {/* SOS Button Area */}
-                                <div className="card" style={{ padding: 32, background: "#FFFFFF", border: "1px solid #E2E8F0", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-                                    <div style={{ fontSize: 12, fontWeight: 800, color: "#C8102E", letterSpacing: 1.5, marginBottom: 24 }}>INSTANT DISPATCH</div>
-                                    <button
-                                        onClick={handleSOS}
-                                        style={{
-                                            width: 140, height: 140, borderRadius: "50%",
-                                            background: "radial-gradient(circle at top right, #DC2626, #C8102E)",
-                                            border: "8px solid #FEF2F2",
-                                            color: "#FFFFFF", fontSize: 24, fontWeight: 900,
-                                            cursor: "pointer", boxShadow: "0 12px 32px rgba(200, 16, 46, 0.4)",
-                                            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8,
-                                            transition: "all 0.1s"
-                                        }}
-                                        onMouseDown={e => e.currentTarget.style.transform = "scale(0.95)"}
-                                        onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}
-                                    >
-                                        <Icon name="alert-triangle" size={32} color="#FFFFFF" />
-                                        <span>SOS</span>
-                                    </button>
-                                    <p style={{ fontSize: 12, color: "#64748B", marginTop: 24, padding: "0 20px" }}>
-                                        Tap to instantly share your location with the National Police and SAMU. Use only in severe emergencies.
-                                    </p>
-                                </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 32, marginBottom: 32 }}>
+                                {/* Premium SOS Card */}
+                                <div className="card" style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 32, padding: "60px 40px", position: "relative", overflow: "hidden" }}>
+                                    <div style={{ position: "absolute", top: "-20%", left: "-20%", width: "140%", height: "140%", background: "radial-gradient(circle, rgba(200,16,46,0.05) 0%, transparent 70%)", pointerEvents: "none" }}></div>
 
-                                {/* Live Safety Broadcasts */}
-                                <div className="card" style={{ padding: 24, background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
-                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-                                        <div style={{ fontSize: 14, fontWeight: 800, color: "#1E293B", display: "flex", alignItems: "center", gap: 8 }}>
-                                            <Icon name="broadcast" size={18} color="#1E3A8A" /> Official Safety Broadcasts
-                                        </div>
-                                        <div style={{ fontSize: 11, fontWeight: 800, color: "#1E3A8A", background: "#EFF6FF", padding: "4px 8px", borderRadius: 6 }}>
-                                            LIVE
+                                    <div style={{ maxWidth: 400 }}>
+                                        <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 12, color: "#0F172A", letterSpacing: -1 }}>Emergency Response</h1>
+                                        <p style={{ color: "#64748B", fontSize: 16, lineHeight: 1.6 }}>Hold the button below for 2 seconds to trigger an immediate SOS alert to all nearby authorities.</p>
+                                    </div>
+
+                                    <div
+                                        className={`sos-button-container ${sosHolding ? "holding" : ""}`}
+                                        onMouseDown={startSOS}
+                                        onMouseUp={cancelSOS}
+                                        onMouseLeave={cancelSOS}
+                                        onTouchStart={startSOS}
+                                        onTouchEnd={cancelSOS}
+                                        style={{
+                                            position: "relative",
+                                            width: 180,
+                                            height: 180,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            cursor: "pointer",
+                                            userSelect: "none"
+                                        }}
+                                    >
+                                        <svg width="200" height="200" style={{ position: "absolute", transform: "rotate(-90deg)" }}>
+                                            <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(200,16,46,0.08)" strokeWidth="10" />
+                                            <circle
+                                                cx="100" cy="100" r="90" fill="none" stroke="#C8102E" strokeWidth="10"
+                                                strokeDasharray={565}
+                                                strokeDashoffset={565 - (565 * sosProgress) / 100}
+                                                strokeLinecap="round"
+                                                style={{ transition: sosHolding ? "none" : "stroke-dashoffset 0.3s ease-out" }}
+                                            />
+                                        </svg>
+
+                                        <div style={{
+                                            width: 150, height: 150, borderRadius: "50%",
+                                            background: sosHolding ? "#A50D27" : "linear-gradient(135deg, #C8102E, #8a2436)",
+                                            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                                            boxShadow: sosHolding ? "inset 0 4px 12px rgba(0,0,0,0.2)" : "0 12px 32px rgba(200, 16, 46, 0.4)",
+                                            transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                                            transform: sosHolding ? "scale(0.92)" : "scale(1)",
+                                            zIndex: 2, border: "6px solid rgba(255,255,255,0.2)"
+                                        }}>
+                                            <Icon name="zap" size={48} color="#FFFFFF" />
+                                            <span style={{ color: "#FFFFFF", fontWeight: 900, fontSize: 24, marginTop: 4 }}>SOS</span>
                                         </div>
                                     </div>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                                        {broadcasts.length === 0 ? (
-                                            <div style={{ fontSize: 13, color: "#94A3B8", textAlign: "center", padding: 20 }}>No active alerts.</div>
-                                        ) : broadcasts.map(b => (
-                                            <div key={b.id} style={{ display: "flex", gap: 16, padding: 16, background: "#F8FAFC", borderRadius: 12, borderLeft: `4px solid ${b.type === "Urgent" ? "#C8102E" : "#1E3A8A"}` }}>
-                                                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                                    <Icon name={b.type === "Urgent" ? "alert-circle" : "info-circle"} size={20} color={b.type === "Urgent" ? "#C8102E" : "#1E3A8A"} />
+
+                                    <div style={{ padding: "8px 20px", borderRadius: 20, background: "#F1F5F9", fontSize: 13, fontWeight: 800, color: "#475569", display: "flex", alignItems: "center", gap: 10 }}>
+                                        <Icon name="map-pin" size={14} color="#C8102E" />
+                                        Monitoring Active: {user?.district}
+                                    </div>
+                                </div>
+
+                                {/* Right Side: Highlights & Broadcasts */}
+                                <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                                    {/* Action Cards */}
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                                        {[
+                                            { title: "Report Accident", icon: "car-crash", color: "#C8102E" },
+                                            { title: "Crime Alert", icon: "shield-alert", color: "#1E3A8A" }
+                                        ].map((action, i) => (
+                                            <div key={i} className="card" style={{ padding: 24, cursor: "pointer", display: "flex", flexDirection: "column", gap: 16 }}>
+                                                <div style={{ width: 48, height: 48, borderRadius: 12, background: `${action.color}15`, color: action.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                    <Icon name={action.icon} size={24} />
                                                 </div>
-                                                <div>
-                                                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
-                                                        <span style={{ fontSize: 13, fontWeight: 800, color: "#1E293B" }}>{b.type} Alert</span>
-                                                        <span style={{ fontSize: 11, color: "#94A3B8", fontWeight: 600 }}>{new Date(b.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                                    </div>
-                                                    <div style={{ fontSize: 13, color: "#475569", lineHeight: 1.6 }}>{b.message}</div>
-                                                </div>
+                                                <div style={{ fontWeight: 800, fontSize: 16, color: "#1E293B" }}>{action.title}</div>
                                             </div>
                                         ))}
+                                    </div>
+
+                                    {/* Safety Broadcasts */}
+                                    <div className="card" style={{ flex: 1, padding: 32 }}>
+                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+                                            <h3 style={{ fontSize: 16, fontWeight: 900, color: "#0F172A", display: "flex", alignItems: "center", gap: 10 }}>
+                                                <Icon name="broadcast" size={20} color="#1E3A8A" /> Safety Feed
+                                            </h3>
+                                            <div className="badge-critical" style={{ padding: "4px 10px", borderRadius: 20, fontSize: 10, fontWeight: 800 }}>LIVE</div>
+                                        </div>
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                            {broadcasts.length === 0 ? (
+                                                <div style={{ padding: 40, textAlign: "center", color: "#94A3B8", background: "rgba(0,0,0,0.02)", borderRadius: 16 }}>No active alerts</div>
+                                            ) : broadcasts.map(b => (
+                                                <div key={b.id} className="fadeIn" style={{ padding: 16, background: "rgba(30,58,138,0.03)", borderRadius: 16, borderLeft: `6px solid ${b.type === "Urgent" ? "#C8102E" : "#1E3A8A"}` }}>
+                                                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                                                        <span style={{ fontWeight: 800, fontSize: 13, color: b.type === "Urgent" ? "#C8102E" : "#1E3A8A" }}>{b.type} ALERT</span>
+                                                        <span style={{ fontSize: 11, opacity: 0.6 }}>{new Date(b.time).toLocaleTimeString()}</span>
+                                                    </div>
+                                                    <p style={{ fontSize: 13, lineHeight: 1.6, color: "#475569" }}>{b.message}</p>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Recent Personal Reports */}
-                            <div className="card" style={{ padding: 32, background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
+                            {/* Bottom Tier: Reports */}
+                            <div className="card" style={{ padding: 32 }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                                    <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1E293B" }}>My Recent Incidents</h3>
-                                    <button onClick={() => setActiveTab("My Reports")} style={{ background: "none", border: "none", color: "#1E3A8A", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                                        View All Vault <Icon name="arrow-right" size={14} />
-                                    </button>
+                                    <h3 style={{ fontSize: 18, fontWeight: 900, color: "#0F172A" }}>My Request History</h3>
+                                    <button onClick={() => setActiveTab("My Reports")} style={{ background: "transparent", color: "#1E3A8A", fontWeight: 800, fontSize: 13 }}>View Full Archive →</button>
                                 </div>
-                                {loading ? (
-                                    <div className="skeleton" style={{ height: 100, borderRadius: 12 }} />
-                                ) : reports.length === 0 ? (
-                                    <div style={{ padding: 40, textAlign: "center", color: "#94A3B8", background: "#F8FAFC", borderRadius: 12, border: "1px dashed #E2E8F0" }}>
-                                        <Icon name="shield-check" size={32} color="#CBD5E1" />
-                                        <div style={{ fontSize: 14, fontWeight: 700, marginTop: 12, color: "#64748B" }}>No incidents reported.</div>
-                                        <div style={{ fontSize: 12, marginTop: 4 }}>You have a clean safety record.</div>
+
+                                {reports.length === 0 ? (
+                                    <div style={{ padding: 60, textAlign: "center", borderRadius: 24, background: "#F8FAFC", border: "2px dashed #E2E8F0" }}>
+                                        <div style={{ fontSize: 16, fontWeight: 800, color: "#64748B" }}>No incidents registered</div>
+                                        <p style={{ fontSize: 13, color: "#94A3B8", marginTop: 8 }}>Your safety record is completely clear.</p>
                                     </div>
                                 ) : (
-                                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                                        <thead>
-                                            <tr>
-                                                <th style={{ textAlign: "left", padding: 12, fontSize: 11, color: "#94A3B8", letterSpacing: 1, borderBottom: "1px solid #E2E8F0" }}>ID</th>
-                                                <th style={{ textAlign: "left", padding: 12, fontSize: 11, color: "#94A3B8", letterSpacing: 1, borderBottom: "1px solid #E2E8F0" }}>INCIDENT</th>
-                                                <th style={{ textAlign: "left", padding: 12, fontSize: 11, color: "#94A3B8", letterSpacing: 1, borderBottom: "1px solid #E2E8F0" }}>DATE</th>
-                                                <th style={{ textAlign: "left", padding: 12, fontSize: 11, color: "#94A3B8", letterSpacing: 1, borderBottom: "1px solid #E2E8F0" }}>PRIORITY</th>
-                                                <th style={{ textAlign: "left", padding: 12, fontSize: 11, color: "#94A3B8", letterSpacing: 1, borderBottom: "1px solid #E2E8F0" }}>STATUS</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {reports.slice(0, 3).map(r => (
-                                                <tr key={r.id}>
-                                                    <td style={{ padding: "16px 12px", fontSize: 13, fontWeight: 800, color: "#1E3A8A" }}>{r.id}</td>
-                                                    <td style={{ padding: "16px 12px", fontSize: 14, fontWeight: 600, color: "#1E293B" }}>{r.type}</td>
-                                                    <td style={{ padding: "16px 12px", fontSize: 13, color: "#64748B" }}>{new Date(r.date || Date.now()).toLocaleDateString()}</td>
-                                                    <td style={{ padding: "16px 12px" }}><LevelBadge level={r.level} /></td>
-                                                    <td style={{ padding: "16px 12px" }}><StatusBadge status={r.status} /></td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
+                                        {reports.slice(0, 3).map(r => (
+                                            <div key={r.id} className="fadeIn" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 24, background: "rgba(30,58,138,0.02)", borderRadius: 20, border: "1px solid rgba(0,0,0,0.03)" }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                                                    <div style={{ width: 48, height: 48, borderRadius: 14, background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+                                                        <Icon name="file-text" size={24} color="#1E3A8A" />
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontSize: 12, fontWeight: 800, color: "#64748B", marginBottom: 4 }}>{r.id} • {new Date(r.date || Date.now()).toLocaleDateString()}</div>
+                                                        <div style={{ fontSize: 16, fontWeight: 800, color: "#1E293B" }}>{r.type}</div>
+                                                    </div>
+                                                </div>
+                                                <div style={{ textAlign: "right" }}>
+                                                    <StatusBadge status={r.status} />
+                                                    <div style={{ fontSize: 12, fontWeight: 700, color: "#3B82F6", marginTop: 8, cursor: "pointer" }}>Track Details</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -253,46 +344,30 @@ const CitizenDashboard = ({ user }) => {
 
                     {activeTab === "My Reports" && (
                         <div className="slide-in">
-                            <div className="card" style={{ padding: 32, background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                                    <h3 style={{ fontSize: 18, fontWeight: 900, color: "#1E293B" }}>Incident Vault</h3>
-                                </div>
-                                {loading ? (
-                                    <div className="skeleton" style={{ height: 300, borderRadius: 12 }} />
-                                ) : reports.length === 0 ? (
-                                    <div style={{ padding: 60, textAlign: "center", color: "#94A3B8", background: "#F8FAFC", borderRadius: 12, border: "1px dashed #E2E8F0" }}>
-                                        <Icon name="check-circle" size={48} color="#CBD5E1" />
-                                        <div style={{ fontSize: 16, fontWeight: 800, marginTop: 16, color: "#64748B" }}>No History Found</div>
-                                        <div style={{ fontSize: 14, marginTop: 8 }}>You haven't filed any emergency reports yet.</div>
-                                    </div>
-                                ) : (
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
-                                        {reports.map((r) => (
-                                            <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 24, border: "1px solid #E2E8F0", borderRadius: 12, background: "#F8FAFC" }}>
-                                                <div>
-                                                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                                                        <span style={{ fontSize: 14, fontWeight: 900, color: "#1E3A8A" }}>{r.id}</span>
-                                                        <LevelBadge level={r.level} />
-                                                    </div>
-                                                    <div style={{ fontSize: 16, fontWeight: 800, color: "#1E293B", marginBottom: 4 }}>{r.type}</div>
-                                                    <div style={{ fontSize: 13, color: "#64748B", display: "flex", alignItems: "center", gap: 6 }}>
-                                                        <Icon name="map-pin" size={14} color="#94A3B8" /> {r.location}
-                                                    </div>
-                                                </div>
-                                                <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 16 }}>
-                                                    <StatusBadge status={r.status} />
-                                                    <button onClick={() => navigate("/track")} style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", padding: "8px 16px", borderRadius: 8, fontSize: 12, fontWeight: 700, color: "#1E3A8A", cursor: "pointer" }}>Track Live Progress</button>
-                                                </div>
+                            <div className="card" style={{ padding: 32 }}>
+                                <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 24 }}>Incident Archive</h2>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }}>
+                                    {reports.map(r => (
+                                        <div key={r.id} className="card" style={{ display: "flex", justifyContent: "space-between", padding: 24, background: "rgba(0,0,0,0.01)" }}>
+                                            {/* List details here */}
+                                            <div>
+                                                <div style={{ fontWeight: 900, color: "#1E3A8A", marginBottom: 8 }}>{r.id}</div>
+                                                <div style={{ fontSize: 18, fontWeight: 800 }}>{r.type}</div>
+                                                <div style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>{r.location}</div>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
+                                            <div style={{ textAlign: "right" }}>
+                                                <StatusBadge status={r.status} />
+                                                <LevelBadge level={r.level} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     )}
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

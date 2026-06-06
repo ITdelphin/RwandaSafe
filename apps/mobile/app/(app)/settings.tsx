@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Switch, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
 import { useSettingsStore } from '../../src/store/settingsStore';
@@ -55,7 +56,10 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>My Account</Text>
           <View style={styles.accountInfo}>
-            <Text style={styles.accountPhone}>📱 {user.phone}</Text>
+            <View style={styles.accountPhoneRow}>
+              <Ionicons name="call-outline" size={15} color={Colors.textPrimary} />
+              <Text style={styles.accountPhone}> {user.phone}</Text>
+            </View>
             {user.name && <Text style={styles.accountName}>{user.name}</Text>}
           </View>
         </View>
@@ -87,6 +91,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   rowLabel: { fontSize: 15, color: Colors.textPrimary },
   accountInfo: { gap: 4 },
+  accountPhoneRow: { flexDirection: 'row', alignItems: 'center' },
   accountPhone: { fontSize: 15, color: Colors.textPrimary },
   accountName: { fontSize: 14, color: Colors.textSecondary },
   version: { fontSize: 14, color: Colors.textSecondary },

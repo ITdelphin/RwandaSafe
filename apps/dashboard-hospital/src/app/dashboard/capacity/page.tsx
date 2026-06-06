@@ -1,4 +1,5 @@
 'use client';
+import { RefreshCw, Droplets, XCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useHospitalCapacity } from '../../../hooks/useHospitalCapacity';
 import { HospitalCapacityBoard } from '../../../components/capacity/HospitalCapacityBoard';
 import { useQuery } from '@tanstack/react-query';
@@ -19,15 +20,16 @@ export default function CapacityPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-gray-900">Hospital Capacity Board</h1>
-        <button onClick={() => refetch()} className="text-xs border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-600">
-          🔄 Refresh
+        <button onClick={() => refetch()} className="text-xs border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-600 flex items-center gap-1.5">
+          <RefreshCw size={14} /> Refresh
         </button>
       </div>
 
       {/* Critical blood alerts */}
       {critical.map((b: any) => (
-        <div key={b.type} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-          🩸 <strong>{BLOOD_TYPE_LABELS[b.type] ?? b.type}</strong> blood type critically low across all hospitals ({b.units} unit{b.units !== 1 ? 's' : ''}). Consider urgent procurement.
+        <div key={b.type} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
+          <Droplets size={16} className="flex-shrink-0 mt-0.5" />
+          <span><strong>{BLOOD_TYPE_LABELS[b.type] ?? b.type}</strong> blood type critically low across all hospitals ({b.units} unit{b.units !== 1 ? 's' : ''}). Consider urgent procurement.</span>
         </div>
       ))}
 
@@ -37,10 +39,10 @@ export default function CapacityPage() {
         <div className="grid grid-cols-4 gap-3">
           {blood.map((b: any) => {
             const color = b.status === 'CRITICAL' ? '#EF4444' : b.status === 'LOW' ? '#F59E0B' : '#22C55E';
-            const icon = b.status === 'CRITICAL' ? '❌' : b.status === 'LOW' ? '⚠️' : '✅';
+            const StatusIcon = b.status === 'CRITICAL' ? XCircle : b.status === 'LOW' ? AlertTriangle : CheckCircle2;
             return (
               <div key={b.type} className="text-center p-3 rounded-lg border" style={{ borderColor: color + '30' }}>
-                <div className="text-lg mb-1">{icon}</div>
+                <div className="flex justify-center mb-1"><StatusIcon size={20} style={{ color }} /></div>
                 <div className="text-sm font-bold" style={{ color }}>{BLOOD_TYPE_LABELS[b.type] ?? b.type}</div>
                 <div className="text-xs text-gray-500">{b.units} units</div>
               </div>

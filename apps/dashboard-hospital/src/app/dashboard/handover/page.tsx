@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { dashboardApi, officersApi } from '../../../lib/apiClient';
 import { useAuthStore } from '../../../store/authStore';
@@ -42,7 +43,7 @@ export default function HandoverPage() {
   if (success) {
     return (
       <div className="flex flex-col items-center justify-center h-96">
-        <div className="text-5xl mb-4">✅</div>
+        <div className="mb-4 flex justify-center"><CheckCircle2 size={56} className="text-green-500" /></div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">Handover Complete</h2>
         <p className="text-sm text-gray-500">You are now off duty. Redirecting to login...</p>
       </div>
@@ -59,7 +60,7 @@ export default function HandoverPage() {
           <h2 className="text-sm font-semibold text-gray-700">Your Open Cases ({openCases.length})</h2>
         </div>
         {openCases.length === 0 ? (
-          <EmptyState message="No open cases assigned to you" icon="✅" />
+          <EmptyState message="No open cases assigned to you" icon={<CheckCircle2 size={48} className="text-green-500" />} />
         ) : (
           <div className="divide-y divide-gray-50">
             {openCases.map((inc: any) => (

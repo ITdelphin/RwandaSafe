@@ -10,6 +10,7 @@ import { AssignModal } from './AssignModal';
 import { StatusUpdateModal } from './StatusUpdateModal';
 import { ForwardModal } from './ForwardModal';
 import { formatDate, timeAgo } from '../../lib/formatters';
+import { X, Lock, MessageSquare } from 'lucide-react';
 
 interface Props { incidentId: string; onClose: () => void; }
 
@@ -63,7 +64,9 @@ export function IncidentDetail({ incidentId, onClose }: Props) {
               </>
             )}
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none ml-4">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-4">
+            <X size={20} />
+          </button>
         </div>
 
         {/* Body */}
@@ -132,8 +135,8 @@ export function IncidentDetail({ incidentId, onClose }: Props) {
                 <div className="flex gap-2 mb-3">
                   {(['notes', 'chat'] as const).map(t => (
                     <button key={t} onClick={() => setTab(t)}
-                      className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${tab === t ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-gray-100'}`}>
-                      {t === 'notes' ? '🔒 Internal Notes' : '💬 Citizen Messages'}
+                      className={`inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full font-medium transition-colors ${tab === t ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-gray-100'}`}>
+                      {t === 'notes' ? <><Lock size={11} /> Internal Notes</> : <><MessageSquare size={11} /> Citizen Messages</>}
                     </button>
                   ))}
                 </div>

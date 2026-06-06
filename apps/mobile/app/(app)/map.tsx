@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Linking, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
 
 const EMERGENCY_NUMBERS = [
@@ -25,7 +26,7 @@ export default function MapScreen() {
       </View>
 
       <View style={styles.mapPlaceholder}>
-        <Text style={styles.mapIcon}>🗺️</Text>
+        <Ionicons name="map-outline" size={64} color={Colors.textMuted} style={styles.mapIcon} />
         <Text style={styles.mapText}>Map view</Text>
         <Text style={styles.mapSubtext}>
           Add your Google Maps API key to {Platform.OS === 'ios' ? 'app.json' : 'app.json'} to enable the full map.
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
   emergencyLabel: { color: '#fff', fontSize: 11, fontWeight: '600' },
   emergencyNumber: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   mapPlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-  mapIcon: { fontSize: 64, marginBottom: 16 },
+  mapIcon: { marginBottom: 16 },
   mapText: { fontSize: 20, fontWeight: 'bold', color: Colors.textPrimary, marginBottom: 8 },
   mapSubtext: { fontSize: 14, color: Colors.textSecondary, textAlign: 'center', marginTop: 4 },
 });

@@ -1,5 +1,6 @@
 'use client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { CheckCircle2 } from 'lucide-react';
 import { officersApi } from '../../lib/apiClient';
 
 interface Props { officer: any; compact?: boolean; }
@@ -49,8 +50,12 @@ export function OfficerCard({ officer, compact = false }: Props) {
           <div className="text-xs text-gray-500">{officer.badgeNumber ? `#${officer.badgeNumber}` : '—'} · {officer.rank ?? 'Officer'}</div>
         </div>
       </div>
-      <div className="text-xs text-gray-500 mb-3">
-        {cases === 0 ? '✅ Available' : `${cases} open case${cases !== 1 ? 's' : ''}`}
+      <div className="text-xs text-gray-500 mb-3 flex items-center gap-1">
+        {cases === 0 ? (
+          <><CheckCircle2 size={12} className="text-green-500" /> Available</>
+        ) : (
+          `${cases} open case${cases !== 1 ? 's' : ''}`
+        )}
       </div>
       <button onClick={() => toggle.mutate()}
         className={`w-full text-xs py-1.5 rounded-lg font-medium border transition-colors ${officer.isOnDuty ? 'border-red-200 text-red-600 hover:bg-red-50' : 'border-green-200 text-green-600 hover:bg-green-50'}`}>

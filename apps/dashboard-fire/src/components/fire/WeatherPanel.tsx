@@ -1,5 +1,6 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
+import { AlertTriangle } from 'lucide-react';
 import { fireApi } from '../../lib/apiClient';
 
 interface Props {
@@ -40,7 +41,7 @@ export function WeatherPanel({ incidentId }: Props) {
 
       {isHighWind && (
         <div className="mb-3 bg-red-100 border border-red-300 rounded-lg px-3 py-2 flex items-center gap-2">
-          <span className="text-sm">⚠️</span>
+          <AlertTriangle size={14} className="text-red-700 flex-shrink-0" />
           <span className="text-xs font-semibold text-red-700">HIGH WIND WARNING — Fire spread risk elevated</span>
         </div>
       )}

@@ -1,9 +1,10 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { Stethoscope, AlertCircle, Lock, Mail } from 'lucide-react';
 import { authApi } from '../../lib/apiClient';
 
-const AGENCY = { name: 'King Faisal Hospital SAMU', role: 'Medical Portal', icon: '🚑', color: '#34A853' };
+const AGENCY = { name: 'King Faisal Hospital SAMU', role: 'Medical Portal', color: '#34A853' };
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -26,8 +27,8 @@ export default function ForgotPasswordPage() {
     <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
       <div style={{ width: '100%', maxWidth: '440px' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: AGENCY.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '28px', boxShadow: `0 4px 14px ${AGENCY.color}40` }}>
-            {AGENCY.icon}
+          <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: AGENCY.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: `0 4px 14px ${AGENCY.color}40` }}>
+            <Stethoscope size={28} color="white" />
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#202124', margin: '0 0 4px' }}>Rwanda Safe</h1>
           <p style={{ fontSize: '14px', color: '#5f6368', margin: 0 }}>{AGENCY.name} · {AGENCY.role}</p>
@@ -37,7 +38,7 @@ export default function ForgotPasswordPage() {
           {sent ? (
             <div style={{ textAlign: 'center', padding: '8px 0' }}>
               <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#e8f0fe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <span style={{ fontSize: '28px' }}>📧</span>
+                <Mail size={28} color="#1a73e8" />
               </div>
               <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#202124', margin: '0 0 8px' }}>Check your inbox</h2>
               <p style={{ fontSize: '13px', color: '#5f6368', marginBottom: '20px', lineHeight: 1.5 }}>
@@ -66,7 +67,7 @@ export default function ForgotPasswordPage() {
 
                 {error && (
                   <div style={{ backgroundColor: '#fce8e6', border: '1px solid #f5c6c2', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                    <span style={{ color: '#d93025', fontSize: '14px' }}>⚠️</span>
+                    <AlertCircle size={14} style={{ color: '#d93025', flexShrink: 0, marginTop: '1px' }} />
                     <p style={{ fontSize: '13px', color: '#c5221f', margin: 0 }}>{error}</p>
                   </div>
                 )}
@@ -92,7 +93,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         <p style={{ textAlign: 'center', fontSize: '11px', color: '#80868b', marginTop: '20px' }}>
-          🔒 Secured by Rwanda Safe · Emergency Response Platform
+          <Lock size={11} className="inline" /> Secured by Rwanda Safe · Emergency Response Platform
         </p>
       </div>
     </div>

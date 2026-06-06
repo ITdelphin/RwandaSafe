@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { Truck } from 'lucide-react';
 import { fireApi } from '../../lib/apiClient';
 import { UNIT_COLORS, UNIT_TRANSITIONS } from '../../constants/theme';
 import { FireUnitSelectModal } from './FireUnitSelectModal';
@@ -40,7 +41,9 @@ export function FireUnitDispatchPanel({ incidentId, fireReport, onRefresh }: Pro
 
       {dispatchedUnits.length === 0 ? (
         <div className="text-center py-6 text-gray-400">
-          <div className="text-3xl mb-2">🚒</div>
+          <div className="flex justify-center mb-2">
+            <Truck size={32} className="text-gray-300" />
+          </div>
           <div className="text-xs">No units dispatched yet</div>
           <button
             onClick={() => setShowModal(true)}
@@ -56,9 +59,10 @@ export function FireUnitDispatchPanel({ incidentId, fireReport, onRefresh }: Pro
             return (
               <div key={unit.id} className="bg-white rounded-xl p-3 border border-orange-100">
                 <div className="flex items-center justify-between mb-2">
-                  <div>
+                  <div className="flex items-center gap-2">
+                    <Truck size={14} className="text-orange-600" />
                     <span className="font-bold text-sm text-gray-900">{unit.callSign}</span>
-                    <span className="text-xs text-gray-500 ml-2">{unit.unitType}</span>
+                    <span className="text-xs text-gray-500">{unit.unitType}</span>
                   </div>
                   <span
                     className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"

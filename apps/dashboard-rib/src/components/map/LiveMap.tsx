@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
+import { Map } from 'lucide-react';
 import { useMapData } from '../../hooks/useMapData';
 import { SEVERITY_COLORS, INCIDENT_TYPES } from '../../constants/theme';
 
@@ -57,7 +58,7 @@ export function LiveMap() {
     incidents.forEach((inc: any) => {
       if (!filters.incidents) return;
       const color = SEVERITY_COLORS[inc.severity] ?? '#757575';
-      const typeIcon = INCIDENT_TYPES.find(t => t.key === inc.type)?.icon ?? '❗';
+      const typeLabel = INCIDENT_TYPES.find(t => t.key === inc.type)?.label ?? inc.type;
 
       const marker = new google.maps.Marker({
         position: { lat: inc.latitude, lng: inc.longitude },
@@ -76,7 +77,7 @@ export function LiveMap() {
       const infoWindow = new google.maps.InfoWindow({
         content: `<div style="font-family:sans-serif;padding:4px 0">
           <b style="font-size:13px;font-family:monospace">${inc.trackingCode}</b>
-          <div style="font-size:12px;margin:4px 0">${typeIcon} ${inc.type.replace(/_/g,' ')}</div>
+          <div style="font-size:12px;margin:4px 0">${typeLabel}</div>
           <div style="font-size:11px;color:#64748b">${inc.status.replace(/_/g,' ')}</div>
           <a href="/dashboard/incidents" style="font-size:11px;color:#1B5E82">Open Case →</a>
         </div>`,
@@ -104,7 +105,7 @@ export function LiveMap() {
         </label>
         <button onClick={() => setHeatMode(h => !h)}
           className={`w-full text-xs py-1.5 rounded-lg font-medium transition-colors ${heatMode ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-          {heatMode ? '🌡️ Heat Map On' : '🌡️ Heat Map'}
+          {heatMode ? 'Heat Map On' : 'Heat Map'}
         </button>
         <div className="mt-3 pt-3 border-t border-gray-100">
           <div className="text-[11px] font-semibold text-gray-500 mb-2">Legend</div>
@@ -120,7 +121,9 @@ export function LiveMap() {
       {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY === 'your_google_maps_key' ? (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
           <div className="text-center">
-            <div className="text-4xl mb-3">🗺️</div>
+            <div className="flex justify-center mb-3 text-gray-400">
+              <Map size={48} />
+            </div>
             <p className="text-sm text-gray-600 font-medium">Google Maps API key not configured</p>
             <p className="text-xs text-gray-400 mt-1">Set NEXT_PUBLIC_GOOGLE_MAPS_KEY in .env.local</p>
           </div>

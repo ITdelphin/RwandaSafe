@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Icon, LevelBadge, StatusBadge } from "../components/Badges";
 import toast from "react-hot-toast";
-import API from "../config/api";
+import { io } from "socket.io-client";
 
-/* ─────────────────────────── helpers ─────────────────────────── */
+const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+/* ─── helpers ─── */
 const fmtTime = (d) =>
     new Date(d).toLocaleTimeString("en-RW", { hour: "2-digit", minute: "2-digit" });
 const fmtDate = (d) =>
@@ -22,7 +24,7 @@ const TABS = [
 
 /* ═══════════════════════════════════════════════════════════════════
    POLICE DASHBOARD
-═══════════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════════════ */
 const PoliceDashboard = ({ user }) => {
     const [tab, setTab] = useState("intel");
     const [showModal, setShowModal] = useState(null);
@@ -32,8 +34,8 @@ const PoliceDashboard = ({ user }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [refreshing, setRefreshing] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [confirmDelete, setConfirmDelete] = useState(null); // report id to confirm deleting
-    const pollRef = useRef(null);
+    const [confirmDelete, setConfirmDelete] = useState(null);
+    const socketRef = useRef(null);
 
     /* Live clock */
     useEffect(() => {
@@ -41,14 +43,34 @@ const PoliceDashboard = ({ user }) => {
         return () => clearInterval(t);
     }, []);
 
-    /* Auto-refresh every 15s */
+    /* Socket & Initial Fetch */
     useEffect(() => {
         fetchReports();
-        pollRef.current = setInterval(() => {
-            setRefreshing(true);
-            fetchReports().finally(() => setRefreshing(false));
-        }, 15000);
-        return () => clearInterval(pollRef.current);
+
+        socketRef.current = io(SOCKET_URL);
+        socketRef.current.on("connect", () => {
+            console.log("👮 Connected to Police Response Network");
+        });
+
+        const handleNewIncident = (incident) => {
+            setReports(prev => [incident, ...prev]);
+            toast.error(`🚨 NEW EMERGENCY: ${incident.type} in ${incident.location}`, {
+                duration: 6000,
+                position: "top-right",
+                icon: "🚔"
+            });
+            // Play alert sound if needed
+        };
+
+        socketRef.current.on("sos_signal", handleNewIncident);
+        socketRef.current.on("new_report", handleNewIncident);
+        socketRef.current.on("report_update", ({ id, status }) => {
+            setReports(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+        });
+
+        return () => {
+            if (socketRef.current) socketRef.current.disconnect();
+        };
     }, []);
 
     const fetchReports = async () => {
@@ -143,114 +165,47 @@ const PoliceDashboard = ({ user }) => {
         <div style={{ display: "flex", minHeight: "100vh", background: "#F1F5F9", fontFamily: "'Sora', sans-serif" }}>
 
             {/* ├── SIDEBAR ──────────────────────────────────────── */}
-            <aside style={{
-                width: 260, flexShrink: 0,
-                background: "linear-gradient(180deg, #0F172A 0%, #1E293B 100%)",
-                display: "flex", flexDirection: "column",
-                position: "sticky", top: 0, height: "100vh", overflowY: "auto",
-                boxShadow: "4px 0 24px rgba(0,0,0,0.15)",
-            }}>
-                {/* Logo */}
-                <div style={{ padding: "28px 20px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
-                        <div style={{
-                            width: 42, height: 42,
-                            background: "linear-gradient(145deg, #C8102E, #9A0C24)",
-                            borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center",
-                            boxShadow: "0 4px 14px rgba(200,16,46,0.3)",
-                        }}>
-                            <Icon name="shield-lock" size={22} color="#fff" />
+            <aside className="dashboard-sidebar" style={{ background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)", color: "#FFFFFF" }}>
+                <div className="dashboard-sidebar-header" style={{ padding: "32px 24px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ width: 44, height: 44, background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.2)" }}>
+                        <Icon name="shield-lock" size={24} color="#FFFFFF" />
+                    </div>
+                    <div>
+                        <div style={{ fontWeight: 900, fontSize: 18, letterSpacing: -0.5, color: "#FFFFFF" }}>RNP Response</div>
+                        <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.6, letterSpacing: 2, textTransform: "uppercase" }}>Police Authority</div>
+                    </div>
+                </div>
+
+                <div className="dashboard-sidebar-nav" style={{ padding: "32px 16px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                    {TABS.map((t) => (
+                        <button
+                            key={t.id}
+                            className={`sidebar-link ${tab === t.id ? "active" : ""}`}
+                            onClick={() => setTab(t.id)}
+                        >
+                            <Icon name={t.icon} size={18} />
+                            {t.label}
+                            {t.id === "trash" && deleted.length > 0 && (
+                                <span style={{ marginLeft: "auto", background: "#EF4444", color: "#fff", padding: "2px 8px", borderRadius: 10, fontSize: 10 }}>{deleted.length}</span>
+                            )}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="dashboard-sidebar-footer" style={{ padding: 24, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800 }}>
+                            {user?.name?.[0]}
                         </div>
                         <div>
-                            <div style={{ fontWeight: 900, fontSize: 16, color: "#FFFFFF", letterSpacing: -0.3 }}>RNP Portal</div>
-                            <div style={{ fontSize: 8.5, color: "#475569", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace" }}>
-                                SECURITY NETWORK
-                            </div>
+                            <div style={{ fontSize: 13, fontWeight: 800 }}>{user?.name}</div>
+                            <div style={{ fontSize: 10, opacity: 0.6 }}>Duty Officer</div>
                         </div>
                     </div>
-                </div>
-
-                {/* Live clock */}
-                <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                    <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: "12px 14px" }}>
-                        <div style={{ fontSize: 24, fontWeight: 900, color: "#FFFFFF", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2, lineHeight: 1 }}>
-                            {currentTime.toLocaleTimeString("en-RW", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-                        </div>
-                        <div style={{ fontSize: 10, color: "#64748B", marginTop: 6, letterSpacing: 1, fontWeight: 600 }}>
-                            {currentTime.toLocaleDateString("en-RW", { weekday: "long", month: "short", day: "numeric" })}
-                        </div>
+                    <div style={{ padding: "8px 12px", background: "rgba(34,197,94,0.1)", borderRadius: 8, display: "flex", alignItems: "center", gap: 8, border: "1px solid rgba(34,197,94,0.2)" }}>
+                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", boxShadow: "0 0 10px #22C55E" }} />
+                        <span style={{ fontSize: 10, fontWeight: 800, color: "#22C55E", letterSpacing: 1 }}>SYSTEM ONLINE</span>
                     </div>
-                </div>
-
-                {/* Nav */}
-                <nav style={{ flex: 1, padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
-                    <div style={{ fontSize: 9, fontWeight: 800, color: "#334155", letterSpacing: 2, textTransform: "uppercase", padding: "4px 8px 12px", fontFamily: "'JetBrains Mono', monospace" }}>
-                        OPERATIONS
-                    </div>
-                    {TABS.map((t) => {
-                        const isActive = tab === t.id;
-                        const badgeCount = t.id === "trash" ? deleted.length : null;
-                        return (
-                            <button
-                                key={t.id}
-                                onClick={() => setTab(t.id)}
-                                style={{
-                                    display: "flex", alignItems: "center", gap: 12,
-                                    padding: "11px 14px",
-                                    background: isActive ? "linear-gradient(135deg, rgba(200,16,46,0.15), rgba(200,16,46,0.08))" : "transparent",
-                                    border: isActive ? "1px solid rgba(200,16,46,0.2)" : "1px solid transparent",
-                                    borderRadius: 10,
-                                    color: isActive ? "#FFFFFF" : "#64748B",
-                                    fontSize: 13, fontWeight: isActive ? 700 : 500,
-                                    cursor: "pointer", transition: "all 0.2s ease",
-                                    textAlign: "left", width: "100%", position: "relative",
-                                    fontFamily: "'Sora', sans-serif",
-                                    justifyContent: "space-between",
-                                }}
-                                onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#CBD5E1"; } }}
-                                onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#64748B"; } }}
-                            >
-                                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                                    {isActive && <div style={{ position: "absolute", left: 0, top: "20%", bottom: "20%", width: 3, borderRadius: "0 2px 2px 0", background: "#C8102E" }} />}
-                                    <Icon name={t.icon} size={18} color={isActive ? "#F87171" : t.id === "trash" ? "#EF4444" : "#475569"} />
-                                    {t.label}
-                                </div>
-                                {badgeCount > 0 && (
-                                    <div style={{
-                                        minWidth: 18, height: 18, borderRadius: 9,
-                                        background: "#DC2626", color: "#fff",
-                                        fontSize: 9, fontWeight: 800,
-                                        display: "flex", alignItems: "center", justifyContent: "center",
-                                        padding: "0 5px",
-                                    }}>
-                                        {badgeCount}
-                                    </div>
-                                )}
-                            </button>
-                        );
-                    })}
-                </nav>
-
-                {/* Officer card */}
-                <div style={{ padding: "16px 12px 20px" }}>
-                    <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "16px 14px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                            <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(145deg, #1E3A8A, #2D5DD6)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15, color: "#fff", boxShadow: "0 3px 10px rgba(30,58,138,0.3)" }}>
-                                {(user?.name || "P")[0]}
-                            </div>
-                            <div>
-                                <div style={{ fontSize: 13, fontWeight: 800, color: "#F1F5F9" }}>{user?.name || "Police Officer"}</div>
-                                <div style={{ fontSize: 9, color: "#475569", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace" }}>
-                                    {user?.role || "Police"} UNIT
-                                </div>
-                            </div>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)", borderRadius: 8 }}>
-                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E", boxShadow: "0 0 8px rgba(34,197,94,0.6)", animation: "pulse 2s infinite" }} />
-                            <span style={{ fontSize: 10, fontWeight: 800, color: "#22C55E", letterSpacing: 1.5, textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace" }}>DUTY ACTIVE</span>
-                        </div>
-                    </div>
-                    {refreshing && <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 6, justifyContent: "center", fontSize: 10, color: "#475569" }}><Icon name="refresh" size={11} color="#475569" />Syncing...</div>}
                 </div>
             </aside>
 
@@ -343,22 +298,15 @@ const PoliceDashboard = ({ user }) => {
                 <div style={{ flex: 1, overflowY: "auto", padding: "32px 36px 48px" }}>
 
                     {/* ── KPI Row ── */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 32 }}>
                         {stats.map((s) => (
-                            <div key={s.label} style={{
-                                background: "#FFFFFF", border: `1px solid ${s.border}`, borderRadius: 16,
-                                padding: "22px 24px", display: "flex", alignItems: "center", gap: 16,
-                                boxShadow: "0 1px 4px rgba(0,0,0,0.04)", transition: "all 0.25s ease", cursor: "default",
-                            }}
-                                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 8px 24px ${s.border}88`; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; }}
-                            >
-                                <div style={{ width: 46, height: 46, borderRadius: 12, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                    <Icon name={s.icon} size={22} color={s.color} />
+                            <div key={s.label} className="stat-card" style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                                <div style={{ width: 52, height: 52, borderRadius: 14, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1px solid ${s.border}` }}>
+                                    <Icon name={s.icon} size={24} color={s.color} />
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 32, fontWeight: 900, color: s.color, lineHeight: 1, fontFamily: "'JetBrains Mono', monospace" }}>{s.val}</div>
-                                    <div style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 1.2, marginTop: 4 }}>{s.label}</div>
+                                    <div style={{ fontSize: 32, fontWeight: 900, color: "#0F172A", lineHeight: 1, letterSpacing: -1 }}>{s.val}</div>
+                                    <div style={{ fontSize: 11, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>{s.label}</div>
                                 </div>
                             </div>
                         ))}
@@ -489,82 +437,58 @@ const PoliceDashboard = ({ user }) => {
                                     </div>
                                 </div>
                             ) : (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                                     {displayed.map((r) => {
                                         const lColor = levelColor[r.level] || "#94A3B8";
                                         const sColor = statusColor[r.status] || "#94A3B8";
                                         return (
-                                            <div key={r.id} style={{
-                                                background: "#FFFFFF", border: "1px solid #E2E8F0",
-                                                borderLeft: `4px solid ${lColor}`, borderRadius: 14,
-                                                padding: "22px 24px", display: "flex", gap: 20, alignItems: "flex-start",
-                                                boxShadow: "0 1px 4px rgba(0,0,0,0.04)", transition: "all 0.25s ease",
-                                            }}
-                                                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.07)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-                                                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; e.currentTarget.style.transform = ""; }}
-                                            >
+                                            <div key={r.id} className="card" style={{ display: "flex", gap: 24, alignItems: "flex-start", padding: 28 }}>
                                                 {/* Level icon */}
-                                                <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, background: levelBg[r.level] || "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${lColor}33` }}>
-                                                    <Icon name={r.level === "Critical" ? "flame" : r.level === "High" ? "alert-triangle" : "alert-circle"} size={20} color={lColor} />
+                                                <div style={{ width: 56, height: 56, borderRadius: 16, flexShrink: 0, background: `${lColor}10`, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${lColor}20` }}>
+                                                    <Icon name={r.level === "Critical" ? "flame" : r.level === "High" ? "alert-triangle" : "alert-circle"} size={24} color={lColor} />
                                                 </div>
 
                                                 {/* Content */}
                                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
-                                                        <span style={{ fontSize: 10, fontWeight: 800, color: "#C8102E", background: "#FEF2F2", padding: "3px 8px", borderRadius: 5, fontFamily: "'JetBrains Mono', monospace" }}>#{r.id}</span>
-                                                        <span style={{ fontSize: 10, fontWeight: 800, color: lColor, background: levelBg[r.level] || "#F8FAFC", padding: "3px 10px", borderRadius: 6, border: `1px solid ${lColor}33`, textTransform: "uppercase", letterSpacing: 0.5 }}>{r.level}</span>
-                                                        <span style={{ fontSize: 10, fontWeight: 700, color: sColor, background: `${sColor}15`, padding: "3px 10px", borderRadius: 6, border: `1px solid ${sColor}30`, textTransform: "uppercase", letterSpacing: 0.5 }}>{r.status}</span>
+                                                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+                                                        <span style={{ fontSize: 11, fontWeight: 800, color: "#1E3A8A", background: "rgba(30,58,138,0.08)", padding: "4px 10px", borderRadius: 8 }}>#{r.id}</span>
+                                                        <span style={{ fontSize: 11, fontWeight: 800, color: lColor, background: `${lColor}10`, padding: "4px 12px", borderRadius: 8, textTransform: "uppercase" }}>{r.level}</span>
+                                                        <span style={{ fontSize: 11, fontWeight: 800, color: sColor, background: `${sColor}10`, padding: "4px 12px", borderRadius: 8, textTransform: "uppercase" }}>{r.status}</span>
                                                     </div>
-                                                    <h3 style={{ fontSize: 17, fontWeight: 800, color: "#0F172A", margin: "0 0 8px", letterSpacing: -0.3 }}>{r.type}</h3>
-                                                    <p style={{ fontSize: 13, color: "#64748B", lineHeight: 1.65, marginBottom: 14 }}>{r.description}</p>
-                                                    <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
-                                                        {r.location && <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "#475569" }}><Icon name="map-pin" size={13} color="#94A3B8" />{r.location}</span>}
-                                                        {r.reporter && <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "#475569" }}><Icon name="user" size={13} color="#94A3B8" />{r.reporter}</span>}
-                                                        <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "#475569" }}><Icon name="clock" size={13} color="#94A3B8" />{fmtDate(r.date)} · {fmtTime(r.date)}</span>
+                                                    <h3 style={{ fontSize: 18, fontWeight: 900, color: "#0F172A", margin: "0 0 8px", letterSpacing: -0.5 }}>{r.type}</h3>
+                                                    <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.6, marginBottom: 20 }}>{r.description}</p>
+                                                    <div style={{ display: "flex", gap: 24 }}>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#64748B", fontWeight: 600 }}>
+                                                            <Icon name="map-pin" size={14} color="#94A3B8" /> {r.location}
+                                                        </div>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#64748B", fontWeight: 600 }}>
+                                                            <Icon name="clock" size={14} color="#94A3B8" /> {fmtDate(r.date)} · {fmtTime(r.date)}
+                                                        </div>
                                                     </div>
                                                 </div>
 
                                                 {/* Action buttons */}
                                                 {tab !== "history" && (
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0, minWidth: 150 }}>
-                                                        <button onClick={() => setShowModal(r.id)} style={{ padding: "10px 0", width: "100%", background: "linear-gradient(135deg, #1E3A8A, #2D5DD6)", color: "#fff", border: "none", borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 2px 8px rgba(30,58,138,0.2)", transition: "all 0.2s", fontFamily: "'Sora', sans-serif" }}
-                                                            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(30,58,138,0.3)"; }}
-                                                            onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 8px rgba(30,58,138,0.2)"; }}>
-                                                            <Icon name="file-report" size={13} color="#fff" />View Docket
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: 10, minWidth: 160 }}>
+                                                        <button onClick={() => setShowModal(r.id)} className="btn-primary" style={{ width: "100%", fontSize: 12 }}>
+                                                            Detail Docket
                                                         </button>
                                                         {r.status === "Open" && (
-                                                            <button onClick={() => updateStatus(r.id, "In Progress")} style={{ padding: "10px 0", width: "100%", background: "linear-gradient(135deg, #D97706, #B45309)", color: "#fff", border: "none", borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.2s", fontFamily: "'Sora', sans-serif" }}
-                                                                onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-1px)"}
-                                                                onMouseLeave={(e) => e.currentTarget.style.transform = ""}>
-                                                                <Icon name="user-check" size={13} color="#fff" />Accept Unit
+                                                            <button onClick={() => updateStatus(r.id, "In Progress")} style={{ width: "100%", padding: "10px", background: "#F59E0B", color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 12 }}>
+                                                                Accept Alert
                                                             </button>
                                                         )}
                                                         {r.status === "In Progress" && (
-                                                            <button onClick={() => updateStatus(r.id, "Resolved")} style={{ padding: "10px 0", width: "100%", background: "linear-gradient(135deg, #16A34A, #15803D)", color: "#fff", border: "none", borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.2s", fontFamily: "'Sora', sans-serif" }}
-                                                                onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-1px)"}
-                                                                onMouseLeave={(e) => e.currentTarget.style.transform = ""}>
-                                                                <Icon name="circle-check" size={13} color="#fff" />Close Case
+                                                            <button onClick={() => updateStatus(r.id, "Resolved")} style={{ width: "100%", padding: "10px", background: "#10B981", color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 12 }}>
+                                                                Mark Resolved
                                                             </button>
                                                         )}
-                                                        {/* ── DELETE BUTTON ── */}
-                                                        {confirmDelete === r.id ? (
-                                                            <div style={{ display: "flex", gap: 5 }}>
-                                                                <button onClick={() => { updateStatus(r.id, "Deleted"); setConfirmDelete(null); }}
-                                                                    style={{ flex: 1, padding: "9px 0", background: "#DC2626", color: "#fff", border: "none", borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "'Sora', sans-serif" }}>
-                                                                    Confirm
-                                                                </button>
-                                                                <button onClick={() => setConfirmDelete(null)}
-                                                                    style={{ flex: 1, padding: "9px 0", background: "#F8FAFC", color: "#64748B", border: "1px solid #E2E8F0", borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Sora', sans-serif" }}>
-                                                                    Cancel
-                                                                </button>
-                                                            </div>
-                                                        ) : (
-                                                            <button onClick={() => setConfirmDelete(r.id)} style={{ padding: "9px 0", width: "100%", background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA", borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.2s", fontFamily: "'Sora', sans-serif" }}
-                                                                onMouseEnter={(e) => { e.currentTarget.style.background = "#FEE2E2"; }}
-                                                                onMouseLeave={(e) => { e.currentTarget.style.background = "#FEF2F2"; }}>
-                                                                <Icon name="trash" size={13} color="#DC2626" />Delete Case
-                                                            </button>
-                                                        )}
+                                                        <button
+                                                            onClick={() => setConfirmDelete(r.id)}
+                                                            style={{ width: "100%", padding: "10px", background: "transparent", color: "#EF4444", borderRadius: 10, fontWeight: 700, fontSize: 12, border: "1px solid rgba(239,68,68,0.2)" }}
+                                                        >
+                                                            Delete
+                                                        </button>
                                                     </div>
                                                 )}
                                             </div>

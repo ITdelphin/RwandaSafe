@@ -100,9 +100,9 @@ export const BLOOD_TYPE_LABELS: Record<string, string> = {
 };
 
 export const FIRE_TYPE_ICONS: Record<string, string> = {
-  STRUCTURAL_FIRE: '🏠🔥', VEHICLE_FIRE: '🚗🔥', WILDFIRE: '🌿🔥',
-  GAS_LEAK: '💨⚠️', CHEMICAL_SPILL: '☣️', EXPLOSION: '💥',
-  RESCUE_TRAPPED: '🆘', ELECTRICAL_FIRE: '⚡🔥', OTHER: '🔥',
+  STRUCTURAL_FIRE: 'Structural', VEHICLE_FIRE: 'Vehicle', WILDFIRE: 'Wildfire',
+  GAS_LEAK: 'Gas Leak', CHEMICAL_SPILL: 'Chemical', EXPLOSION: 'Explosion',
+  RESCUE_TRAPPED: 'Rescue', ELECTRICAL_FIRE: 'Electrical', OTHER: 'Other',
 };
 
 export const HAZMAT_COLORS: Record<string, string> = {
@@ -110,8 +110,8 @@ export const HAZMAT_COLORS: Record<string, string> = {
 };
 
 export const EVIDENCE_TYPE_ICONS: Record<string, string> = {
-  PHOTO: '📷', VIDEO: '🎥', DOCUMENT: '📄', AUDIO: '🎵',
-  PHYSICAL_DESCRIPTION: '🔍', WITNESS_STATEMENT: '🗣️', OTHER: '📦',
+  PHOTO: 'Photo', VIDEO: 'Video', DOCUMENT: 'Document', AUDIO: 'Audio',
+  PHYSICAL_DESCRIPTION: 'Physical', WITNESS_STATEMENT: 'Witness', OTHER: 'Other',
 };
 
 export const SYMPTOM_OPTIONS = [
@@ -120,15 +120,15 @@ export const SYMPTOM_OPTIONS = [
 ];
 
 export const INCIDENT_TYPES = [
-  { key: 'ACCIDENT',          label: 'Accident',         icon: '🚗' },
-  { key: 'MEDICAL_EMERGENCY', label: 'Medical Emergency',icon: '🏥' },
-  { key: 'CRIME',             label: 'Crime',            icon: '🚨' },
-  { key: 'FIRE',              label: 'Fire',             icon: '🔥' },
-  { key: 'GBV',               label: 'GBV',              icon: '⚠️' },
-  { key: 'CORRUPTION',        label: 'Corruption',       icon: '📋' },
-  { key: 'MISSING_PERSON',    label: 'Missing Person',   icon: '🔍' },
-  { key: 'NATURAL_DISASTER',  label: 'Natural Disaster', icon: '🌪️' },
-  { key: 'OTHER',             label: 'Other',            icon: '❗' },
+  { key: 'ACCIDENT',          label: 'Accident' },
+  { key: 'MEDICAL_EMERGENCY', label: 'Medical Emergency' },
+  { key: 'CRIME',             label: 'Crime' },
+  { key: 'FIRE',              label: 'Fire' },
+  { key: 'GBV',               label: 'GBV' },
+  { key: 'CORRUPTION',        label: 'Corruption' },
+  { key: 'MISSING_PERSON',    label: 'Missing Person' },
+  { key: 'NATURAL_DISASTER',  label: 'Natural Disaster' },
+  { key: 'OTHER',             label: 'Other' },
 ];
 
 export const RWANDA_DISTRICTS = [

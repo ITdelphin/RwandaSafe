@@ -1,14 +1,13 @@
 {
-    "version": 2,
-    "experimentalServices": {
-        "frontend": {
-            "root": "frontend",
-            "routePrefix": "/",
-            "framework": "vite"
-        },
-        "backend": {
-            "root": "backend",
-            "routePrefix": "/api"
-        }
+  "version": 2,
+  "buildCommand": "turbo run build --filter=web-citizen",
+  "outputDirectory": "apps/web-citizen/.next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet .",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
     }
+  }
 }

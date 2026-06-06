@@ -1,6 +1,7 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Flame } from 'lucide-react';
 import { SplashScreen } from '../components/shared/SplashScreen';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -13,7 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <SplashScreen
           onComplete={() => setSplashDone(true)}
           color="#E8710A"
-          icon="🚒"
+          icon={<Flame size={44} color="white" />}
           agencyName="Fire Brigade"
         />
       )}

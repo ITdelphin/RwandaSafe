@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { RefreshCw, Video, FileText } from 'lucide-react';
 import { apiClient } from '../../../lib/apiClient';
 import { formatDate } from '../../../lib/formatters';
 import { EmptyState } from '../../../components/shared/EmptyState';
@@ -21,14 +22,16 @@ export default function TelemedicinePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-gray-900">Telemedicine Sessions</h1>
-        <button onClick={() => refetch()} className="text-xs border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-600">🔄 Refresh</button>
+        <button onClick={() => refetch()} className="text-xs border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-600 flex items-center gap-1.5">
+          <RefreshCw size={14} /> Refresh
+        </button>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-700">Active Sessions ({active.length})</h2>
         </div>
-        {active.length === 0 ? <EmptyState message="No active telemedicine sessions" icon="💻" /> : (
+        {active.length === 0 ? <EmptyState message="No active telemedicine sessions" icon={<Video size={48} />} /> : (
           <table className="w-full">
             <thead><tr className="border-b border-gray-100">
               {['Tracking Code','Citizen','Status','Duration','Actions'].map(h => (
@@ -58,7 +61,7 @@ export default function TelemedicinePage() {
         <div className="px-5 py-4 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-700">Past Sessions ({past.length})</h2>
         </div>
-        {past.length === 0 ? <EmptyState message="No past sessions" icon="📋" /> : (
+        {past.length === 0 ? <EmptyState message="No past sessions" icon={<FileText size={48} />} /> : (
           <table className="w-full">
             <thead><tr className="border-b border-gray-100">
               {['Date','Tracking Code','Status','Notes'].map(h => (

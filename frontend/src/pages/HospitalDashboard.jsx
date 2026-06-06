@@ -184,6 +184,111 @@ const HospitalDashboard = ({ user, onLogout }) => {
                         ))}
                     </div>
                 )}
+
+                {tab === "fleet" && (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
+                        <div style={{ background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 12, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                            <Icon name="ambulance" size={18} color="#10B981" />
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "#065F46" }}>SAMU Fleet Status — Real-time tracking</span>
+                        </div>
+                        {ambulanceFleet.map(a => (
+                            <div key={a.id} className="card" style={{ padding: 24, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                                    <div style={{
+                                        width: 48, height: 48, borderRadius: 12,
+                                        background: a.status === "Dispatched" ? "#FEF3C7" : "#F0FDF4",
+                                        border: `2px solid ${a.status === "Dispatched" ? "#FCD34D" : "#BBF7D0"}`,
+                                        display: "flex", alignItems: "center", justifyContent: "center"
+                                    }}>
+                                        <Icon name="ambulance" size={22} color={a.status === "Dispatched" ? "#D97706" : "#10B981"} />
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: 15, fontWeight: 800, color: "#1E293B" }}>{a.unit}</div>
+                                        <div style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>ID: {a.id} · Base: {a.loc}</div>
+                                    </div>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                                    {a.eta !== "—" && (
+                                        <div style={{ textAlign: "center" }}>
+                                            <div style={{ fontSize: 20, fontWeight: 900, color: "#D97706" }}>{a.eta}</div>
+                                            <div style={{ fontSize: 10, color: "#94A3B8", fontWeight: 700 }}>ETA</div>
+                                        </div>
+                                    )}
+                                    <span style={{
+                                        padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 800,
+                                        background: a.status === "Dispatched" ? "#FEF3C7" : "#F0FDF4",
+                                        color: a.status === "Dispatched" ? "#92400E" : "#065F46",
+                                        border: `1.5px solid ${a.status === "Dispatched" ? "#FCD34D" : "#6EE7B7"}`
+                                    }}>{a.status}</span>
+                                    <button className="btn-primary" style={{ padding: "8px 16px", background: "#1E3A8A", border: "none", fontSize: 12 }}
+                                        onClick={() => toast.success(`${a.unit} dispatched to incident`)}>
+                                        Dispatch
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {tab === "resources" && (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+                        {/* Bed Capacity */}
+                        <div className="card" style={{ padding: 28 }}>
+                            <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1E293B", marginBottom: 20 }}>🏥 Bed Capacity — CHUK</h3>
+                            {[
+                                { label: "Emergency Beds", avail: 12, total: 30, color: "#10B981" },
+                                { label: "ICU Beds", avail: 3, total: 10, color: "#F59E0B" },
+                                { label: "Surgery Bays", avail: 2, total: 6, color: "#6366F1" },
+                            ].map(b => (
+                                <div key={b.label} style={{ marginBottom: 20 }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                                        <span style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>{b.label}</span>
+                                        <span style={{ fontSize: 13, fontWeight: 800, color: b.avail < 4 ? "#EF4444" : b.color }}>
+                                            {b.avail}/{b.total} Available
+                                        </span>
+                                    </div>
+                                    <div style={{ height: 8, background: "#F1F5F9", borderRadius: 99 }}>
+                                        <div style={{ height: 8, borderRadius: 99, width: `${(b.avail / b.total) * 100}%`, background: b.avail < 4 ? "#EF4444" : b.color, transition: "width 0.5s" }} />
+                                    </div>
+                                </div>
+                            ))}
+                            <div style={{ marginTop: 16, padding: "12px 16px", background: "#F0FDF4", borderRadius: 10, border: "1px solid #BBF7D0" }}>
+                                <div style={{ fontSize: 12, fontWeight: 800, color: "#065F46" }}>✅ Currently Accepting Patients</div>
+                            </div>
+                        </div>
+
+                        {/* Blood Bank */}
+                        <div className="card" style={{ padding: 28 }}>
+                            <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1E293B", marginBottom: 20 }}>🩸 Blood Bank Status</h3>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                                {[
+                                    { type: "A+", units: 18, ok: true },
+                                    { type: "A-", units: 4, ok: false },
+                                    { type: "B+", units: 22, ok: true },
+                                    { type: "B-", units: 2, ok: false },
+                                    { type: "O+", units: 35, ok: true },
+                                    { type: "O-", units: 6, ok: true },
+                                    { type: "AB+", units: 9, ok: true },
+                                    { type: "AB-", units: 1, ok: false },
+                                ].map(b => (
+                                    <div key={b.type} style={{
+                                        padding: "12px 16px", borderRadius: 10,
+                                        background: b.ok ? "#F0FDF4" : "#FEF2F2",
+                                        border: `1.5px solid ${b.ok ? "#BBF7D0" : "#FEE2E2"}`,
+                                        display: "flex", justifyContent: "space-between", alignItems: "center"
+                                    }}>
+                                        <span style={{ fontSize: 15, fontWeight: 900, color: b.ok ? "#065F46" : "#991B1B" }}>{b.type}</span>
+                                        <span style={{ fontSize: 13, fontWeight: 700, color: b.ok ? "#10B981" : "#EF4444" }}>{b.units} units</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
+                                <button className="btn-secondary" style={{ flex: 1, padding: "10px", fontSize: 12 }}>Request Supply</button>
+                                <button className="btn-primary" style={{ flex: 1, padding: "10px", fontSize: 12, background: "#C8102E", border: "none" }}>Emergency Order</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

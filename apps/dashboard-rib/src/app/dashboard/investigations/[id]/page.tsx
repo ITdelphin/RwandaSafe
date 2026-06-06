@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
+import { Lock, Search, FileText } from 'lucide-react';
 import { investigationApi, tiplineApi } from '../../../../lib/apiClient';
 import { INVESTIGATION_STATUS_COLORS } from '../../../../constants/theme';
 import { SuspectPanel } from '../../../../components/investigations/SuspectPanel';
@@ -101,7 +102,7 @@ export default function InvestigationDetailPage() {
   if (error || !investigation) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-        <div className="text-4xl mb-3">🔍</div>
+        <div className="mb-3"><Search size={48} /></div>
         <p>Investigation not found</p>
         <button onClick={() => router.back()} className="mt-3 text-xs text-purple-600 hover:underline">← Back</button>
       </div>
@@ -120,7 +121,7 @@ export default function InvestigationDetailPage() {
             <span className="font-mono text-lg font-bold text-purple-700">
               {investigation.caseNumber ?? investigation.id?.slice(0, 8)}
             </span>
-            {investigation.isSensitive && <span>🔒</span>}
+            {investigation.isSensitive && <Lock size={14} className="text-gray-400" />}
             <span
               className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
               style={{ backgroundColor: statusColor + '20', color: statusColor, border: `1px solid ${statusColor}40` }}
@@ -301,10 +302,11 @@ export default function InvestigationDetailPage() {
             <button
               onClick={handleExportPdf}
               disabled={exporting}
-              className="w-full py-3 text-sm text-white font-semibold rounded-xl disabled:opacity-50"
+              className="w-full py-3 text-sm text-white font-semibold rounded-xl disabled:opacity-50 flex items-center justify-center gap-2"
               style={{ backgroundColor: '#4C1D95' }}
             >
-              {exporting ? 'Generating PDF...' : '📄 Generate Court-Ready PDF'}
+              <FileText size={16} />
+              {exporting ? 'Generating PDF...' : 'Generate Court-Ready PDF'}
             </button>
           </div>
 

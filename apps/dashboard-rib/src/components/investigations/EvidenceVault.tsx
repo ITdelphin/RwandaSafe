@@ -1,7 +1,19 @@
 'use client';
 import { useState } from 'react';
+import {
+  Image,
+  Video,
+  FileText,
+  Music,
+  ScanLine,
+  MessageSquare,
+  PackageOpen,
+  Lock,
+  ChevronUp,
+  ChevronDown,
+  Plus,
+} from 'lucide-react';
 import { investigationApi } from '../../lib/apiClient';
-import { EVIDENCE_TYPE_ICONS } from '../../constants/theme';
 import { formatDate } from '../../lib/formatters';
 
 interface Props {
@@ -11,6 +23,18 @@ interface Props {
 }
 
 const EVIDENCE_TYPES = ['PHOTO', 'VIDEO', 'DOCUMENT', 'AUDIO', 'PHYSICAL_DESCRIPTION', 'WITNESS_STATEMENT', 'OTHER'];
+
+function EvidenceIcon({ type, size = 20 }: { type: string; size?: number }) {
+  switch (type) {
+    case 'PHOTO':               return <Image size={size} />;
+    case 'VIDEO':               return <Video size={size} />;
+    case 'DOCUMENT':            return <FileText size={size} />;
+    case 'AUDIO':               return <Music size={size} />;
+    case 'PHYSICAL_DESCRIPTION':return <ScanLine size={size} />;
+    case 'WITNESS_STATEMENT':   return <MessageSquare size={size} />;
+    default:                    return <PackageOpen size={size} />;
+  }
+}
 
 export function EvidenceVault({ investigationId, evidence = [], onRefresh }: Props) {
   const [showUpload, setShowUpload] = useState(false);
@@ -70,12 +94,13 @@ export function EvidenceVault({ investigationId, evidence = [], onRefresh }: Pro
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {evidence.map((item: any) => {
-            const icon = EVIDENCE_TYPE_ICONS[item.type] ?? '📦';
             const isExpanded = expandedChain === item.id;
             return (
               <div key={item.id} className="bg-white border border-purple-100 rounded-xl p-4">
                 <div className="flex items-start gap-3 mb-2">
-                  <span className="text-xl">{icon}</span>
+                  <span className="text-purple-500 flex-shrink-0 mt-0.5">
+                    <EvidenceIcon type={item.type} size={20} />
+                  </span>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-gray-800 truncate">{item.title}</div>
                     <div className="text-xs text-gray-400">{item.type?.replace(/_/g, ' ')} · {item.createdAt ? formatDate(item.createdAt) : '—'}</div>
@@ -95,14 +120,14 @@ export function EvidenceVault({ investigationId, evidence = [], onRefresh }: Pro
                     disabled={viewingId === item.id}
                     className="flex items-center gap-1 text-xs font-medium text-purple-700 hover:text-purple-900 disabled:opacity-50"
                   >
-                    🔒 {viewingId === item.id ? 'Loading...' : 'View'}
+                    <Lock size={11} /> {viewingId === item.id ? 'Loading...' : 'View'}
                   </button>
                   {item.chainOfCustody && (
                     <button
                       onClick={() => setExpandedChain(isExpanded ? null : item.id)}
-                      className="text-xs text-gray-400 hover:text-gray-600"
+                      className="flex items-center gap-0.5 text-xs text-gray-400 hover:text-gray-600"
                     >
-                      {isExpanded ? '▲' : '▼'} Chain of Custody
+                      {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />} Chain of Custody
                     </button>
                   )}
                 </div>
@@ -143,7 +168,7 @@ export function EvidenceVault({ investigationId, evidence = [], onRefresh }: Pro
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-purple-400"
               >
                 {EVIDENCE_TYPES.map(t => (
-                  <option key={t} value={t}>{EVIDENCE_TYPE_ICONS[t]} {t.replace(/_/g, ' ')}</option>
+                  <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>
                 ))}
               </select>
             </div>
@@ -187,9 +212,9 @@ export function EvidenceVault({ investigationId, evidence = [], onRefresh }: Pro
       ) : (
         <button
           onClick={() => setShowUpload(true)}
-          className="w-full py-2.5 text-xs font-medium text-purple-700 border border-purple-200 rounded-xl hover:bg-purple-50 transition-colors"
+          className="w-full py-2.5 text-xs font-medium text-purple-700 border border-purple-200 rounded-xl hover:bg-purple-50 transition-colors flex items-center justify-center gap-1.5"
         >
-          + Upload Evidence
+          <Plus size={14} /> Upload Evidence
         </button>
       )}
     </div>

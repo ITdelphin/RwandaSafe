@@ -1,7 +1,8 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import { User, FolderOpen, Link2, Lock } from 'lucide-react';
 import { INVESTIGATION_STATUS_COLORS } from '../../constants/theme';
-import { formatDate, timeAgo } from '../../lib/formatters';
+import { timeAgo } from '../../lib/formatters';
 
 interface Props {
   investigation: any;
@@ -22,7 +23,7 @@ export function InvestigationCard({ investigation }: Props) {
             {investigation.caseNumber ?? investigation.id?.slice(0, 8)}
           </span>
           {investigation.isSensitive && (
-            <span className="text-xs" title="Sensitive case">🔒</span>
+            <span className="text-gray-400" title="Sensitive case"><Lock size={12} /></span>
           )}
         </div>
         <span
@@ -42,9 +43,15 @@ export function InvestigationCard({ investigation }: Props) {
       </div>
 
       <div className="flex items-center gap-4 text-xs text-gray-500 border-t border-gray-100 pt-2 mt-2">
-        <span title="Suspects">👤 {investigation.suspects?.length ?? 0}</span>
-        <span title="Evidence">📁 {investigation.evidence?.length ?? 0}</span>
-        <span title="Linked incidents">🔗 {investigation.linkedIncidents?.length ?? investigation.incidentIds?.length ?? 0}</span>
+        <span className="flex items-center gap-1" title="Suspects">
+          <User size={12} /> {investigation.suspects?.length ?? 0}
+        </span>
+        <span className="flex items-center gap-1" title="Evidence">
+          <FolderOpen size={12} /> {investigation.evidence?.length ?? 0}
+        </span>
+        <span className="flex items-center gap-1" title="Linked incidents">
+          <Link2 size={12} /> {investigation.linkedIncidents?.length ?? investigation.incidentIds?.length ?? 0}
+        </span>
         <span className="ml-auto text-gray-400">
           {investigation.openedAt ? timeAgo(investigation.openedAt) : timeAgo(investigation.createdAt)}
         </span>

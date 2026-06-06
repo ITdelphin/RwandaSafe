@@ -1,6 +1,15 @@
 'use client';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import {
+  Siren,
+  AlertTriangle,
+  Ambulance,
+  Clock,
+  BedDouble,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 import { dashboardApi, medicalApi } from '../../lib/apiClient';
 import { useIncidentFeed } from '../../hooks/useIncidentFeed';
 import { useAmbulanceFleet } from '../../hooks/useAmbulanceFleet';
@@ -27,11 +36,11 @@ export default function HospitalDashboard() {
     <div className="space-y-6">
       {/* Stat cards */}
       <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
-        <StatCard label="Open Medical Cases" value={stats?.openCases ?? '—'} color="#C62828" icon="🏥" />
-        <StatCard label="Immediate Triage" value={stats?.criticalOpen ?? '—'} color="#D32F2F" icon="🚨" />
-        <StatCard label="Ambulances Available" value={`${availableCount} / ${ambulances.length}`} color="#22C55E" icon="🚑" />
-        <StatCard label="Avg Response" value={stats?.avgResponseTimeMinutes != null ? `${stats.avgResponseTimeMinutes}m` : '—'} color="#F57C00" icon="⏱️" />
-        <StatCard label="Beds Available" value={totalBedsAvailable} color="#1B5E82" icon="🛏️" />
+        <StatCard label="Open Medical Cases" value={stats?.openCases ?? '—'} color="#C62828" icon={<Siren size={24} />} />
+        <StatCard label="Immediate Triage" value={stats?.criticalOpen ?? '—'} color="#D32F2F" icon={<AlertTriangle size={24} />} />
+        <StatCard label="Ambulances Available" value={`${availableCount} / ${ambulances.length}`} color="#22C55E" icon={<Ambulance size={24} />} />
+        <StatCard label="Avg Response" value={stats?.avgResponseTimeMinutes != null ? `${stats.avgResponseTimeMinutes}m` : '—'} color="#F57C00" icon={<Clock size={24} />} />
+        <StatCard label="Beds Available" value={totalBedsAvailable} color="#1B5E82" icon={<BedDouble size={24} />} />
       </div>
 
       {/* Feed + Ambulances */}
@@ -47,7 +56,7 @@ export default function HospitalDashboard() {
           {isLoading ? (
             <div className="p-8 text-center text-gray-400 text-sm">Loading...</div>
           ) : incidents.length === 0 ? (
-            <EmptyState message="No medical incidents yet" icon="✅" />
+            <EmptyState message="No medical incidents yet" icon={<CheckCircle2 size={48} className="text-green-500" />} />
           ) : (
             <div className="divide-y divide-gray-50">
               {incidents.slice(0, 8).map((inc: any) => (
@@ -98,10 +107,10 @@ export default function HospitalDashboard() {
         <div className="grid grid-cols-4 gap-3">
           {(blood ?? []).map((b: any) => {
             const color = b.status === 'CRITICAL' ? '#EF4444' : b.status === 'LOW' ? '#F59E0B' : '#22C55E';
-            const icon = b.status === 'CRITICAL' ? '❌' : b.status === 'LOW' ? '⚠️' : '✅';
+            const StatusIcon = b.status === 'CRITICAL' ? XCircle : b.status === 'LOW' ? AlertTriangle : CheckCircle2;
             return (
               <div key={b.type} className="flex items-center gap-2 p-3 rounded-lg border" style={{ borderColor: color + '40', backgroundColor: color + '08' }}>
-                <span>{icon}</span>
+                <StatusIcon size={16} style={{ color }} />
                 <div>
                   <div className="text-xs font-bold" style={{ color }}>{BLOOD_TYPE_LABELS[b.type] ?? b.type}</div>
                   <div className="text-xs text-gray-500">{b.units} units</div>

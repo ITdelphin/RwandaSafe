@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import NetInfo from '@react-native-community/netinfo';
 import { Colors } from '../constants/colors';
 
@@ -17,7 +18,8 @@ export function OfflineBanner() {
 
   return (
     <View style={styles.banner}>
-      <Text style={styles.text}>⚠️ You are offline</Text>
+      <Ionicons name="cloud-offline-outline" size={16} color="white" />
+      <Text style={styles.text}> You are offline</Text>
     </View>
   );
 }
@@ -28,6 +30,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   text: { color: '#fff', fontWeight: '600', fontSize: 13 },
 });

@@ -5,6 +5,7 @@ import { IncidentRow } from '../../../components/incidents/IncidentRow';
 import { IncidentFilters } from '../../../components/incidents/IncidentFilters';
 import { IncidentDetail } from '../../../components/incidents/IncidentDetail';
 import { EmptyState } from '../../../components/shared/EmptyState';
+import { Siren, PackageOpen } from 'lucide-react';
 
 export default function IncidentsPage() {
   const { data: result, isLoading, filters, setFilters, newCount, resetNewCount } = useIncidentFeed();
@@ -26,7 +27,10 @@ export default function IncidentsPage() {
 
       {newCount > 0 && (
         <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl flex items-center justify-between mb-4 text-sm">
-          <span>🚨 {newCount} new incident{newCount > 1 ? 's' : ''} received</span>
+          <span className="flex items-center gap-2">
+            <Siren size={16} />
+            {newCount} new incident{newCount > 1 ? 's' : ''} received
+          </span>
           <button onClick={resetNewCount} className="text-xs underline">Dismiss</button>
         </div>
       )}
@@ -37,7 +41,7 @@ export default function IncidentsPage() {
         {isLoading ? (
           <div className="p-12 text-center text-gray-400">Loading...</div>
         ) : incidents.length === 0 ? (
-          <EmptyState message="No incidents match your filters" />
+          <EmptyState message="No incidents match your filters" icon={<PackageOpen size={48} className="text-gray-300" />} />
         ) : (
           <>
             <div className="overflow-x-auto">

@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { Stethoscope, Flame, Search } from 'lucide-react';
 import { dashboardApi } from '../../lib/apiClient';
 
 interface Props {
@@ -9,9 +10,9 @@ interface Props {
 }
 
 const AGENCIES = [
-  { key: 'HOSPITAL', label: 'Hospital / SAMU', icon: '🏥', desc: 'For medical emergencies at the scene' },
-  { key: 'FIRE',     label: 'Fire Brigade',    icon: '🚒', desc: 'For fire or hazmat at the scene' },
-  { key: 'RIB',      label: 'RIB',             icon: '🔍', desc: 'For serious crimes requiring investigation' },
+  { key: 'HOSPITAL', label: 'Hospital / SAMU', icon: <Stethoscope size={16} />, desc: 'For medical emergencies at the scene' },
+  { key: 'FIRE',     label: 'Fire Brigade',    icon: <Flame size={16} />,        desc: 'For fire or hazmat at the scene' },
+  { key: 'RIB',      label: 'RIB',             icon: <Search size={16} />,       desc: 'For serious crimes requiring investigation' },
 ];
 
 export function ForwardModal({ incidentId, onClose, onSuccess }: Props) {
@@ -48,7 +49,7 @@ export function ForwardModal({ incidentId, onClose, onSuccess }: Props) {
               style={{ borderColor: targetAgency === a.key ? '#1B5E82' : '#E2E8F0', backgroundColor: targetAgency === a.key ? '#EFF6FF' : '' }}>
               <input type="radio" name="agency" value={a.key} checked={targetAgency === a.key}
                 onChange={() => setTargetAgency(a.key)} className="accent-blue-600" />
-              <span className="text-xl">{a.icon}</span>
+              <span className="text-gray-600">{a.icon}</span>
               <div>
                 <div className="text-sm font-medium text-gray-800">{a.label}</div>
                 <div className="text-xs text-gray-500">{a.desc}</div>

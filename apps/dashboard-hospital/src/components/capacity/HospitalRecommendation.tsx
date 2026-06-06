@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { medicalApi } from '../../lib/apiClient';
+import { Droplets, CheckCircle2, XCircle } from 'lucide-react';
 
 interface Props { incidentId: string; onAssigned: () => void; }
 
@@ -34,8 +35,8 @@ export function HospitalRecommendation({ incidentId, onAssigned }: Props) {
             <div className="text-sm font-semibold text-gray-800">{h.name}</div>
             <div className="text-xs text-gray-500">
               {h.distance != null ? `${h.distance} km · ` : ''}{h.emergencyBedsAvail} beds · ICU: {h.icuBedsAvail}
-              {h.hasRequiredBlood === true && ' · 🩸 ✅'}
-              {h.hasRequiredBlood === false && ' · 🩸 ❌'}
+              {h.hasRequiredBlood === true && <span className="inline-flex items-center gap-0.5 ml-1"><Droplets size={11} className="text-red-500" /><CheckCircle2 size={11} className="text-green-600" /></span>}
+              {h.hasRequiredBlood === false && <span className="inline-flex items-center gap-0.5 ml-1"><Droplets size={11} className="text-red-500" /><XCircle size={11} className="text-red-500" /></span>}
             </div>
           </div>
           <button onClick={() => assign.mutate(h.agencyId ?? h.id)} disabled={assign.isPending}

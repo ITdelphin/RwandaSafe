@@ -1,6 +1,7 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Stethoscope } from 'lucide-react';
 import { SplashScreen } from '../components/shared/SplashScreen';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -13,7 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <SplashScreen
           onComplete={() => setSplashDone(true)}
           color="#34A853"
-          icon="🚑"
+          icon={<Stethoscope size={44} color="white" />}
           agencyName="SAMU / Hospital"
         />
       )}

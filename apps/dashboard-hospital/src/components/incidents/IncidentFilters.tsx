@@ -24,7 +24,7 @@ export function IncidentFilters({ filters, onChange }: Props) {
       <select value={filters.type ?? ''} onChange={e => set('type', e.target.value)}
         className="text-xs border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400 bg-white">
         <option value="">All Types</option>
-        {INCIDENT_TYPES.map(t => <option key={t.key} value={t.key}>{t.icon} {t.label}</option>)}
+        {INCIDENT_TYPES.map(t => <option key={t.key} value={t.key}>{t.label}</option>)}
       </select>
 
       <select value={filters.severity ?? ''} onChange={e => set('severity', e.target.value)}
