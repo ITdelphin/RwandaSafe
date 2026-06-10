@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi, slaApi } from '../../../lib/apiClient';
 import { formatDateTime } from '../../../lib/formatters';
+import { useMediaQuery, BREAKPOINTS } from '../../../hooks/useMediaQuery';
 import { Gauge, Edit3, Save, X, Clock, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function SLAPage() {
   const queryClient = useQueryClient();
+  const isMobile = useMediaQuery(BREAKPOINTS.md);
   const [tab, setTab] = useState<'config' | 'breaches'>('config');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState(0);
@@ -55,17 +57,13 @@ export default function SLAPage() {
     POLICE: '#1B5E82', HOSPITAL: '#C62828', FIRE: '#EA580C', RIB: '#4C1D95',
   };
 
-  const severityOrder = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <Gauge size={22} color="#0F4C75" />
         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0F172A', margin: 0 }}>SLA Configuration</h2>
       </div>
 
-      {/* Tabs */}
       <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', borderRadius: '10px', padding: '4px', width: 'fit-content' }}>
         {(['config', 'breaches'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
@@ -83,80 +81,143 @@ export default function SLAPage() {
 
       {tab === 'config' && (
         <div style={{ background: '#fff', borderRadius: '14px', border: '1px solid #E2E8F0', overflow: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: '#F8FAFC' }}>
-                <th style={thStyle}>Agency</th>
-                <th style={thStyle}>Severity</th>
-                <th style={thStyle}>Target (min)</th>
-                <th style={thStyle}>Warning (min)</th>
-                <th style={thStyle}>Last Updated</th>
-                <th style={thStyle}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          {isMobile ? (
+            <div style={{ padding: '12px' }}>
               {configs?.length === 0 ? (
-                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8', fontSize: '13px' }}>No SLA configurations found</td></tr>
+                <p style={{ textAlign: 'center', padding: '40px', color: '#94A3B8', fontSize: '13px' }}>No SLA configurations found</p>
               ) : (
                 configs?.map((c: any) => (
-                  <tr key={c.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={tdStyle}>
+                  <div key={c.id} style={{ background: '#F8FAFC', borderRadius: '10px', padding: '14px', marginBottom: '8px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                       <span style={{
-                        display: 'inline-block', padding: '3px 10px', borderRadius: '6px',
+                        padding: '3px 10px', borderRadius: '6px',
                         background: `${agencyColors[c.agencyType] ?? '#64748B'}15`,
                         color: agencyColors[c.agencyType] ?? '#64748B',
                         fontSize: '12px', fontWeight: 600,
                       }}>
                         {c.agencyType}
                       </span>
-                    </td>
-                    <td style={{ ...tdStyle, fontSize: '12px', fontWeight: 600, color: c.severity === 'CRITICAL' ? '#EF4444' : c.severity === 'HIGH' ? '#F59E0B' : '#64748B' }}>
-                      {c.severity}
-                    </td>
-                    <td style={tdStyle}>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: c.severity === 'CRITICAL' ? '#EF4444' : c.severity === 'HIGH' ? '#F59E0B' : '#64748B' }}>
+                        {c.severity}
+                      </span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+                      <div style={{ fontSize: '12px', color: '#64748B' }}>
+                        Target: {editingId === c.id ? (
+                          <input type="number" value={editTarget} onChange={(e) => setEditTarget(parseInt(e.target.value) || 0)}
+                            style={{ width: '60px', padding: '4px 6px', borderRadius: '4px', border: '1px solid #E2E8F0', fontSize: '12px', textAlign: 'center', marginLeft: '4px' }} />
+                        ) : (
+                          <strong style={{ color: '#0F172A' }}> {c.targetMinutes} min</strong>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#64748B' }}>
+                        Warning: {editingId === c.id ? (
+                          <input type="number" value={editWarning} onChange={(e) => setEditWarning(parseInt(e.target.value) || 0)}
+                            style={{ width: '60px', padding: '4px 6px', borderRadius: '4px', border: '1px solid #E2E8F0', fontSize: '12px', textAlign: 'center', marginLeft: '4px' }} />
+                        ) : (
+                          <strong style={{ color: '#0F172A' }}> {c.warningMinutes} min</strong>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94A3B8', gridColumn: '1 / -1' }}>
+                        Updated: {formatDateTime(c.updatedAt)}
+                      </div>
+                    </div>
+                    <div>
                       {editingId === c.id ? (
-                        <input type="number" value={editTarget} onChange={(e) => setEditTarget(parseInt(e.target.value) || 0)}
-                          style={{ width: '70px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '13px', textAlign: 'center' }} />
-                      ) : (
-                        <span style={{ fontWeight: 600, color: '#0F172A' }}>{c.targetMinutes}</span>
-                      )}
-                    </td>
-                    <td style={tdStyle}>
-                      {editingId === c.id ? (
-                        <input type="number" value={editWarning} onChange={(e) => setEditWarning(parseInt(e.target.value) || 0)}
-                          style={{ width: '70px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '13px', textAlign: 'center' }} />
-                      ) : (
-                        <span style={{ fontWeight: 600, color: '#0F172A' }}>{c.warningMinutes}</span>
-                      )}
-                    </td>
-                    <td style={{ ...tdStyle, fontSize: '12px', color: '#64748B' }}>
-                      {formatDateTime(c.updatedAt)}
-                    </td>
-                    <td style={tdStyle}>
-                      {editingId === c.id ? (
-                        <div style={{ display: 'flex', gap: '4px' }}>
+                        <div style={{ display: 'flex', gap: '6px' }}>
                           <button onClick={() => handleSave(c.id)}
-                            style={{ padding: '6px 10px', borderRadius: '6px', border: 'none', background: '#22C55E', color: '#fff', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
-                            <Save size={12} style={{ verticalAlign: 'middle' }} />
+                            style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: '#22C55E', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+                            <Save size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Save
                           </button>
                           <button onClick={() => setEditingId(null)}
-                            style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#fff', color: '#64748B', fontSize: '11px', cursor: 'pointer' }}>
-                            <X size={12} />
+                            style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#fff', color: '#64748B', fontSize: '12px', cursor: 'pointer' }}>
+                            <X size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Cancel
                           </button>
                         </div>
                       ) : (
                         <button onClick={() => startEdit(c)}
-                          style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#0F4C75', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
-                          <Edit3 size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                          Edit
+                          style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#0F4C75', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+                          <Edit3 size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Edit
                         </button>
                       )}
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 ))
               )}
-            </tbody>
-          </table>
+            </div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#F8FAFC' }}>
+                  <th style={thStyle}>Agency</th>
+                  <th style={thStyle}>Severity</th>
+                  <th style={thStyle}>Target (min)</th>
+                  <th style={thStyle}>Warning (min)</th>
+                  <th style={thStyle}>Last Updated</th>
+                  <th style={thStyle}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {configs?.length === 0 ? (
+                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8', fontSize: '13px' }}>No SLA configurations found</td></tr>
+                ) : (
+                  configs?.map((c: any) => (
+                    <tr key={c.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={tdStyle}>
+                        <span style={{
+                          display: 'inline-block', padding: '3px 10px', borderRadius: '6px',
+                          background: `${agencyColors[c.agencyType] ?? '#64748B'}15`,
+                          color: agencyColors[c.agencyType] ?? '#64748B',
+                          fontSize: '12px', fontWeight: 600,
+                        }}>{c.agencyType}</span>
+                      </td>
+                      <td style={{ ...tdStyle, fontSize: '12px', fontWeight: 600, color: c.severity === 'CRITICAL' ? '#EF4444' : c.severity === 'HIGH' ? '#F59E0B' : '#64748B' }}>
+                        {c.severity}
+                      </td>
+                      <td style={tdStyle}>
+                        {editingId === c.id ? (
+                          <input type="number" value={editTarget} onChange={(e) => setEditTarget(parseInt(e.target.value) || 0)}
+                            style={{ width: '70px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '13px', textAlign: 'center' }} />
+                        ) : (
+                          <span style={{ fontWeight: 600, color: '#0F172A' }}>{c.targetMinutes}</span>
+                        )}
+                      </td>
+                      <td style={tdStyle}>
+                        {editingId === c.id ? (
+                          <input type="number" value={editWarning} onChange={(e) => setEditWarning(parseInt(e.target.value) || 0)}
+                            style={{ width: '70px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '13px', textAlign: 'center' }} />
+                        ) : (
+                          <span style={{ fontWeight: 600, color: '#0F172A' }}>{c.warningMinutes}</span>
+                        )}
+                      </td>
+                      <td style={{ ...tdStyle, fontSize: '12px', color: '#64748B' }}>
+                        {formatDateTime(c.updatedAt)}
+                      </td>
+                      <td style={tdStyle}>
+                        {editingId === c.id ? (
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button onClick={() => handleSave(c.id)}
+                              style={{ padding: '6px 10px', borderRadius: '6px', border: 'none', background: '#22C55E', color: '#fff', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                              <Save size={12} style={{ verticalAlign: 'middle' }} />
+                            </button>
+                            <button onClick={() => setEditingId(null)}
+                              style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#fff', color: '#64748B', fontSize: '11px', cursor: 'pointer' }}>
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button onClick={() => startEdit(c)}
+                            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#0F4C75', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                            <Edit3 size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Edit
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
 
@@ -167,47 +228,77 @@ export default function SLAPage() {
             <span style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A' }}>SLA Breach Report</span>
             <span style={{ fontSize: '12px', color: '#94A3B8' }}>(last 30 days)</span>
           </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: '#F8FAFC' }}>
-                <th style={thStyle}>Tracking Code</th>
-                <th style={thStyle}>Agency</th>
-                <th style={thStyle}>Severity</th>
-                <th style={thStyle}>Response Time</th>
-                <th style={thStyle}>Created</th>
-                <th style={thStyle}>Responded</th>
-              </tr>
-            </thead>
-            <tbody>
+          {isMobile ? (
+            <div style={{ padding: '12px' }}>
               {breaches?.length === 0 ? (
-                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8', fontSize: '13px' }}>No SLA breaches in the selected period</td></tr>
+                <p style={{ textAlign: 'center', padding: '40px', color: '#94A3B8', fontSize: '13px' }}>No SLA breaches in the selected period</p>
               ) : (
                 breaches?.map((b: any) => (
-                  <tr key={b.assignmentId} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>{b.trackingCode}</td>
-                    <td style={tdStyle}>
+                  <div key={b.assignmentId} style={{ background: '#FEF2F2', borderRadius: '10px', padding: '14px', marginBottom: '8px', border: '1px solid #FECACA' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>{b.trackingCode}</span>
                       <span style={{
-                        padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600,
+                        padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 600,
                         background: `${agencyColors[b.agency] ?? '#64748B'}15`,
                         color: agencyColors[b.agency] ?? '#64748B',
                       }}>{b.agency}</span>
-                    </td>
-                    <td style={{ ...tdStyle, fontSize: '12px', fontWeight: 600, color: b.severity === 'CRITICAL' ? '#EF4444' : b.severity === 'HIGH' ? '#F59E0B' : '#64748B' }}>
-                      {b.severity}
-                    </td>
-                    <td style={tdStyle}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 600, color: b.timeToRespond > 30 ? '#EF4444' : '#22C55E' }}>
-                        <Clock size={12} />
-                        {b.timeToRespond} min
-                      </span>
-                    </td>
-                    <td style={{ ...tdStyle, fontSize: '12px', color: '#64748B' }}>{formatDateTime(b.createdAt)}</td>
-                    <td style={{ ...tdStyle, fontSize: '12px', color: '#64748B' }}>{formatDateTime(b.respondedAt)}</td>
-                  </tr>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '12px', color: '#64748B' }}>
+                      <div>Severity: <strong style={{ color: b.severity === 'CRITICAL' ? '#EF4444' : '#F59E0B' }}>{b.severity}</strong></div>
+                      <div>
+                        Response: <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: b.timeToRespond > 30 ? '#EF4444' : '#22C55E' }}>
+                          <Clock size={10} /> {b.timeToRespond} min
+                        </strong>
+                      </div>
+                      <div>Created: {formatDateTime(b.createdAt)}</div>
+                      <div>Responded: {formatDateTime(b.respondedAt)}</div>
+                    </div>
+                  </div>
                 ))
               )}
-            </tbody>
-          </table>
+            </div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#F8FAFC' }}>
+                  <th style={thStyle}>Tracking Code</th>
+                  <th style={thStyle}>Agency</th>
+                  <th style={thStyle}>Severity</th>
+                  <th style={thStyle}>Response Time</th>
+                  <th style={thStyle}>Created</th>
+                  <th style={thStyle}>Responded</th>
+                </tr>
+              </thead>
+              <tbody>
+                {breaches?.length === 0 ? (
+                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8', fontSize: '13px' }}>No SLA breaches in the selected period</td></tr>
+                ) : (
+                  breaches?.map((b: any) => (
+                    <tr key={b.assignmentId} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>{b.trackingCode}</td>
+                      <td style={tdStyle}>
+                        <span style={{
+                          padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600,
+                          background: `${agencyColors[b.agency] ?? '#64748B'}15`,
+                          color: agencyColors[b.agency] ?? '#64748B',
+                        }}>{b.agency}</span>
+                      </td>
+                      <td style={{ ...tdStyle, fontSize: '12px', fontWeight: 600, color: b.severity === 'CRITICAL' ? '#EF4444' : b.severity === 'HIGH' ? '#F59E0B' : '#64748B' }}>
+                        {b.severity}
+                      </td>
+                      <td style={tdStyle}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 600, color: b.timeToRespond > 30 ? '#EF4444' : '#22C55E' }}>
+                          <Clock size={12} /> {b.timeToRespond} min
+                        </span>
+                      </td>
+                      <td style={{ ...tdStyle, fontSize: '12px', color: '#64748B' }}>{formatDateTime(b.createdAt)}</td>
+                      <td style={{ ...tdStyle, fontSize: '12px', color: '#64748B' }}>{formatDateTime(b.respondedAt)}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
     </div>

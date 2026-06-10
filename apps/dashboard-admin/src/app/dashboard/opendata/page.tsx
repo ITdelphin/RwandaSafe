@@ -2,16 +2,15 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { opendataApi } from '../../../lib/apiClient';
+import { useMediaQuery, BREAKPOINTS } from '../../../hooks/useMediaQuery';
 import { Database, Download, BarChart3, FileJson, FileText, TrendingUp, MapPin, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 function SummaryCard({ label, value, icon, color }: { label: string; value: string | number; icon: React.ReactNode; color: string }) {
   return (
     <div style={{ background: '#fff', borderRadius: '14px', padding: '20px', border: '1px solid #E2E8F0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {icon}
-        </div>
+      <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+        {icon}
       </div>
       <div style={{ fontSize: '22px', fontWeight: 700, color: '#0F172A', marginBottom: '4px' }}>{value}</div>
       <div style={{ fontSize: '13px', color: '#64748B', fontWeight: 500 }}>{label}</div>
@@ -20,6 +19,7 @@ function SummaryCard({ label, value, icon, color }: { label: string; value: stri
 }
 
 export default function OpenDataPage() {
+  const isMobile = useMediaQuery(BREAKPOINTS.md);
   const [format, setFormat] = useState<'csv' | 'json'>('csv');
   const [dateFrom, setDateFrom] = useState(() => {
     const d = new Date(); d.setMonth(d.getMonth() - 1);
@@ -57,63 +57,34 @@ export default function OpenDataPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <Database size={22} color="#0F4C75" />
         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0F172A', margin: 0 }}>Open Data</h2>
       </div>
 
-      {/* Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
-        <SummaryCard
-          label="Current Month"
-          value={summary?.month ?? '—'}
-          icon={<BarChart3 size={20} color="#3B82F6" />}
-          color="#3B82F6"
-        />
-        <SummaryCard
-          label="Total Incidents"
-          value={summary?.totalIncidents ?? 0}
-          icon={<Activity size={20} color="#EF4444" />}
-          color="#EF4444"
-        />
-        <SummaryCard
-          label="Most Common Type"
-          value={summary?.mostCommonType?.replace(/_/g, ' ') ?? '—'}
-          icon={<TrendingUp size={20} color="#F59E0B" />}
-          color="#F59E0B"
-        />
-        <SummaryCard
-          label="Top District"
-          value={summary?.mostAffectedDistrict ?? '—'}
-          icon={<MapPin size={20} color="#14B8A6" />}
-          color="#14B8A6"
-        />
-        <SummaryCard
-          label="Resolution Rate"
-          value={`${summary?.resolutionRate ?? 0}%`}
-          icon={<BarChart3 size={20} color="#8B5CF6" />}
-          color="#8B5CF6"
-        />
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${isMobile ? '140px' : '180px'}, 1fr))`, gap: isMobile ? '10px' : '16px' }}>
+        <SummaryCard label="Current Month" value={summary?.month ?? '—'} icon={<BarChart3 size={20} color="#3B82F6" />} color="#3B82F6" />
+        <SummaryCard label="Total Incidents" value={summary?.totalIncidents ?? 0} icon={<Activity size={20} color="#EF4444" />} color="#EF4444" />
+        <SummaryCard label="Most Common Type" value={summary?.mostCommonType?.replace(/_/g, ' ') ?? '—'} icon={<TrendingUp size={20} color="#F59E0B" />} color="#F59E0B" />
+        <SummaryCard label="Top District" value={summary?.mostAffectedDistrict ?? '—'} icon={<MapPin size={20} color="#14B8A6" />} color="#14B8A6" />
+        <SummaryCard label="Resolution Rate" value={`${summary?.resolutionRate ?? 0}%`} icon={<BarChart3 size={20} color="#8B5CF6" />} color="#8B5CF6" />
       </div>
 
-      {/* Export Section */}
-      <div style={{ background: '#fff', borderRadius: '14px', padding: '24px', border: '1px solid #E2E8F0' }}>
+      <div style={{ background: '#fff', borderRadius: '14px', padding: isMobile ? '18px' : '24px', border: '1px solid #E2E8F0' }}>
         <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>Export Anonymized Data</h3>
         <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '20px' }}>
           Download anonymized incident data for research and analysis. All personal information is removed.
         </p>
-
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '160px' }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', alignItems: isMobile ? 'stretch' : 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: isMobile ? '100%' : '160px' }}>
             <label style={labelStyle}>From</label>
             <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={inputStyle} />
           </div>
-          <div style={{ flex: 1, minWidth: '160px' }}>
+          <div style={{ flex: 1, minWidth: isMobile ? '100%' : '160px' }}>
             <label style={labelStyle}>To</label>
             <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={inputStyle} />
           </div>
-          <div style={{ flex: 1, minWidth: '120px' }}>
+          <div style={{ flex: 1, minWidth: isMobile ? '100%' : '120px' }}>
             <label style={labelStyle}>Format</label>
             <div style={{ display: 'flex', gap: '6px' }}>
               <button onClick={() => setFormat('csv')}
@@ -145,21 +116,18 @@ export default function OpenDataPage() {
                 borderRadius: '10px', border: 'none',
                 background: exporting ? '#CBD5E1' : '#0F4C75',
                 color: '#fff', fontSize: '13px', fontWeight: 600, cursor: exporting ? 'not-allowed' : 'pointer',
+                width: isMobile ? '100%' : undefined, justifyContent: 'center',
               }}>
-              <Download size={16} />
-              {exporting ? 'Exporting...' : 'Download Data'}
+              <Download size={16} /> {exporting ? 'Exporting...' : 'Download Data'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Stats details */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
         <div style={{ background: '#fff', borderRadius: '14px', padding: '20px', border: '1px solid #E2E8F0' }}>
           <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>Monthly Statistics</h3>
-          <p style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '16px' }}>
-            Summary for {summary?.month ?? 'current month'}
-          </p>
+          <p style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '16px' }}>Summary for {summary?.month ?? 'current month'}</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F1F5F9' }}>
               <span style={{ fontSize: '13px', color: '#64748B' }}>Total Incidents</span>

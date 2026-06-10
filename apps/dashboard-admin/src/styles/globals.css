@@ -1,0 +1,73 @@
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in    { animation: fadeIn 0.3s ease-out; }
+.slide-in   { animation: slideInLeft 0.3s ease-out; }
+.scale-in   { animation: scaleIn 0.2s ease-out; }
+.pulse      { animation: pulse 2s ease-in-out infinite; }
+.shimmer    { background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%); background-size: 200px 100%; animation: shimmer 1.5s infinite; }
+
+/* Responsive table wrapper */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Print styles */
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff !important; }
+}
+
+/* Dark mode overrides */
+.dark-mode {
+  color-scheme: dark;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* Mobile responsive breakpoints */
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+  .card-grid-2 { grid-template-columns: 1fr !important; }
+  .content-padding { padding: 12px !important; }
+}
+
+@media (max-width: 640px) {
+  .hide-sm { display: none !important; }
+  .card-grid { grid-template-columns: 1fr !important; }
+}
