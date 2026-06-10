@@ -139,4 +139,9 @@ export const socketEmit = {
     if (!io) return;
     io.to('agency:RIB').emit('pattern:alert', data);
   },
+
+  slaUpdated: (data: any) => {
+    if (!io) return;
+    io.emit('sla:updated', data);
+  },
 };

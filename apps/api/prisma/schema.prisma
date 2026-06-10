@@ -145,6 +145,9 @@ model User {
   refreshTokens RefreshToken[]
   officer       Officer?
   feedback      Feedback[]
+  broadcastAlerts BroadcastAlert[]
+  slaConfigs    SlaConfig[]
+  systemConfigs SystemConfig[]
 
   @@map("users")
 }
@@ -739,4 +742,70 @@ model PatternAlert {
   createdAt       DateTime @default(now()) @map("created_at")
 
   @@map("pattern_alerts")
+}
+
+// ─── SUPER ADMIN MODELS ──────────────────────────────────────────────────────
+
+model AuditLog {
+  id            String    @id @default(uuid())
+  actorId       String?   @map("actor_id")
+  actorRole     String?   @map("actor_role")
+  action        String
+  resourceType  String    @map("resource_type")
+  resourceId    String?   @map("resource_id")
+  oldValue      Json?     @map("old_value")
+  newValue      Json?     @map("new_value")
+  ipAddress     String?   @map("ip_address")
+  userAgent     String?   @map("user_agent")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
+
+model SlaConfig {
+  id              String    @id @default(uuid())
+  agencyType      String    @map("agency_type")
+  severity        String
+  targetMinutes   Int       @map("target_minutes")
+  warningMinutes  Int       @map("warning_minutes")
+  updatedById     String    @map("updated_by_id")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  updatedBy User @relation(fields: [updatedById], references: [id])
+
+  @@unique([agencyType, severity])
+  @@map("sla_configs")
+}
+
+model SystemConfig {
+  id        String    @id @default(uuid())
+  key       String    @unique
+  value     String
+  label     String
+  category  String
+  updatedById String  @map("updated_by_id")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  updatedBy User @relation(fields: [updatedById], references: [id])
+
+  @@map("system_configs")
+}
+
+model BroadcastAlert {
+  id            String    @id @default(uuid())
+  title         String
+  message       String
+  district      String?
+  severity      String    @default("INFO")
+  issuedById    String    @map("issued_by_id")
+  targetCount   Int       @default(0) @map("target_count")
+  deliveredCount Int      @default(0) @map("delivered_count")
+  isActive      Boolean   @default(true) @map("is_active")
+  expiresAt     DateTime? @map("expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  issuedBy User @relation(fields: [issuedById], references: [id])
+
+  @@map("broadcast_alerts")
 }

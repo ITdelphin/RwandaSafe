@@ -238,6 +238,48 @@ async function main() {
   });
 
   console.log('Resources created');
+
+  // ── SLA Configs ─────────────────────────────────────────────────────────────
+  const slaConfigs = [
+    // Police SLA targets
+    { agencyType: 'POLICE', severity: 'CRITICAL', targetMinutes: 10, warningMinutes: 7 },
+    { agencyType: 'POLICE', severity: 'HIGH', targetMinutes: 15, warningMinutes: 10 },
+    { agencyType: 'POLICE', severity: 'MEDIUM', targetMinutes: 30, warningMinutes: 20 },
+    { agencyType: 'POLICE', severity: 'LOW', targetMinutes: 60, warningMinutes: 45 },
+    // Hospital SLA targets
+    { agencyType: 'HOSPITAL', severity: 'CRITICAL', targetMinutes: 8, warningMinutes: 5 },
+    { agencyType: 'HOSPITAL', severity: 'HIGH', targetMinutes: 12, warningMinutes: 8 },
+    { agencyType: 'HOSPITAL', severity: 'MEDIUM', targetMinutes: 20, warningMinutes: 14 },
+    { agencyType: 'HOSPITAL', severity: 'LOW', targetMinutes: 45, warningMinutes: 30 },
+    // Fire SLA targets
+    { agencyType: 'FIRE', severity: 'CRITICAL', targetMinutes: 8, warningMinutes: 5 },
+    { agencyType: 'FIRE', severity: 'HIGH', targetMinutes: 12, warningMinutes: 8 },
+    { agencyType: 'FIRE', severity: 'MEDIUM', targetMinutes: 20, warningMinutes: 14 },
+    { agencyType: 'FIRE', severity: 'LOW', targetMinutes: 60, warningMinutes: 45 },
+    // RIB SLA targets
+    { agencyType: 'RIB', severity: 'CRITICAL', targetMinutes: 60, warningMinutes: 40 },
+    { agencyType: 'RIB', severity: 'HIGH', targetMinutes: 120, warningMinutes: 90 },
+    { agencyType: 'RIB', severity: 'MEDIUM', targetMinutes: 240, warningMinutes: 180 },
+    { agencyType: 'RIB', severity: 'LOW', targetMinutes: 480, warningMinutes: 360 },
+  ];
+
+  for (const config of slaConfigs) {
+    await prisma.slaConfig.upsert({
+      where: {
+        agencyType_severity: {
+          agencyType: config.agencyType,
+          severity: config.severity,
+        },
+      },
+      update: {},
+      create: {
+        ...config,
+        updatedById: adminUser.id,
+      },
+    });
+  }
+  console.log('SLA configurations created');
+
   console.log('\nSeed complete. Accounts:');
   console.log('  Super Admin : +250788000001');
   console.log('  Police      : +250788100001');

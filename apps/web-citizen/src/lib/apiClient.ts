@@ -50,7 +50,7 @@ export const incidentsApi = {
 };
 
 export const authApi = {
-  requestOtp: (phone: string) => apiClient.post('/auth/register', { phone }),
+  requestOtp: (phone: string) => apiClient.post('/auth/otp/request', { phone }),
   verifyOtp: (phone: string, code: string) => apiClient.post('/auth/verify', { phone, code }),
 };
 

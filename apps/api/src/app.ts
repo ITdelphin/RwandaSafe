@@ -6,6 +6,7 @@ import { notFound } from './middleware/notFound';
 import { requestLogger } from './middleware/logger';
 import { globalRateLimiter } from './middleware/rateLimiter';
 import { env } from './config/env';
+import { auditLogger } from './audit/audit.middleware';
 import { authRouter } from './modules/auth/auth.router';
 import { incidentsRouter } from './modules/incidents/incidents.router';
 import { mediaRouter } from './modules/media/media.router';
@@ -21,6 +22,9 @@ import { investigationRouter } from './modules/investigation/investigation.route
 import { patternRouter } from './modules/investigation/pattern.router';
 import { tiplineRouter } from './modules/tipline/tipline.router';
 import { statsRouter } from './modules/stats/stats.router';
+import { adminRouter } from './modules/admin/admin.router';
+import { slaRouter } from './modules/sla/sla.router';
+import { opendataRouter } from './modules/opendata/opendata.router';
 
 export const app = express();
 
@@ -52,6 +56,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 app.use(globalRateLimiter);
+app.use(auditLogger);
 
 app.get('/health', (_req, res) => {
   res.json({
@@ -80,6 +85,9 @@ app.use('/v1/investigations', investigationRouter);
 app.use('/v1/patterns', patternRouter);
 app.use('/v1/tips', tiplineRouter);
 app.use('/v1/stats', statsRouter);
+app.use('/v1/admin', adminRouter);
+app.use('/v1/sla', slaRouter);
+app.use('/v1/opendata', opendataRouter);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -20,7 +20,7 @@ export function Navbar() {
             <button onClick={logout} className="text-sm text-red-600 hover:text-red-800">Log Out</button>
           </>
         ) : (
-          <Link href="/my-reports" className="bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-900">
+          <Link href="/my-reports?login=1" className="bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-900">
             Sign In
           </Link>
         )}
