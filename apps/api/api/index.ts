@@ -14,13 +14,13 @@ import express from 'express';
 import { PrismaClient } from '@prisma/client';
 
 const app = express();
+const prisma = new PrismaClient();
 
 app.get('/health', async (_req, res) => {
   try {
-    const prisma = new PrismaClient();
     await prisma.$connect();
-    await prisma.$disconnect();
     res.json({ status: 'ok', db: 'connected' });
+    await prisma.$disconnect();
   } catch (err) {
     res.status(500).json({ status: 'error', message: String(err) });
   }

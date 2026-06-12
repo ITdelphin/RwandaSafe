@@ -1,14 +1,10 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["node_modules/.prisma/client/**"]
-      }
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "node_modules/.prisma/client/**"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/(.*)",
