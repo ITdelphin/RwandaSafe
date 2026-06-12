@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { PrismaClient, AgencyType, Role, ResourceType } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -90,12 +91,15 @@ async function main() {
   console.log('Agencies created');
 
   // ── Super Admin ─────────────────────────────────────────────────────────────
+  const adminPassword = await bcrypt.hash('Admin@123', 10);
   const adminUser = await prisma.user.upsert({
     where: { phone: '+250788000001' },
     update: {},
     create: {
       phone: '+250788000001',
+      email: 'admin@safe.gov.rw',
       name: 'Super Administrator',
+      passwordHash: adminPassword,
       role: Role.SUPER_ADMIN,
       isVerified: true,
     },
@@ -281,11 +285,11 @@ async function main() {
   console.log('SLA configurations created');
 
   console.log('\nSeed complete. Accounts:');
-  console.log('  Super Admin : +250788000001');
-  console.log('  Police      : +250788100001');
-  console.log('  Medical     : +250788200001');
-  console.log('  Fire        : +250788300001');
-  console.log('  RIB         : +250788400001');
+  console.log('  Super Admin : admin@safe.gov.rw / Admin@123');
+  console.log('  Police      : +250788100001 (OTP only)');
+  console.log('  Medical     : +250788200001 (OTP only)');
+  console.log('  Fire        : +250788300001 (OTP only)');
+  console.log('  RIB         : +250788400001 (OTP only)');
 }
 
 main()
