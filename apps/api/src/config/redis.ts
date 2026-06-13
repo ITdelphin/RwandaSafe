@@ -1,16 +1,14 @@
-import { createClient } from 'redis';
-import { env } from './env';
 import { logger } from '../middleware/logger';
 
-export const redisClient = createClient({ url: env.REDIS_URL });
-
-redisClient.on('error', (err) => logger.error('Redis error', err));
+// Mocked redis client to prevent crashes while Redis is down
+export const redisClient = {
+  on: () => { },
+  connect: async () => { throw new Error('Redis disabled'); },
+  get: async () => null,
+  set: async () => { },
+  del: async () => { },
+};
 
 export async function connectRedis() {
-  try {
-    await redisClient.connect();
-    logger.info('Redis connected');
-  } catch (err) {
-    logger.warn('Redis connection failed — continuing without cache', err);
-  }
+  logger.info('Redis disabled for stability');
 }

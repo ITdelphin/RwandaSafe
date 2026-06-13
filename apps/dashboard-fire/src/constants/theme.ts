@@ -1,20 +1,13 @@
 export const Theme = {
-  primary: '#EA580C', // Fire primary from admin dashboard
-  primaryDark: '#C2410C',
-  primaryLight: '#FB923C',
-  primarySurface: '#FFF7ED',
-  secondary: '#34A853',
-  secondaryDark: '#1B8A3C',
-  secondarySurface: '#e6f4ea',
-  warning: '#F9AB00',
-  warningSurface: '#fef9e3',
-  danger: '#d93025',
-  dangerSurface: '#fce8e6',
   sidebar: '#0F172A',
   sidebarActive: '#1E3A5F',
+  topbar: '#FFFFFF',
   background: '#F1F5F9',
-  surface: '#ffffff',
+  surface: '#FFFFFF',
   border: '#E2E8F0',
+  primary: '#EA580C', // Fire primary
+  primaryHover: '#C2410C',
+  accent: '#F59E0B',
   textPrimary: '#1E293B',
   textSecondary: '#64748B',
 };

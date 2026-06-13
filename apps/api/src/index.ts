@@ -1,7 +1,6 @@
 import 'dotenv/config';
 
 // Construct DATABASE_URL from separate parts if DB_PASS is set
-// This avoids URL-encoding issues with special characters in passwords
 if (process.env.DB_PASS && process.env.DB_HOST && process.env.DB_USER) {
   const user = encodeURIComponent(process.env.DB_USER);
   const pass = encodeURIComponent(process.env.DB_PASS);
@@ -23,11 +22,16 @@ const server = http.createServer(app);
 initSocket(server);
 
 async function bootstrap() {
-  await connectRedis();
   const port = Number(process.env.PORT) || env.API_PORT;
+
   server.listen(port, () => {
     logger.info(`Rwanda Safe API running on port ${port}`);
     logger.info(`Environment: ${env.NODE_ENV}`);
+  });
+
+  // Decoupled Redis connection to prevent boot block
+  connectRedis().catch(err => {
+    logger.warn('Initial Redis connection failed — continuing without cache', err);
   });
 }
 

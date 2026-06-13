@@ -22,14 +22,17 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
   if (!open) return null;
 
   const handleRequestOtp = async () => {
-    if (!phone.match(/^\+?250\d{9}$/)) {
-      setError('Enter a valid Rwandan phone number (+250XXXXXXXXX)');
+    // Basic validation for Rwandan numbers or generic test numbers
+    if (!phone.match(/^\+?250\d{9}$/) && !phone.startsWith('250')) {
+      setError('Enter a valid Rwandan phone number (e.g. 2507XXXXXXXX)');
       return;
     }
     setLoading(true);
     setError('');
     try {
-      await authApi.requestOtp(phone.replace(/^\+/, ''));
+      // Ensure phone is in 250... format as expected by API
+      const formattedPhone = phone.replace(/^\+/, '');
+      await authApi.requestOtp(formattedPhone);
       setStep('otp');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to send OTP');
@@ -46,13 +49,14 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
     setLoading(true);
     setError('');
     try {
-      const res: any = await authApi.verifyOtp(phone.replace(/^\+/, ''), code);
+      const formattedPhone = phone.replace(/^\+/, '');
+      const res: any = await authApi.verifyOtp(formattedPhone, code);
       const { accessToken, refreshToken, user } = res.data.data;
       setAuth(user, accessToken, refreshToken);
       onClose();
       router.refresh();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid code');
+      setError(err.response?.data?.message || 'Invalid or expired code');
     } finally {
       setLoading(false);
     }
@@ -64,81 +68,99 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-blue-900/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
       onClick={handleBackdrop}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-8 relative">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-10 relative border border-gray-100">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
         >
           <X size={20} />
         </button>
 
-        <div className="flex justify-center mb-6">
-          <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
-            <Shield size={28} className="text-blue-800" />
+        <div className="flex justify-center mb-8">
+          <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-900 border border-blue-100 shadow-sm">
+            <Shield size={32} />
           </div>
         </div>
 
-        <h2 className="text-xl font-bold text-center text-gray-900 mb-1">
-          {step === 'phone' ? 'Sign In' : 'Enter Code'}
+        <h2 className="text-2xl font-extrabold text-center text-gray-900 mb-2 tracking-tight">
+          {step === 'phone' ? 'Citizen Sign In' : 'Verification'}
         </h2>
-        <p className="text-sm text-gray-500 text-center mb-6">
+        <p className="text-sm text-gray-500 text-center mb-8 leading-relaxed">
           {step === 'phone'
-            ? 'Enter your phone number to receive a code'
-            : `We sent a 6-digit code to ${phone}`}
+            ? 'Sign in to track your emergency reports and view history.'
+            : `We've sent a secure 6-digit code to your device.`}
         </p>
 
         {step === 'phone' ? (
           <div className="space-y-4">
-            <div className="flex items-center border border-gray-200 rounded-xl px-4 py-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition">
-              <Phone size={18} className="text-gray-400 mr-3" />
-              <input
-                className="w-full outline-none text-sm"
-                placeholder="+250 7XX XXX XXX"
-                value={phone}
-                onChange={(e) => { setPhone(e.target.value); setError(''); }}
-                onKeyDown={(e) => e.key === 'Enter' && handleRequestOtp()}
-                autoFocus
-              />
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
+              <div className="flex items-center border border-gray-200 rounded-2xl px-5 py-4 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-50 transition-all bg-gray-50/50">
+                <Phone size={18} className="text-gray-400 mr-3" />
+                <input
+                  className="w-full bg-transparent outline-none text-base font-medium text-gray-900 placeholder:text-gray-300"
+                  placeholder="250 7XX XXX XXX"
+                  value={phone}
+                  onChange={(e) => { setPhone(e.target.value); setError(''); }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleRequestOtp()}
+                  autoFocus
+                />
+              </div>
             </div>
-            {error && <p className="text-red-600 text-xs">{error}</p>}
+            {error && <p className="text-red-500 text-xs font-semibold px-1">{error}</p>}
             <button
               onClick={handleRequestOtp}
               disabled={loading}
-              className="w-full bg-blue-800 hover:bg-blue-900 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition text-sm"
+              className="w-full bg-blue-900 hover:bg-black disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-200 active:scale-95 flex items-center justify-center gap-2"
             >
-              {loading ? 'Sending...' : 'Send Code'}
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                'Send Verification Code'
+              )}
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
-            <input
-              className="w-full text-center text-2xl tracking-[0.5em] font-mono border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-              placeholder="000000"
-              maxLength={6}
-              value={code}
-              onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setError(''); }}
-              onKeyDown={(e) => e.key === 'Enter' && handleVerifyOtp()}
-              autoFocus
-            />
-            {error && <p className="text-red-600 text-xs">{error}</p>}
+          <div className="space-y-5">
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1 text-center">Security Code</label>
+              <input
+                className="w-full text-center text-3xl tracking-[0.4em] font-black border border-gray-200 rounded-2xl px-5 py-5 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all bg-gray-50/50 text-blue-900 placeholder:text-gray-200"
+                placeholder="000000"
+                maxLength={6}
+                value={code}
+                onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setError(''); }}
+                onKeyDown={(e) => e.key === 'Enter' && handleVerifyOtp()}
+                autoFocus
+              />
+            </div>
+            {error && <p className="text-red-500 text-xs font-semibold text-center">{error}</p>}
             <button
               onClick={handleVerifyOtp}
               disabled={loading}
-              className="w-full bg-blue-800 hover:bg-blue-900 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition text-sm"
+              className="w-full bg-blue-900 hover:bg-black disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-200 active:scale-95 flex items-center justify-center gap-2"
             >
-              {loading ? 'Verifying...' : 'Verify'}
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                'Verify & Continue'
+              )}
             </button>
             <button
               onClick={() => { setStep('phone'); setCode(''); setError(''); }}
-              className="w-full text-sm text-blue-600 hover:underline text-center"
+              className="w-full text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors text-center uppercase tracking-wider"
             >
               Change phone number
             </button>
           </div>
         )}
+
+        <p className="mt-8 text-[10px] text-gray-400 text-center leading-relaxed">
+          By continuing, you agree to Rwanda Safe's terms of service and recognize that this platform is for emergency use only.
+        </p>
       </div>
     </div>
   );

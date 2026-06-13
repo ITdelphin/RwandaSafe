@@ -18,6 +18,7 @@ adminRouter.post('/users/officer', adminController.createOfficerAccount);
 adminRouter.get('/users/:id', adminController.getUserDetail);
 adminRouter.patch('/users/:id/suspend', adminController.suspendUser);
 adminRouter.patch('/users/:id/reactivate', adminController.reactivateUser);
+adminRouter.post('/users/:id/promote', adminController.promoteToOfficer);
 adminRouter.delete('/users/:id', adminController.deleteUser);
 
 adminRouter.post('/broadcast', adminController.sendBroadcastAlert);

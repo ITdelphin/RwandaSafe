@@ -259,6 +259,37 @@ export const adminService = {
     };
   },
 
+  async promoteToOfficer(userId: string, data: { role: Role; agencyId: string; badgeNumber?: string; rank?: string }, promotedById: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId }, include: { officer: true } });
+    if (!user) throw Object.assign(new Error('User not found'), { statusCode: 404 });
+    if (user.officer) throw Object.assign(new Error('User is already an officer'), { statusCode: 400 });
+
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      const u = await tx.user.update({
+        where: { id: userId },
+        data: {
+          role: data.role,
+          isVerified: true,
+          isActive: true,
+        },
+      });
+
+      await tx.officer.create({
+        data: {
+          userId: u.id,
+          agencyId: data.agencyId,
+          badgeNumber: data.badgeNumber,
+          rank: data.rank,
+          isOnDuty: false,
+        },
+      });
+
+      return u;
+    });
+
+    return updatedUser;
+  },
+
   async createOfficerAccount(data: CreateOfficerInput, createdById: string) {
     const existing = await prisma.user.findUnique({ where: { phone: data.phone } });
     if (existing) throw Object.assign(new Error('User with this phone already exists'), { statusCode: 409 });

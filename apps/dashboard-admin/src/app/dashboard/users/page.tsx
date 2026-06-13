@@ -6,9 +6,16 @@ import { adminApi } from '../../../lib/apiClient';
 import { formatDateTime, timeAgo } from '../../../lib/formatters';
 import { useMediaQuery, BREAKPOINTS } from '../../../hooks/useMediaQuery';
 import {
-  Users, Search, Shield, UserPlus, AlertCircle, CheckCircle, XCircle,
+  Users, Search, Shield, UserPlus, AlertCircle, CheckCircle, XCircle, ChevronRight, Briefcase
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const ROLE_OPTIONS = [
+  { value: 'POLICE_OFFICER', label: 'Police Officer' },
+  { value: 'MEDICAL_RESPONDER', label: 'Medical Responder' },
+  { value: 'FIRE_OFFICER', label: 'Fire Officer' },
+  { value: 'RIB_INVESTIGATOR', label: 'RIB Investigator' },
+];
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
@@ -16,12 +23,26 @@ export default function AdminUsersPage() {
   const [tab, setTab] = useState<'all' | 'citizens' | 'officers'>('all');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+
   const [suspendUserId, setSuspendUserId] = useState<string | null>(null);
   const [suspendReason, setSuspendReason] = useState('');
 
-  const { data, isLoading } = useQuery({
+  const [promoteUserId, setPromoteUserId] = useState<string | null>(null);
+  const [promotionData, setPromotionData] = useState({
+    role: 'POLICE_OFFICER',
+    agencyId: '',
+    badgeNumber: '',
+    rank: '',
+  });
+
+  const { data: usersData, isLoading } = useQuery({
     queryKey: ['admin', 'users', page, search, tab],
     queryFn: () => adminApi.listUsers({ page, limit: 20, search: search || undefined }).then((r) => r.data),
+  });
+
+  const { data: agenciesData } = useQuery({
+    queryKey: ['admin', 'agencies', 'list'],
+    queryFn: () => adminApi.getScorecard().then(r => r.data.data), // Reuse scorecard to get agency list
   });
 
   const suspendMutation = useMutation({
@@ -44,20 +65,30 @@ export default function AdminUsersPage() {
     onError: (e: any) => toast.error(e.response?.data?.message ?? 'Failed to reactivate'),
   });
 
-  const users = data?.users ?? [];
-  const total = data?.total ?? 0;
-  const totalPages = data?.totalPages ?? 0;
+  const promoteMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => adminApi.promoteToOfficer(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      toast.success('User promoted to staff');
+      setPromoteUserId(null);
+    },
+    onError: (e: any) => toast.error(e.response?.data?.message ?? 'Failed to promote'),
+  });
 
-  const filtered = tab === 'all' ? users : users.filter((u: any) =>
-    tab === 'citizens' ? u.role === 'CITIZEN' : u.role !== 'CITIZEN',
+  const users = usersData?.users ?? [];
+  const total = usersData?.total ?? 0;
+  const totalPages = usersData?.totalPages ?? 0;
+
+  const filteredUsers = tab === 'all' ? users : users.filter((u: any) =>
+    tab === 'citizens' ? u.role === 'CITIZEN' : u.role !== 'CITIZEN'
   );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>User Management</h2>
-          <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>{total} total users</p>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>User Management</h2>
+          <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>Manage citizens and professional staff</p>
         </div>
         <Link href="/dashboard/users/new"
           style={{
@@ -77,152 +108,127 @@ export default function AdminUsersPage() {
                 padding: '8px 16px', borderRadius: '8px', border: 'none',
                 background: tab === t ? '#fff' : 'transparent',
                 color: tab === t ? '#0F172A' : '#64748B',
-                fontWeight: tab === t ? 600 : 400, fontSize: '13px', cursor: 'pointer',
+                fontWeight: tab === t ? 700 : 500, fontSize: '13px', cursor: 'pointer',
                 boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.2s',
               }}>
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '8px 14px', flex: isMobile ? 1 : undefined }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '8px 14px', flex: isMobile ? 1 : undefined }}>
           <Search size={14} color="#94A3B8" />
           <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Search by name, phone, badge..."
+            placeholder="Search by name, phone, email..."
             style={{ border: 'none', outline: 'none', fontSize: '13px', background: 'transparent', color: '#0F172A', width: isMobile ? '100%' : '240px' }} />
         </div>
       </div>
 
-      <div style={{ background: '#fff', borderRadius: '14px', border: '1px solid #E2E8F0', overflow: 'auto' }}>
-        {isMobile ? (
-          <div style={{ padding: '12px' }}>
-            {filtered.length === 0 ? (
-              <p style={{ textAlign: 'center', padding: '40px', color: '#94A3B8', fontSize: '13px' }}>No users found</p>
+      <div style={{ background: '#fff', borderRadius: '14px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: '#F8FAFC' }}>
+              <th style={thStyle}>User</th>
+              {!isMobile && <th style={thStyle}>Contact</th>}
+              <th style={thStyle}>Role</th>
+              {!isMobile && <th style={thStyle}>Status</th>}
+              <th style={thStyle}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredUsers.length === 0 ? (
+              <tr><td colSpan={5} style={{ textAlign: 'center', padding: '60px', color: '#94A3B8' }}>{isLoading ? 'Loading...' : 'No users found'}</td></tr>
             ) : (
-              filtered.map((u: any) => (
-                <div key={u.id} style={{
-                  background: '#F8FAFC', borderRadius: '10px', padding: '14px', marginBottom: '8px',
-                  border: '1px solid #E2E8F0',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              filteredUsers.map((u: any) => (
+                <tr key={u.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                  <td style={tdStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: '#64748B' }}>
-                        {u.name?.[0] ?? '?'}
+                      <div style={{
+                        width: '36px', height: '36px', borderRadius: '10px',
+                        background: 'linear-gradient(135deg, #F1F5F9, #E2E8F0)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '14px', fontWeight: 700, color: '#475569'
+                      }}>
+                        {u.name?.[0] ?? u.phone?.[0] ?? '?'}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '14px' }}>{u.name ?? '—'}</div>
-                        <div style={{ fontFamily: 'monospace', fontSize: '11px', color: '#94A3B8' }}>{u.phone}</div>
+                        <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '14px' }}>{u.name ?? 'Anonymous Citizen'}</div>
+                        {isMobile && <div style={{ fontSize: '11px', color: '#64748B' }}>{u.phone}</div>}
                       </div>
                     </div>
-                    <div>
+                  </td>
+                  {!isMobile && (
+                    <td style={tdStyle}>
+                      <div style={{ fontSize: '13px', color: '#0F172A' }}>{u.phone}</div>
+                      <div style={{ fontSize: '11px', color: '#64748B' }}>{u.email ?? '—'}</div>
+                    </td>
+                  )}
+                  <td style={tdStyle}>
+                    <span style={{
+                      fontSize: '11px', fontWeight: 700,
+                      padding: '4px 10px', borderRadius: '20px',
+                      background: u.role === 'CITIZEN' ? '#F1F5F9' : '#E0F2FE',
+                      color: u.role === 'CITIZEN' ? '#64748B' : '#0369A1',
+                      textTransform: 'uppercase'
+                    }}>
+                      {u.role.replace(/_/g, ' ')}
+                    </span>
+                  </td>
+                  {!isMobile && (
+                    <td style={tdStyle}>
                       {u.isActive ? (
-                        <span style={{ color: '#22C55E', fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', background: '#F0FDF4' }}>Active</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#16A34A', fontWeight: 600, fontSize: '12px' }}>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#16A34A' }} /> Active
+                        </div>
                       ) : (
-                        <span style={{ color: '#EF4444', fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', background: '#FEF2F2' }}>Suspended</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#DC2626', fontWeight: 600, fontSize: '12px' }}>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#DC2626' }} /> Suspended
+                        </div>
+                      )}
+                    </td>
+                  )}
+                  <td style={tdStyle}>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      {u.role === 'CITIZEN' && (
+                        <button
+                          onClick={() => setPromoteUserId(u.id)}
+                          style={{
+                            padding: '6px 12px', borderRadius: '8px', border: '1px solid #0F4C75',
+                            background: '#F0F9FF', color: '#0F4C75', fontSize: '11px', fontWeight: 700, cursor: 'pointer'
+                          }}
+                        >
+                          PROMOTE
+                        </button>
+                      )}
+                      {u.isActive ? (
+                        <button onClick={() => setSuspendUserId(u.id)}
+                          style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #FECACA', background: '#fff', color: '#DC2626', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                          SUSPEND
+                        </button>
+                      ) : (
+                        <button onClick={() => reactivateMutation.mutate(u.id)}
+                          style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #BBF7D0', background: '#fff', color: '#16A34A', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                          ACTIVATE
+                        </button>
                       )}
                     </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '12px', color: '#64748B', marginBottom: '10px' }}>
-                    <div>Role: <strong style={{ color: '#0F172A' }}>{u.role.replace(/_/g, ' ')}</strong></div>
-                    <div>Reports: <strong style={{ color: '#0F172A' }}>{u._count?.incidents ?? 0}</strong></div>
-                    <div>Verified: {u.isVerified ? <CheckCircle size={12} color="#22C55E" style={{ verticalAlign: 'middle' }} /> : <XCircle size={12} color="#94A3B8" style={{ verticalAlign: 'middle' }} />}</div>
-                    <div>Last login: <strong style={{ color: '#0F172A' }}>{u.lastLoginAt ? timeAgo(u.lastLoginAt) : '—'}</strong></div>
-                  </div>
-                  <div>
-                    {u.isActive ? (
-                      <button onClick={() => setSuspendUserId(u.id)}
-                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
-                        Suspend
-                      </button>
-                    ) : (
-                      <button onClick={() => reactivateMutation.mutate(u.id)}
-                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #BBF7D0', background: '#F0FDF4', color: '#16A34A', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
-                        Reactivate
-                      </button>
-                    )}
-                  </div>
-                </div>
+                  </td>
+                </tr>
               ))
             )}
-          </div>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: '#F8FAFC' }}>
-                <th style={thStyle}>Name</th>
-                <th style={thStyle}>Phone</th>
-                <th style={thStyle}>Role</th>
-                <th style={thStyle}>Status</th>
-                <th style={thStyle}>Verified</th>
-                <th style={thStyle}>Reports</th>
-                <th style={thStyle}>Last Login</th>
-                <th style={thStyle}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8', fontSize: '13px' }}>No users found</td></tr>
-              ) : (
-                filtered.map((u: any) => (
-                  <tr key={u.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={tdStyle}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#64748B' }}>
-                          {u.name?.[0] ?? '?'}
-                        </div>
-                        <span style={{ fontWeight: 500, color: '#0F172A', fontSize: '13px' }}>{u.name ?? '—'}</span>
-                      </div>
-                    </td>
-                    <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '12px' }}>{u.phone}</td>
-                    <td style={tdStyle}>
-                      <span style={{ fontSize: '11px', fontWeight: 600, color: u.role === 'CITIZEN' ? '#64748B' : '#0F4C75' }}>
-                        {u.role.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td style={tdStyle}>
-                      {u.isActive ? (
-                        <span style={{ color: '#22C55E', fontSize: '12px', fontWeight: 600 }}>Active</span>
-                      ) : (
-                        <span style={{ color: '#EF4444', fontSize: '12px', fontWeight: 600 }}>Suspended</span>
-                      )}
-                    </td>
-                    <td style={tdStyle}>
-                      {u.isVerified ? <CheckCircle size={14} color="#22C55E" /> : <XCircle size={14} color="#94A3B8" />}
-                    </td>
-                    <td style={tdStyle}>{u._count?.incidents ?? 0}</td>
-                    <td style={{ ...tdStyle, fontSize: '12px', color: '#64748B' }}>
-                      {u.lastLoginAt ? timeAgo(u.lastLoginAt) : '—'}
-                    </td>
-                    <td style={tdStyle}>
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        {u.isActive ? (
-                          <button onClick={() => setSuspendUserId(u.id)}
-                            style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
-                            Suspend
-                          </button>
-                        ) : (
-                          <button onClick={() => reactivateMutation.mutate(u.id)}
-                            style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #BBF7D0', background: '#F0FDF4', color: '#16A34A', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
-                            Reactivate
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        )}
+          </tbody>
+        </table>
 
         {totalPages > 1 && (
-          <div style={{ padding: '12px 20px', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'center', gap: '4px' }}>
-            {Array.from({ length: Math.min(totalPages, isMobile ? 5 : 10) }, (_, i) => i + 1).map((p) => (
+          <div style={{ padding: '16px 20px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'center', gap: '6px' }}>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
               <button key={p} onClick={() => setPage(p)}
                 style={{
-                  padding: '6px 12px', borderRadius: '6px', border: 'none',
-                  background: p === page ? '#0F4C75' : '#F1F5F9',
+                  minWidth: '32px', height: '32px', borderRadius: '8px', border: 'none',
+                  background: p === page ? '#0F4C75' : '#fff',
                   color: p === page ? '#fff' : '#64748B',
-                  fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                  fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                 }}>
                 {p}
               </button>
@@ -231,30 +237,118 @@ export default function AdminUsersPage() {
         )}
       </div>
 
+      {/* Promotion Modal */}
+      {promoteUserId && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+          <div style={{ background: '#fff', borderRadius: '20px', padding: '32px', width: '460px', maxWidth: '100%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#0F4C75', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                <Shield size={24} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0F172A', margin: 0 }}>Promote to Staff</h3>
+                <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>Grant professional access to the system</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={labelStyle}>Assign Role</label>
+                <select
+                  style={inputStyle}
+                  value={promotionData.role}
+                  onChange={e => setPromotionData({ ...promotionData, role: e.target.value })}
+                >
+                  {ROLE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Assigned Agency</label>
+                <select
+                  style={inputStyle}
+                  value={promotionData.agencyId}
+                  onChange={e => setPromotionData({ ...promotionData, agencyId: e.target.value })}
+                >
+                  <option value="">Select Agency...</option>
+                  {agenciesData?.map((a: any) => (
+                    <option key={a.agency} value={a.agency}>{a.agency} - Performance: {a.performanceScore}%</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={labelStyle}>Badge Number</label>
+                  <input
+                    style={inputStyle}
+                    placeholder="Optional"
+                    value={promotionData.badgeNumber}
+                    onChange={e => setPromotionData({ ...promotionData, badgeNumber: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Officer Rank</label>
+                  <input
+                    style={inputStyle}
+                    placeholder="e.g. Sergeant"
+                    value={promotionData.rank}
+                    onChange={e => setPromotionData({ ...promotionData, rank: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+              <button
+                onClick={() => setPromoteUserId(null)}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E2E8F0', background: '#fff', color: '#64748B', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => promoteMutation.mutate({ id: promoteUserId, data: promotionData })}
+                disabled={!promotionData.agencyId || promoteMutation.isPending}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px', border: 'none',
+                  background: !promotionData.agencyId ? '#CBD5E1' : '#0F4C75',
+                  color: '#fff', fontWeight: 700, cursor: promotionData.agencyId ? 'pointer' : 'not-allowed',
+                  opacity: promoteMutation.isPending ? 0.7 : 1
+                }}
+              >
+                {promoteMutation.isPending ? 'Promoting...' : 'Promote User'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Suspension Modal (Reason UI) */}
       {suspendUserId && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-          <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', width: '400px', maxWidth: '100%' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A', marginBottom: '12px' }}>Suspend User</h3>
-            <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '16px' }}>Enter the reason for suspension:</p>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+          <div style={{ background: '#fff', borderRadius: '20px', padding: '32px', width: '400px', maxWidth: '100%' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0F172A', marginBottom: '8px' }}>Suspend Account</h3>
+            <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '20px' }}>Enter a justification for account suspension.</p>
             <textarea value={suspendReason} onChange={(e) => setSuspendReason(e.target.value)}
-              placeholder="Reason for suspension..." rows={3}
+              placeholder="Violation of terms, inactive post, etc..." rows={3}
               style={{
-                width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0',
-                fontSize: '13px', outline: 'none', boxSizing: 'border-box', resize: 'vertical',
+                width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E2E8F0',
+                fontSize: '13px', outline: 'none', boxSizing: 'border-box', resize: 'none',
+                background: '#F8FAFC'
               }} />
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
-              <button onClick={() => { setSuspendUserId(null); setSuspendReason(''); }}
-                style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#fff', color: '#64748B', fontSize: '13px', cursor: 'pointer' }}>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+              <button onClick={() => setSuspendUserId(null)}
+                style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid #E2E8F0', background: '#fff', color: '#64748B', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
                 Cancel
               </button>
               <button onClick={() => suspendMutation.mutate({ id: suspendUserId, reason: suspendReason })}
-                disabled={!suspendReason.trim()}
+                disabled={!suspendReason.trim() || suspendMutation.isPending}
                 style={{
-                  padding: '8px 16px', borderRadius: '8px', border: 'none',
+                  flex: 1, padding: '10px', borderRadius: '10px', border: 'none',
                   background: !suspendReason.trim() ? '#CBD5E1' : '#DC2626',
-                  color: '#fff', fontSize: '13px', fontWeight: 600, cursor: !suspendReason.trim() ? 'not-allowed' : 'pointer',
+                  color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer'
                 }}>
-                Confirm Suspension
+                Confirm
               </button>
             </div>
           </div>
@@ -265,11 +359,22 @@ export default function AdminUsersPage() {
 }
 
 const thStyle: React.CSSProperties = {
-  textAlign: 'left', padding: '12px 16px', fontSize: '11px', fontWeight: 700,
-  color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px',
+  textAlign: 'left', padding: '16px', fontSize: '11px', fontWeight: 700,
+  color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px',
   borderBottom: '1px solid #E2E8F0',
 };
 
 const tdStyle: React.CSSProperties = {
-  padding: '12px 16px', fontSize: '13px', color: '#475569',
+  padding: '16px', fontSize: '13px', color: '#475569',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block', fontSize: '11px', fontWeight: 700, color: '#64748B',
+  textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px'
+};
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E2E8F0',
+  fontSize: '14px', outline: 'none', background: '#F8FAFC', color: '#0F172A',
+  boxSizing: 'border-box'
 };

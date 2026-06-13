@@ -195,7 +195,7 @@ export default function LandingPage() {
   const [stats, setStats] = useState<PublicStats | null>(null);
 
   useEffect(() => {
-    statsApi.getPublic().then((res: any) => setStats(res.data.data)).catch(() => {});
+    statsApi.getPublic().then((res: any) => setStats(res.data.data)).catch(() => { });
   }, []);
 
   return (
@@ -204,7 +204,7 @@ export default function LandingPage() {
 
       {/* ── Hero ── */}
       <section
-        className="relative overflow-hidden text-white py-24 px-6 text-center"
+        className="relative overflow-hidden text-white pt-32 pb-24 px-6 text-center"
         style={{ background: 'linear-gradient(135deg, #0D1B4B 0%, #1a237e 50%, #0D47A1 100%)' }}
       >
         {/* subtle grid pattern */}

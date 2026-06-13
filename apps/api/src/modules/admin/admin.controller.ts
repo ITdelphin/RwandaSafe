@@ -80,6 +80,17 @@ export const adminController = {
     }
   },
 
+  async promoteToOfficer(req: Request, res: Response) {
+    try {
+      const { role, agencyId, badgeNumber, rank } = req.body;
+      if (!role || !agencyId) return sendError(res, 'role and agencyId are required', 400);
+      const user = await adminService.promoteToOfficer(req.params.id, { role, agencyId, badgeNumber, rank }, req.user!.id);
+      return sendSuccess(res, { user, message: 'User promoted to officer' });
+    } catch (err: any) {
+      return sendError(res, err.message || 'Internal server error', err.statusCode || 500);
+    }
+  },
+
   async suspendUser(req: Request, res: Response) {
     try {
       const { reason } = req.body;

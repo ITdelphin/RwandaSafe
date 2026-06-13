@@ -45,6 +45,7 @@ export const adminApi = {
   createOfficer: (data: any) => apiClient.post('/admin/users/officer', data),
   suspendUser: (id: string, reason: string) => apiClient.patch(`/admin/users/${id}/suspend`, { reason }),
   reactivateUser: (id: string) => apiClient.patch(`/admin/users/${id}/reactivate`),
+  promoteToOfficer: (id: string, data: { role: string; agencyId: string; badgeNumber?: string; rank?: string }) => apiClient.post(`/admin/users/${id}/promote`, data),
   deleteUser: (id: string) => apiClient.delete(`/admin/users/${id}`),
   sendBroadcast: (data: any) => apiClient.post('/admin/broadcast', data),
   getBroadcasts: () => apiClient.get('/admin/broadcasts'),

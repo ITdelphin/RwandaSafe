@@ -1,20 +1,13 @@
 export const Theme = {
-  primary: '#4C1D95', // RIB primary from admin dashboard
-  primaryDark: '#371A6D',
-  primaryLight: '#7C3AED',
-  primarySurface: '#F5F3FF',
-  secondary: '#34A853',
-  secondaryDark: '#1B8A3C',
-  secondarySurface: '#e6f4ea',
-  warning: '#F9AB00',
-  warningSurface: '#fef9e3',
-  danger: '#d93025',
-  dangerSurface: '#fce8e6',
   sidebar: '#0F172A',
   sidebarActive: '#1E3A5F',
+  topbar: '#FFFFFF',
   background: '#F1F5F9',
-  surface: '#ffffff',
+  surface: '#FFFFFF',
   border: '#E2E8F0',
+  primary: '#4C1D95', // RIB primary
+  primaryHover: '#371A6D',
+  accent: '#9334E6',
   textPrimary: '#1E293B',
   textSecondary: '#64748B',
 };
