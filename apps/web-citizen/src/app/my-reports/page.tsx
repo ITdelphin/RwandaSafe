@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ClipboardList } from 'lucide-react';
 import { incidentsApi } from '../../lib/apiClient';
@@ -8,7 +8,7 @@ import { Navbar } from '../../components/Navbar';
 import { LoginModal } from '../../components/LoginModal';
 import { useAuthStore } from '../../store/authStore';
 
-export default function MyReportsPage() {
+function MyReportsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuthStore();
@@ -17,7 +17,8 @@ export default function MyReportsPage() {
   const [showLogin, setShowLogin] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get('login') === '1' && !isAuthenticated) {
+    const hasLoginParam = searchParams?.get('login') === '1';
+    if (hasLoginParam && !isAuthenticated) {
       setShowLogin(true);
       setLoading(false);
       return;
@@ -42,13 +43,13 @@ export default function MyReportsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       <Navbar />
       <LoginModal open={showLogin} onClose={handleLoginClose} />
       <div className="max-w-2xl mx-auto px-6 py-10">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">My Reports</h1>
         {loading ? (
-          <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-blue-800 border-t-transparent rounded-full animate-spin" /></div>
+          <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#0F4C75] border-t-transparent rounded-full animate-spin" /></div>
         ) : !isAuthenticated ? (
           <div className="text-center py-20">
             <div className="flex justify-center mb-4 text-gray-300"><ClipboardList size={48} /></div>
@@ -73,5 +74,17 @@ export default function MyReportsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MyReportsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#0F4C75] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <MyReportsContent />
+    </Suspense>
   );
 }
