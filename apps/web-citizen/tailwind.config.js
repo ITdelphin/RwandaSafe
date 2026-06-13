@@ -3,10 +3,12 @@ module.exports = {
   content: ['./src/**/*.{ts,tsx}', './app/**/*.{ts,tsx}'],
   theme: {
     extend: {
-      colors: {
-        primary: '#1B5E82',
-        emergency: '#D32F2F',
-      },
+  colors: {
+    primary: '#0F4C75',
+    emergency: '#EF4444',
+    dark: '#0F172A',
+    surface: '#F1F5F9',
+  },
     },
   },
   plugins: [],

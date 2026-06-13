@@ -205,7 +205,7 @@ export default function LandingPage() {
       {/* ── Hero ── */}
       <section
         className="relative overflow-hidden text-white pt-32 pb-24 px-6 text-center"
-        style={{ background: 'linear-gradient(135deg, #0D1B4B 0%, #1a237e 50%, #0D47A1 100%)' }}
+        style={{ background: 'linear-gradient(135deg, #0F172A 0%, #0F4C75 50%, #0D3B5E 100%)' }}
       >
         {/* subtle grid pattern */}
         <div
@@ -229,7 +229,8 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => router.push('/report')}
-              className="bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xl font-bold px-10 py-5 rounded-2xl shadow-2xl transition-all flex items-center justify-center gap-2"
+              className="active:scale-95 text-white text-xl font-bold px-10 py-5 rounded-2xl shadow-2xl transition-all flex items-center justify-center gap-2"
+              style={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)' }}
             >
               <Siren size={20} /> Report Emergency
             </button>
@@ -246,7 +247,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Live Stats ── */}
-      <section className="bg-gray-900 text-white py-12 px-6">
+      <section className="text-white py-12 px-6" style={{ background: '#0F172A' }}>
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
             {

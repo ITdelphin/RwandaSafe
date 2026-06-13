@@ -55,7 +55,8 @@ export default function MyReportsPage() {
             <p className="text-gray-500 mb-4">Sign in to see your reports</p>
             <button
               onClick={() => setShowLogin(true)}
-              className="bg-blue-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-900 transition"
+              className="text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition"
+              style={{ background: 'linear-gradient(135deg, #0F4C75, #0D3B5E)' }}
             >
               Sign In
             </button>

@@ -18,21 +18,32 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [devOtp, setDevOtp] = useState('');
 
   if (!open) return null;
 
+  function normalizePhone(raw: string): string {
+    let p = raw.replace(/[\s\-\(\)]/g, '');
+    if (p.startsWith('+')) p = p.slice(1);
+    if (p.startsWith('07')) p = '250' + p.slice(1);
+    if (p.startsWith('7')) p = '250' + p;
+    return p;
+  }
+
   const handleRequestOtp = async () => {
-    // Basic validation for Rwandan numbers or generic test numbers
-    if (!phone.match(/^\+?250\d{9}$/) && !phone.startsWith('250')) {
-      setError('Enter a valid Rwandan phone number (e.g. 2507XXXXXXXX)');
+    const clean = phone.replace(/[\s\-\(\)]/g, '');
+    if (!/^(\+?250|0)?7\d{8}$/.test(clean)) {
+      setError('Enter a valid Rwandan phone number (e.g. 07XX XXX XXX)');
       return;
     }
     setLoading(true);
     setError('');
+    setDevOtp('');
     try {
-      // Ensure phone is in 250... format as expected by API
-      const formattedPhone = phone.replace(/^\+/, '');
-      await authApi.requestOtp(formattedPhone);
+      const formattedPhone = normalizePhone(phone);
+      const res: any = await authApi.requestOtp(formattedPhone);
+      const data = res.data?.data;
+      setDevOtp(data?.devOtp ?? '');
       setStep('otp');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to send OTP');
@@ -49,7 +60,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
     setLoading(true);
     setError('');
     try {
-      const formattedPhone = phone.replace(/^\+/, '');
+      const formattedPhone = normalizePhone(phone);
       const res: any = await authApi.verifyOtp(formattedPhone, code);
       const { accessToken, refreshToken, user } = res.data.data;
       setAuth(user, accessToken, refreshToken);
@@ -68,7 +79,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
 
   return (
     <div
-      className="fixed inset-0 bg-blue-900/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+      className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
       onClick={handleBackdrop}
     >
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-10 relative border border-gray-100">
@@ -80,7 +91,8 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
         </button>
 
         <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-900 border border-blue-100 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center border shadow-sm"
+            style={{ background: 'linear-gradient(135deg, #C62828, #0F4C75)', color: 'white' }}>
             <Shield size={32} />
           </div>
         </div>
@@ -98,7 +110,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
           <div className="space-y-4">
             <div>
               <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
-              <div className="flex items-center border border-gray-200 rounded-2xl px-5 py-4 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-50 transition-all bg-gray-50/50">
+              <div className="flex items-center border border-gray-200 rounded-2xl px-5 py-4 focus-within:border-[#0F4C75] focus-within:ring-4 focus-within:ring-[#0F4C75]/10 transition-all bg-gray-50/50">
                 <Phone size={18} className="text-gray-400 mr-3" />
                 <input
                   className="w-full bg-transparent outline-none text-base font-medium text-gray-900 placeholder:text-gray-300"
@@ -114,7 +126,8 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
             <button
               onClick={handleRequestOtp}
               disabled={loading}
-              className="w-full bg-blue-900 hover:bg-black disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-200 active:scale-95 flex items-center justify-center gap-2"
+              className="w-full disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+              style={{ background: 'linear-gradient(135deg, #0F4C75, #0D3B5E)' }}
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -128,7 +141,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
             <div>
               <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1 text-center">Security Code</label>
               <input
-                className="w-full text-center text-3xl tracking-[0.4em] font-black border border-gray-200 rounded-2xl px-5 py-5 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all bg-gray-50/50 text-blue-900 placeholder:text-gray-200"
+                className="w-full text-center text-3xl tracking-[0.4em] font-black border border-gray-200 rounded-2xl px-5 py-5 outline-none focus:border-[#0F4C75] focus:ring-4 focus:ring-[#0F4C75]/10 transition-all bg-gray-50/50 text-[#0F4C75] placeholder:text-gray-200"
                 placeholder="000000"
                 maxLength={6}
                 value={code}
@@ -137,11 +150,18 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
                 autoFocus
               />
             </div>
+            {devOtp && (
+              <div className="text-center py-2 px-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+                <p className="text-[10px] font-bold text-yellow-700 uppercase tracking-wider">Dev Mode</p>
+                <p className="text-2xl font-black text-yellow-800 tracking-widest">{devOtp}</p>
+              </div>
+            )}
             {error && <p className="text-red-500 text-xs font-semibold text-center">{error}</p>}
             <button
               onClick={handleVerifyOtp}
               disabled={loading}
-              className="w-full bg-blue-900 hover:bg-black disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-200 active:scale-95 flex items-center justify-center gap-2"
+              className="w-full disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+              style={{ background: 'linear-gradient(135deg, #0F4C75, #0D3B5E)' }}
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -151,7 +171,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
             </button>
             <button
               onClick={() => { setStep('phone'); setCode(''); setError(''); }}
-              className="w-full text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors text-center uppercase tracking-wider"
+              className="w-full text-xs font-bold text-[#0F4C75] hover:text-[#0D3B5E] transition-colors text-center uppercase tracking-wider"
             >
               Change phone number
             </button>

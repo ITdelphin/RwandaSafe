@@ -7,6 +7,7 @@ interface AuthState {
   isAuthenticated: boolean;
   setAuth: (user: User, accessToken: string, refreshToken: string) => void;
   logout: () => void;
+  hydrate: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -16,6 +17,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window !== 'undefined') {
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
+      localStorage.setItem('user', JSON.stringify(user));
     }
     set({ user, isAuthenticated: true });
   },
@@ -25,5 +27,16 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.removeItem('refreshToken');
     }
     set({ user: null, isAuthenticated: false });
+  },
+  hydrate: () => {
+    if (typeof window === 'undefined') return;
+    const accessToken = localStorage.getItem('accessToken');
+    const userStr = localStorage.getItem('user');
+    if (accessToken && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        set({ user, isAuthenticated: true });
+      } catch {}
+    }
   },
 }));

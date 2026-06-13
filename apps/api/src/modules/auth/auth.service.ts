@@ -193,7 +193,11 @@ export const authService = {
     }
     const code = await createOtp(user.id);
     await sendOtpSms(phone, code);
-    return { userId: user.id, message: 'OTP sent successfully' };
+    const result: any = { userId: user.id, message: 'OTP sent successfully' };
+    if (env.NODE_ENV === 'development') {
+      result.devOtp = code;
+    }
+    return result;
   },
 
   async verifyOtpAndLogin(phone: string, code: string) {

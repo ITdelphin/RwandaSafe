@@ -9,11 +9,12 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-6 py-4">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <Link href="/" className="text-xl font-extrabold text-blue-900 flex items-center gap-2 tracking-tight">
-          <div className="w-8 h-8 bg-blue-900 rounded-lg flex items-center justify-center text-white">
+        <Link href="/" className="text-xl font-extrabold text-[#0F172A] flex items-center gap-2 tracking-tight">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
+            style={{ background: 'linear-gradient(135deg, #C62828, #0F4C75)' }}>
             <Shield size={18} />
           </div>
-          Rwanda Safe
+          Safe<span className="text-red-500">Rwanda</span>
         </Link>
 
         <div className="flex items-center gap-6">
@@ -39,7 +40,8 @@ export function Navbar() {
             </div>
           ) : (
             <Link href="/my-reports?login=1"
-              className="bg-blue-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-800 transition-all shadow-md shadow-blue-900/10 active:scale-95"
+              className="text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-md active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #0F4C75, #0D3B5E)' }}
             >
               Sign In
             </Link>
