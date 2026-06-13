@@ -11,19 +11,29 @@ if (process.env.DB_PASS && process.env.DB_HOST && process.env.DB_USER) {
 }
 
 import express from 'express';
-import { PrismaClient } from './prisma-client';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
-const prisma = new PrismaClient();
 
-app.get('/health', async (_req, res) => {
-  try {
-    await prisma.$connect();
-    res.json({ status: 'ok', db: 'connected' });
-    await prisma.$disconnect();
-  } catch (err: any) {
-    res.status(500).json({ status: 'error', message: err.message });
-  }
+app.get('/health', (_req, res) => {
+  const cwd = process.cwd();
+  const dirs = fs.readdirSync(cwd);
+  const apiDir = path.join(cwd, 'api');
+  const prismaDir = path.join(cwd, 'api', 'prisma-client');
+
+  res.json({
+    cwd,
+    rootFiles: dirs.filter(d => !d.startsWith('.')),
+    apiExists: fs.existsSync(apiDir),
+    apiFiles: fs.existsSync(apiDir) ? fs.readdirSync(apiDir) : [],
+    prismaClientExists: fs.existsSync(prismaDir),
+    prismaClientFiles: fs.existsSync(prismaDir) ? fs.readdirSync(prismaDir).slice(0, 20) : [],
+    env: {
+      hasDbUrl: !!process.env.DATABASE_URL,
+      nodeEnv: process.env.NODE_ENV,
+    },
+  });
 });
 
 app.all('*', (req, res) => {
