@@ -18,22 +18,29 @@ const app = express();
 
 app.get('/health', (_req, res) => {
   const cwd = process.cwd();
-  const dirs = fs.readdirSync(cwd);
-  const apiDir = path.join(cwd, 'api');
-  const prismaDir = path.join(cwd, 'api', 'prisma-client');
+  const results: Record<string, any> = { cwd };
 
-  res.json({
-    cwd,
-    rootFiles: dirs.filter(d => !d.startsWith('.')),
-    apiExists: fs.existsSync(apiDir),
-    apiFiles: fs.existsSync(apiDir) ? fs.readdirSync(apiDir) : [],
-    prismaClientExists: fs.existsSync(prismaDir),
-    prismaClientFiles: fs.existsSync(prismaDir) ? fs.readdirSync(prismaDir).slice(0, 20) : [],
-    env: {
-      hasDbUrl: !!process.env.DATABASE_URL,
-      nodeEnv: process.env.NODE_ENV,
-    },
-  });
+  const checkDir = (dirPath: string) => {
+    const full = path.join(cwd, dirPath);
+    try {
+      const stat = fs.statSync(full);
+      if (stat.isDirectory()) {
+        return { exists: true, type: 'dir', files: fs.readdirSync(full).slice(0, 30) };
+      }
+      return { exists: true, type: 'file', size: stat.size };
+    } catch {
+      return { exists: false };
+    }
+  };
+
+  results.rootDirs = checkDir('');
+  results.apiDir = checkDir('api');
+  results.prismaClientDir = checkDir('api/prisma-client');
+  results.prismaInNodeModules = checkDir('node_modules/.prisma');
+  results.appsDir = checkDir('apps');
+  results.vcDir = checkDir('___vc');
+
+  res.json(results);
 });
 
 app.all('*', (req, res) => {
