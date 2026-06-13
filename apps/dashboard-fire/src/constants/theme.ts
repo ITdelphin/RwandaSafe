@@ -1,94 +1,93 @@
-// Shared Google Material palette — used across all Rwanda Safe dashboards
 export const Theme = {
-  primary:          '#1a73e8',
-  primaryDark:      '#1557b0',
-  primaryLight:     '#4285F4',
-  primarySurface:   '#e8f0fe',
-  secondary:        '#34A853',
-  secondaryDark:    '#1B8A3C',
+  primary: '#EA580C', // Fire primary from admin dashboard
+  primaryDark: '#C2410C',
+  primaryLight: '#FB923C',
+  primarySurface: '#FFF7ED',
+  secondary: '#34A853',
+  secondaryDark: '#1B8A3C',
   secondarySurface: '#e6f4ea',
-  warning:          '#F9AB00',
-  warningSurface:   '#fef9e3',
-  danger:           '#d93025',
-  dangerSurface:    '#fce8e6',
-  sidebar:          '#ffffff',
-  sidebarActive:    '#e8f0fe',
-  background:       '#f8f9fa',
-  surface:          '#ffffff',
-  border:           '#dadce0',
-  textPrimary:      '#202124',
-  textSecondary:    '#5f6368',
+  warning: '#F9AB00',
+  warningSurface: '#fef9e3',
+  danger: '#d93025',
+  dangerSurface: '#fce8e6',
+  sidebar: '#0F172A',
+  sidebarActive: '#1E3A5F',
+  background: '#F1F5F9',
+  surface: '#ffffff',
+  border: '#E2E8F0',
+  textPrimary: '#1E293B',
+  textSecondary: '#64748B',
 };
 
 // Keep agency-specific accent for sidebar top border indicator
 export const AGENCY_ACCENT: Record<string, string> = {
-  POLICE:   '#1a73e8',  // Google Blue
+  POLICE: '#1a73e8',  // Google Blue
   HOSPITAL: '#34A853',  // Bold Green
-  FIRE:     '#E8710A',  // Google Orange
-  RIB:      '#9334E6',  // Google Purple
+  FIRE: '#E8710A',  // Google Orange
+  RIB: '#9334E6',  // Google Purple
 };
 
 // Severity — keep semantic colors, lighter versions
 export const SEVERITY_COLORS: Record<string, string> = {
   CRITICAL: '#d93025',
-  HIGH:     '#E8710A',
-  MEDIUM:   '#1a73e8',
-  LOW:      '#5f6368',
+  HIGH: '#E8710A',
+  MEDIUM: '#1a73e8',
+  LOW: '#5f6368',
 };
 
 // Status — Google Material colors
 export const STATUS_COLORS: Record<string, string> = {
-  RECEIVED:     '#5f6368',
+  RECEIVED: '#5f6368',
   UNDER_REVIEW: '#1a73e8',
-  ASSIGNED:     '#9334E6',
-  DISPATCHED:   '#F9AB00',
-  ON_SCENE:     '#d93025',
-  RESOLVED:     '#34A853',
-  CLOSED:       '#80868b',
-  CANCELLED:    '#d93025',
+  ASSIGNED: '#9334E6',
+  DISPATCHED: '#F9AB00',
+  ON_SCENE: '#d93025',
+  RESOLVED: '#34A853',
+  CLOSED: '#80868b',
+  CANCELLED: '#d93025',
 };
 
 export const TRIAGE_COLORS: Record<string, string> = {
   IMMEDIATE: '#d93025',
-  URGENT:    '#E8710A',
-  DELAYED:   '#F9AB00',
+  URGENT: '#E8710A',
+  DELAYED: '#F9AB00',
   EXPECTANT: '#202124',
 };
 
 export const AMBULANCE_COLORS: Record<string, string> = {
-  AVAILABLE:    '#34A853',
-  DISPATCHED:   '#F9AB00',
-  ON_SCENE:     '#d93025',
+  AVAILABLE: '#34A853',
+  DISPATCHED: '#F9AB00',
+  ON_SCENE: '#d93025',
   TRANSPORTING: '#9334E6',
-  AT_HOSPITAL:  '#1a73e8',
-  OFF_DUTY:     '#80868b',
-  MAINTENANCE:  '#5f6368',
+  AT_HOSPITAL: '#1a73e8',
+  OFF_DUTY: '#80868b',
+  MAINTENANCE: '#5f6368',
 };
 
 export const UNIT_COLORS: Record<string, string> = {
-  AVAILABLE:   '#34A853',
-  RESPONDING:  '#F9AB00',
-  ON_SCENE:    '#d93025',
-  RETURNING:   '#9334E6',
+  AVAILABLE: '#34A853',
+  RESPONDING: '#F9AB00',
+  ON_SCENE: '#d93025',
+  RETURNING: '#9334E6',
   MAINTENANCE: '#5f6368',
-  OFF_DUTY:    '#80868b',
+  OFF_DUTY: '#80868b',
 };
 
 export const INVESTIGATION_STATUS_COLORS: Record<string, string> = {
-  OPEN:            '#1a73e8',
-  ACTIVE:          '#9334E6',
-  SUSPENDED:       '#5f6368',
-  CLOSED_SOLVED:   '#34A853',
+  OPEN: '#1a73e8',
+  ACTIVE: '#9334E6',
+  SUSPENDED: '#5f6368',
+  CLOSED_SOLVED: '#34A853',
   CLOSED_UNSOLVED: '#d93025',
-  REFERRED:        '#F9AB00',
+  REFERRED: '#F9AB00',
 };
 
 export const SUSPECT_STATUS_COLORS: Record<string, string> = {
   PERSON_OF_INTEREST: '#F9AB00',
-  SUSPECT:            '#d93025',
-  CHARGED:            '#9334E6',
-  ACQUITTED:          '#5f6368',
-  CONVICTED:          '#202124',
+  SUSPECT: '#d93025',
+  CHARGED: '#9334E6',
+  ACQUITTED: '#5f6368',
+  CONVICTED: '#202124',
 };
 
 export const BLOOD_TYPE_LABELS: Record<string, string> = {
@@ -101,14 +100,14 @@ export const BLOOD_TYPE_LABELS: Record<string, string> = {
 
 export const FIRE_TYPE_ICONS: Record<string, string> = {
   STRUCTURAL_FIRE: 'Structural Fire',
-  VEHICLE_FIRE:    'Vehicle Fire',
-  WILDFIRE:        'Wildfire',
-  GAS_LEAK:        'Gas Leak',
-  CHEMICAL_SPILL:  'Chemical Spill',
-  EXPLOSION:       'Explosion',
-  RESCUE_TRAPPED:  'Rescue',
+  VEHICLE_FIRE: 'Vehicle Fire',
+  WILDFIRE: 'Wildfire',
+  GAS_LEAK: 'Gas Leak',
+  CHEMICAL_SPILL: 'Chemical Spill',
+  EXPLOSION: 'Explosion',
+  RESCUE_TRAPPED: 'Rescue',
   ELECTRICAL_FIRE: 'Electrical Fire',
-  OTHER:           'Other',
+  OTHER: 'Other',
 };
 
 export const HAZMAT_COLORS: Record<string, string> = {
@@ -116,13 +115,13 @@ export const HAZMAT_COLORS: Record<string, string> = {
 };
 
 export const EVIDENCE_TYPE_ICONS: Record<string, string> = {
-  PHOTO:               'Photo',
-  VIDEO:               'Video',
-  DOCUMENT:            'Document',
-  AUDIO:               'Audio',
-  PHYSICAL_DESCRIPTION:'Physical',
-  WITNESS_STATEMENT:   'Witness',
-  OTHER:               'Other',
+  PHOTO: 'Photo',
+  VIDEO: 'Video',
+  DOCUMENT: 'Document',
+  AUDIO: 'Audio',
+  PHYSICAL_DESCRIPTION: 'Physical',
+  WITNESS_STATEMENT: 'Witness',
+  OTHER: 'Other',
 };
 
 export const SYMPTOM_OPTIONS = [
@@ -131,22 +130,22 @@ export const SYMPTOM_OPTIONS = [
 ];
 
 export const INCIDENT_TYPES = [
-  { key: 'ACCIDENT',          label: 'Accident' },
+  { key: 'ACCIDENT', label: 'Accident' },
   { key: 'MEDICAL_EMERGENCY', label: 'Medical Emergency' },
-  { key: 'CRIME',             label: 'Crime' },
-  { key: 'FIRE',              label: 'Fire' },
-  { key: 'GBV',               label: 'GBV' },
-  { key: 'CORRUPTION',        label: 'Corruption' },
-  { key: 'MISSING_PERSON',    label: 'Missing Person' },
-  { key: 'NATURAL_DISASTER',  label: 'Natural Disaster' },
-  { key: 'OTHER',             label: 'Other' },
+  { key: 'CRIME', label: 'Crime' },
+  { key: 'FIRE', label: 'Fire' },
+  { key: 'GBV', label: 'GBV' },
+  { key: 'CORRUPTION', label: 'Corruption' },
+  { key: 'MISSING_PERSON', label: 'Missing Person' },
+  { key: 'NATURAL_DISASTER', label: 'Natural Disaster' },
+  { key: 'OTHER', label: 'Other' },
 ];
 
 export const RWANDA_DISTRICTS = [
-  'Nyarugenge','Gasabo','Kicukiro','Nyanza','Gisagara','Nyaruguru','Huye','Nyamagabe',
-  'Ruhango','Muhanga','Kamonyi','Karongi','Rutsiro','Rubavu','Nyabihu','Ngororero',
-  'Rusizi','Nyamasheke','Rulindo','Gakenke','Musanze','Burera','Gicumbi','Rwamagana',
-  'Nyagatare','Gatsibo','Kayonza','Kirehe','Ngoma','Bugesera',
+  'Nyarugenge', 'Gasabo', 'Kicukiro', 'Nyanza', 'Gisagara', 'Nyaruguru', 'Huye', 'Nyamagabe',
+  'Ruhango', 'Muhanga', 'Kamonyi', 'Karongi', 'Rutsiro', 'Rubavu', 'Nyabihu', 'Ngororero',
+  'Rusizi', 'Nyamasheke', 'Rulindo', 'Gakenke', 'Musanze', 'Burera', 'Gicumbi', 'Rwamagana',
+  'Nyagatare', 'Gatsibo', 'Kayonza', 'Kirehe', 'Ngoma', 'Bugesera',
 ];
 
 export const STATUS_TRANSITIONS: Record<string, string[]> = {
