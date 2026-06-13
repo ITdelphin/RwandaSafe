@@ -19,50 +19,13 @@ const app = express();
 
 app.get('/health', (_req, res) => {
   const cwd = process.cwd();
-  const results: Record<string, any> = { cwd };
-
-  const scan = (dir: string, depth: number = 0): any => {
-    if (depth > 3) return '(max depth)';
-    const full = path.join(cwd, dir);
-    try {
-      const files = fs.readdirSync(full);
-      const info: Record<string, any> = {};
-      for (const f of files.slice(0, 20)) {
-        const fpath = path.join(full, f);
-        const stat = fs.statSync(fpath);
-        if (stat.isDirectory()) {
-          info[f] = scan(path.join(dir, f), depth + 1);
-        } else {
-          info[f] = `file (${stat.size}B)`;
-        }
-      }
-      return info;
-    } catch {
-      return null;
-    }
-  };
-
-  const interestingPaths = [
-    '',
-    'api',
-    'api/prisma-client',
-    'apps/api',
-    'apps/api/api',
-    'apps/api/api/prisma-client',
-    'node_modules',
-    'node_modules/.prisma',
-    'node_modules/.prisma/client',
-  ];
-
-  for (const p of interestingPaths) {
-    results[p] = scan(p);
+  const buildErrorPath = path.join(cwd, 'apps', 'api', 'build_error.txt');
+  try {
+    const content = fs.readFileSync(buildErrorPath, 'utf8');
+    res.json({ build_error: content.substring(0, 3000) });
+  } catch {
+    res.json({ build_error: 'NOT_FOUND', cwd, files: fs.readdirSync(cwd) });
   }
-
-  res.json(results);
-});
-
-app.all('*', (req, res) => {
-  res.json({ message: 'API is running', path: req.path });
 });
 
 export default app;
