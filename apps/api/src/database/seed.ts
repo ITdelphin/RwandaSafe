@@ -9,10 +9,10 @@ async function main() {
 
   // ── Agencies ────────────────────────────────────────────────────────────────
   const rnp = await prisma.agency.upsert({
-    where: { id: 'agency-rnp' },
+    where: { id: '11111111-1111-4111-a111-111111111111' },
     update: {},
     create: {
-      id: 'agency-rnp',
+      id: '11111111-1111-4111-a111-111111111111',
       name: 'Rwanda National Police (RNP)',
       type: AgencyType.POLICE,
       region: 'Kigali City',
@@ -25,10 +25,10 @@ async function main() {
   });
 
   const samu = await prisma.agency.upsert({
-    where: { id: 'agency-samu' },
+    where: { id: '22222222-2222-4222-a222-222222222222' },
     update: {},
     create: {
-      id: 'agency-samu',
+      id: '22222222-2222-4222-a222-222222222222',
       name: 'King Faisal Hospital SAMU',
       type: AgencyType.HOSPITAL,
       region: 'Kigali City',
@@ -41,10 +41,10 @@ async function main() {
   });
 
   const fire = await prisma.agency.upsert({
-    where: { id: 'agency-fire' },
+    where: { id: '33333333-3333-4333-a333-333333333333' },
     update: {},
     create: {
-      id: 'agency-fire',
+      id: '33333333-3333-4333-a333-333333333333',
       name: 'Rwanda Fire Brigade',
       type: AgencyType.FIRE,
       region: 'Kigali City',
@@ -57,10 +57,10 @@ async function main() {
   });
 
   const rib = await prisma.agency.upsert({
-    where: { id: 'agency-rib' },
+    where: { id: '44444444-4444-4444-a444-444444444444' },
     update: {},
     create: {
-      id: 'agency-rib',
+      id: '44444444-4444-4444-a444-444444444444',
       name: 'Rwanda Investigation Bureau (RIB)',
       type: AgencyType.RIB,
       region: 'Kigali City',
@@ -73,10 +73,10 @@ async function main() {
   });
 
   const gov = await prisma.agency.upsert({
-    where: { id: 'agency-gov' },
+    where: { id: '55555555-5555-4555-a555-555555555555' },
     update: {},
     create: {
-      id: 'agency-gov',
+      id: '55555555-5555-4555-a555-555555555555',
       name: 'Ministry of Internal Security',
       type: AgencyType.GOVERNMENT,
       region: 'Kigali City',
@@ -91,13 +91,16 @@ async function main() {
   console.log('Agencies created');
 
   // ── Super Admin ─────────────────────────────────────────────────────────────
-  const adminPassword = await bcrypt.hash('Admin@123', 10);
+  const adminPassword = await bcrypt.hash('RwandaSafe123', 10);
   const adminUser = await prisma.user.upsert({
     where: { phone: '+250788000001' },
-    update: {},
+    update: {
+      email: 'delphinngarambe@gmail.com',
+      passwordHash: adminPassword,
+    },
     create: {
       phone: '+250788000001',
-      email: 'admin@safe.gov.rw',
+      email: 'delphinngarambe@gmail.com',
       name: 'Super Administrator',
       passwordHash: adminPassword,
       role: Role.SUPER_ADMIN,
@@ -285,7 +288,7 @@ async function main() {
   console.log('SLA configurations created');
 
   console.log('\nSeed complete. Accounts:');
-  console.log('  Super Admin : admin@safe.gov.rw / Admin@123');
+  console.log('  Super Admin : delphinngarambe@gmail.com / RwandaSafe123');
   console.log('  Police      : +250788100001 (OTP only)');
   console.log('  Medical     : +250788200001 (OTP only)');
   console.log('  Fire        : +250788300001 (OTP only)');
