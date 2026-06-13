@@ -6,6 +6,7 @@ import { prisma } from '../../config/database';
 import { env } from '../../config/env';
 import { Role } from '@prisma/client';
 import { createOtp, verifyOtp, sendOtpSms } from '../../utils/otp';
+import { sendEmailOtp as sendEmailOtpUtil, verifyEmailOtp as verifyEmailOtpUtil } from '../../utils/emailOtp';
 
 function signAccess(user: any) {
   return jwt.sign(
@@ -217,5 +218,18 @@ export const authService = {
 
   async logout(refreshToken: string) {
     await prisma.refreshToken.updateMany({ where: { token: refreshToken }, data: { isRevoked: true } });
+  },
+
+  // ── Email OTP verification ──────────────────────────────────────────
+
+  async sendEmailOtp(email: string) {
+    await sendEmailOtpUtil(email);
+    return { message: 'Verification code sent to your email' };
+  },
+
+  async verifyEmailOtp(email: string, code: string) {
+    const isValid = await verifyEmailOtpUtil(email, code);
+    if (!isValid) throw Object.assign(new Error('Invalid or expired verification code'), { statusCode: 401 });
+    return { message: 'Email verified successfully' };
   },
 };

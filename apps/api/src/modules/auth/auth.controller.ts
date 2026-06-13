@@ -53,4 +53,17 @@ export const authController = {
       return sendSuccess(res, { message: 'Logged out' });
     } catch (err) { next(err); }
   },
+  // Email OTP
+  async sendEmailOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await authService.sendEmailOtp(req.body.email);
+      return sendSuccess(res, result);
+    } catch (err) { next(err); }
+  },
+  async verifyEmailOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await authService.verifyEmailOtp(req.body.email, req.body.code);
+      return sendSuccess(res, result);
+    } catch (err) { next(err); }
+  },
 };

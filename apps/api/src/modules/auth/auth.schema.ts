@@ -49,3 +49,16 @@ export const verifyOtpSchema = z.object({
     code: z.string().length(6),
   }),
 });
+
+export const sendEmailOtpSchema = z.object({
+  body: z.object({
+    email: z.string().email(),
+  }),
+});
+
+export const verifyEmailOtpSchema = z.object({
+  body: z.object({
+    email: z.string().email(),
+    code: z.string().length(6),
+  }),
+});
