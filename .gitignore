@@ -48,3 +48,6 @@ coverage/
 *.sqlite
 error.txt
 .vercel/
+
+# Generated Prisma client for Vercel serverless
+apps/api/api/prisma-client/
