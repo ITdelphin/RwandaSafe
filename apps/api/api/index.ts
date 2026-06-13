@@ -11,16 +11,19 @@ if (process.env.DB_PASS && process.env.DB_HOST && process.env.DB_USER) {
 }
 
 import express from 'express';
+import { PrismaClient } from '@prisma/client';
 
 const app = express();
+const prisma = new PrismaClient();
 
-app.get('/health', (_req, res) => {
-  res.json({
-    status: 'ok',
-    env: process.env.NODE_ENV,
-    hasDbUrl: !!process.env.DATABASE_URL,
-    node: process.version,
-  });
+app.get('/health', async (_req, res) => {
+  try {
+    await prisma.$connect();
+    res.json({ status: 'ok', db: 'connected' });
+    await prisma.$disconnect();
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
 });
 
 app.all('*', (req, res) => {

@@ -92,21 +92,29 @@ async function main() {
 
   // ── Super Admin ─────────────────────────────────────────────────────────────
   const adminPassword = await bcrypt.hash('RwandaSafe123', 10);
-  const adminUser = await prisma.user.upsert({
-    where: { phone: '+250788000001' },
-    update: {
-      email: 'delphinngarambe@gmail.com',
-      passwordHash: adminPassword,
-    },
-    create: {
-      phone: '+250788000001',
-      email: 'delphinngarambe@gmail.com',
-      name: 'Super Administrator',
-      passwordHash: adminPassword,
-      role: Role.SUPER_ADMIN,
-      isVerified: true,
-    },
+
+  // Try to find the user by phone or email
+  let existingAdmin = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { phone: '+250788000001' },
+        { email: 'delphinngarambe@gmail.com' }
+      ]
+    }
   });
+
+  const adminData = {
+    phone: '+250788000001',
+    email: 'delphinngarambe@gmail.com',
+    name: 'Super Administrator',
+    passwordHash: adminPassword,
+    role: Role.SUPER_ADMIN,
+    isVerified: true,
+  };
+
+  const adminUser = existingAdmin
+    ? await prisma.user.update({ where: { id: existingAdmin.id }, data: adminData })
+    : await prisma.user.create({ data: adminData });
 
   // ── Officer users ────────────────────────────────────────────────────────────
   const policeUser = await prisma.user.upsert({
