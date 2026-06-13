@@ -91,7 +91,7 @@ async function main() {
   console.log('Agencies created');
 
   // ── Super Admin ─────────────────────────────────────────────────────────────
-  const adminPassword = await bcrypt.hash('RwandaSafe123', 10);
+  const adminPassword = await bcrypt.hash('RwaSec#2026!Admin', 10);
 
   // Try to find the user by phone or email
   let existingAdmin = await prisma.user.findFirst({
@@ -296,7 +296,7 @@ async function main() {
   console.log('SLA configurations created');
 
   console.log('\nSeed complete. Accounts:');
-  console.log('  Super Admin : delphinngarambe@gmail.com / RwandaSafe123');
+  console.log('  Super Admin : delphinngarambe@gmail.com / RwaSec#2026!Admin');
   console.log('  Police      : +250788100001 (OTP only)');
   console.log('  Medical     : +250788200001 (OTP only)');
   console.log('  Fire        : +250788300001 (OTP only)');
