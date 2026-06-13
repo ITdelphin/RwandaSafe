@@ -1,3 +1,4 @@
+// Vercel serverless entry point
 import 'dotenv/config';
 
 if (process.env.DB_PASS && process.env.DB_HOST && process.env.DB_USER) {
