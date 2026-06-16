@@ -3,21 +3,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Car,
-  AlertOctagon,
-  HeartPulse,
-  Flame,
-  Shield,
-  Ambulance,
-  Search,
-  MapPin,
-  Radio,
-  CheckCircle2,
-  Siren,
-  Clock,
-  FileText,
-  ClipboardList,
-  Phone,
+  Car, AlertOctagon, HeartPulse, Flame, Shield, Ambulance,
+  Search, MapPin, Radio, CheckCircle2, Siren, Clock,
+  FileText, ClipboardList, Phone, ArrowRight, Bell,
 } from 'lucide-react';
 import { statsApi } from '../lib/apiClient';
 import { Navbar } from '../components/Navbar';
@@ -31,162 +19,37 @@ interface PublicStats {
   resolutionRate: number | null;
 }
 
-interface ServiceItem {
-  type: string;
-  label: string;
-  icon: React.ReactNode;
-  color: string;
-  bg: string;
-  border: string;
-  description: string;
-}
-
-interface AgencyItem {
-  name: string;
-  short: string;
-  icon: React.ReactNode;
-  color: string;
-  bg: string;
-  hotline: string;
-  desc: string;
-}
-
-interface StepItem {
-  num: string;
-  title: string;
-  desc: string;
-  icon: React.ReactNode;
-}
-
 function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
   const [value, setValue] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
   const started = useRef(false);
-
   useEffect(() => {
     if (started.current || target === 0) return;
     started.current = true;
-    const duration = 1400;
     const steps = 50;
     const increment = target / steps;
     let current = 0;
     const interval = setInterval(() => {
       current += increment;
-      if (current >= target) {
-        setValue(target);
-        clearInterval(interval);
-      } else {
-        setValue(Math.floor(current));
-      }
-    }, duration / steps);
+      if (current >= target) { setValue(target); clearInterval(interval); }
+      else setValue(Math.floor(current));
+    }, 1400 / steps);
     return () => clearInterval(interval);
   }, [target]);
-
-  return (
-    <span ref={ref}>
-      {value.toLocaleString()}
-      {suffix}
-    </span>
-  );
+  return <span>{value.toLocaleString()}{suffix}</span>;
 }
 
-const SERVICES: ServiceItem[] = [
-  {
-    type: 'ACCIDENT',
-    label: 'Road Accidents',
-    icon: <Car size={32} />,
-    color: '#E65100',
-    bg: '#FFF3E0',
-    border: '#FFCC80',
-    description: 'Report traffic accidents, vehicle collisions, and road hazards across Rwanda.',
-  },
-  {
-    type: 'CRIME',
-    label: 'Crime & Security',
-    icon: <AlertOctagon size={32} />,
-    color: '#1A237E',
-    bg: '#E8EAF6',
-    border: '#9FA8DA',
-    description: 'Report crimes, suspicious activity, and security threats to Rwanda National Police.',
-  },
-  {
-    type: 'MEDICAL_EMERGENCY',
-    label: 'Medical Emergency',
-    icon: <HeartPulse size={32} />,
-    color: '#B71C1C',
-    bg: '#FFEBEE',
-    border: '#EF9A9A',
-    description: 'Dispatch SAMU ambulances for medical emergencies, injuries, and critical health crises.',
-  },
-  {
-    type: 'FIRE',
-    label: 'Fire & Hazard',
-    icon: <Flame size={32} />,
-    color: '#BF360C',
-    bg: '#FBE9E7',
-    border: '#FFAB91',
-    description: 'Alert fire brigades for fires, gas leaks, chemical spills, and structural hazards.',
-  },
+const SERVICES = [
+  { type: 'ACCIDENT', label: 'Road Accident', icon: <Car size={28} />, grad: 'linear-gradient(135deg,#F97316,#EA580C)', badge: '#FED7AA', badgeText: '#9A3412' },
+  { type: 'CRIME', label: 'Crime & Security', icon: <AlertOctagon size={28} />, grad: 'linear-gradient(135deg,#3B82F6,#1D4ED8)', badge: '#DBEAFE', badgeText: '#1E3A8A' },
+  { type: 'MEDICAL_EMERGENCY', label: 'Medical Emergency', icon: <HeartPulse size={28} />, grad: 'linear-gradient(135deg,#EF4444,#B91C1C)', badge: '#FEE2E2', badgeText: '#7F1D1D' },
+  { type: 'FIRE', label: 'Fire & Hazard', icon: <Flame size={28} />, grad: 'linear-gradient(135deg,#F59E0B,#D97706)', badge: '#FEF3C7', badgeText: '#78350F' },
 ];
 
-const AGENCIES: AgencyItem[] = [
-  {
-    name: 'Rwanda National Police',
-    short: 'RNP',
-    icon: <Shield size={24} />,
-    color: '#1A237E',
-    bg: '#E8EAF6',
-    hotline: '112',
-    desc: 'Maintaining law and order, crime prevention, and emergency response across all 30 districts.',
-  },
-  {
-    name: 'SAMU / Medical Services',
-    short: 'SAMU',
-    icon: <Ambulance size={24} />,
-    color: '#B71C1C',
-    bg: '#FFEBEE',
-    hotline: '912',
-    desc: 'Pre-hospital emergency medical care, ambulance dispatch, and hospital coordination.',
-  },
-  {
-    name: 'Rwanda Fire Brigade',
-    short: 'RFB',
-    icon: <Flame size={24} />,
-    color: '#BF360C',
-    bg: '#FBE9E7',
-    hotline: '111',
-    desc: 'Fire suppression, rescue operations, hazardous material response, and fire safety.',
-  },
-  {
-    name: 'Rwanda Investigation Bureau',
-    short: 'RIB',
-    icon: <Search size={24} />,
-    color: '#1B5E20',
-    bg: '#E8F5E9',
-    hotline: '3512',
-    desc: 'Criminal investigations, intelligence gathering, and anti-corruption enforcement.',
-  },
-];
-
-const STEPS: StepItem[] = [
-  {
-    num: '01',
-    title: 'Report the Emergency',
-    desc: 'Submit an incident report with your location, description, and optional photos. No account needed.',
-    icon: <MapPin size={32} />,
-  },
-  {
-    num: '02',
-    title: 'Dispatch to Agency',
-    desc: 'The relevant agency — Police, SAMU, Fire, or RIB — receives your report instantly and dispatches responders.',
-    icon: <Radio size={32} />,
-  },
-  {
-    num: '03',
-    title: 'Track & Resolved',
-    desc: 'Track your report in real time with your unique code. Get notified when help is on the way and when resolved.',
-    icon: <CheckCircle2 size={32} />,
-  },
+const AGENCIES = [
+  { name: 'Rwanda National Police', short: 'RNP', icon: <Shield size={20} />, color: '#1D4ED8', bg: '#EFF6FF', hotline: '112', desc: 'Crime, accidents, and public safety across all 30 districts.' },
+  { name: 'SAMU Medical Services', short: 'SAMU', icon: <Ambulance size={20} />, color: '#B91C1C', bg: '#FEF2F2', hotline: '912', desc: 'Medical emergencies, ambulance dispatch, and hospital coordination.' },
+  { name: 'Rwanda Fire Brigade', short: 'RFB', icon: <Flame size={20} />, color: '#D97706', bg: '#FFFBEB', hotline: '111', desc: 'Fire suppression, rescue operations, and hazardous materials.' },
+  { name: 'Rwanda Investigation Bureau', short: 'RIB', icon: <Search size={20} />, color: '#059669', bg: '#F0FDF4', hotline: '3512', desc: 'Criminal investigations, intelligence, and anti-corruption.' },
 ];
 
 export default function LandingPage() {
@@ -199,46 +62,63 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <div className="min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
       <Navbar />
 
-      {/* ── Hero ── */}
+      {/* ── HERO ── */}
       <section
-        className="relative overflow-hidden text-white pt-32 pb-24 px-6 text-center"
-        style={{ background: 'linear-gradient(135deg, #0F172A 0%, #0F4C75 50%, #0D3B5E 100%)' }}
+        className="relative overflow-hidden text-white text-center"
+        style={{
+          background: 'linear-gradient(135deg, #0F172A 0%, #0F4C75 60%, #0D3B5E 100%)',
+          paddingTop: 'clamp(100px, 20vw, 160px)',
+          paddingBottom: 'clamp(60px, 12vw, 100px)',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+        }}
       >
-        {/* subtle grid pattern */}
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage:
-              'repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.3) 39px,rgba(255,255,255,.3) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,.3) 39px,rgba(255,255,255,.3) 40px)',
-          }}
-        />
+        {/* Grid overlay */}
+        <div className="absolute inset-0 opacity-5" style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px)',
+          backgroundSize: '40px 40px',
+        }} />
+        {/* Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full opacity-20" style={{ background: 'radial-gradient(circle,#3B82F6,transparent)', filter: 'blur(60px)' }} />
+
         <div className="relative max-w-3xl mx-auto">
-          <span className="inline-block bg-white/10 border border-white/20 text-blue-100 text-xs font-semibold px-3 py-1 rounded-full mb-6 tracking-widest uppercase">
-            Ministry of Internal Security · Rwanda
-          </span>
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-5 leading-tight tracking-tight">
-            Rwanda Safe
-            <span className="block text-blue-300 mt-1">Emergency Response Platform</span>
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
+            <Bell size={12} className="text-blue-300" />
+            <span className="text-blue-200 text-xs font-bold tracking-widest uppercase">Ministry of Internal Security · Rwanda</span>
+          </div>
+          <h1 className="font-black leading-tight mb-4" style={{ fontSize: 'clamp(2rem, 7vw, 3.5rem)' }}>
+            Rwanda
+            <span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(135deg,#60A5FA,#EF4444)' }}> Safe</span>
+            <span className="block text-blue-200 font-bold mt-1" style={{ fontSize: 'clamp(1rem, 3.5vw, 1.5rem)' }}>
+              Emergency Response Platform
+            </span>
           </h1>
-          <p className="text-blue-200 text-lg md:text-xl mb-10 max-w-xl mx-auto">
-            Report any emergency instantly. Get connected to Police, SAMU, Fire Brigade, or RIB — anywhere in Rwanda.
+          <p className="text-blue-200 mb-8 mx-auto max-w-xl" style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.125rem)', lineHeight: 1.7 }}>
+            Report any emergency instantly. Get connected to Police, SAMU, Fire Brigade, or RIB — anywhere in Rwanda, 24/7.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => router.push('/report')}
-              className="active:scale-95 text-white text-xl font-bold px-10 py-5 rounded-2xl shadow-2xl transition-all flex items-center justify-center gap-2"
-              style={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)' }}
+              className="flex items-center justify-center gap-2 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-2xl"
+              style={{
+                background: 'linear-gradient(135deg,#EF4444,#B91C1C)',
+                fontSize: 'clamp(1rem, 3vw, 1.125rem)',
+                padding: 'clamp(14px, 3vw, 18px) clamp(24px, 5vw, 40px)',
+                boxShadow: '0 0 40px rgba(239,68,68,0.4)',
+              }}
             >
               <Siren size={20} /> Report Emergency
             </button>
             <button
-              onClick={() => {
-                document.getElementById('track-section')?.scrollIntoView({ behavior: 'smooth' });
+              onClick={() => document.getElementById('track-section')?.scrollIntoView({ behavior: 'smooth' })}
+              className="flex items-center justify-center gap-2 font-semibold rounded-2xl transition-all active:scale-95 border border-white/30 bg-white/10 hover:bg-white/20 text-white"
+              style={{
+                fontSize: 'clamp(1rem, 3vw, 1.125rem)',
+                padding: 'clamp(14px, 3vw, 18px) clamp(24px, 5vw, 40px)',
               }}
-              className="bg-white/10 hover:bg-white/20 border border-white/30 text-white text-xl font-semibold px-10 py-5 rounded-2xl transition-all flex items-center justify-center gap-2"
             >
               <ClipboardList size={20} /> Track My Report
             </button>
@@ -246,144 +126,107 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Live Stats ── */}
-      <section className="text-white py-12 px-6" style={{ background: '#0F172A' }}>
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+      {/* ── LIVE STATS ── */}
+      <section style={{ background: '#0F172A' }} className="text-white py-10 px-4">
+        <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
           {[
-            {
-              label: 'Total Reports',
-              value: stats?.totalIncidents ?? null,
-              suffix: '+',
-              color: '#60A5FA',
-              icon: <FileText size={20} />,
-            },
-            {
-              label: 'Resolved',
-              value: stats?.resolvedIncidents ?? null,
-              suffix: '',
-              color: '#34D399',
-              icon: <CheckCircle2 size={20} />,
-            },
-            {
-              label: 'Active Now',
-              value: stats?.activeIncidents ?? null,
-              suffix: '',
-              color: '#F87171',
-              icon: <Siren size={20} />,
-            },
-            {
-              label: 'Avg Response',
-              value: stats?.avgResponseMinutes ?? null,
-              suffix: ' min',
-              color: '#FBBF24',
-              icon: <Clock size={20} />,
-            },
+            { label: 'Total Reports', value: stats?.totalIncidents ?? null, suffix: '+', color: '#60A5FA', icon: <FileText size={18} /> },
+            { label: 'Resolved', value: stats?.resolvedIncidents ?? null, suffix: '', color: '#34D399', icon: <CheckCircle2 size={18} /> },
+            { label: 'Active Now', value: stats?.activeIncidents ?? null, suffix: '', color: '#F87171', icon: <Siren size={18} /> },
+            { label: 'Avg Response', value: stats?.avgResponseMinutes ?? null, suffix: ' min', color: '#FBBF24', icon: <Clock size={18} /> },
           ].map((s) => (
-            <div key={s.label} className="flex flex-col items-center">
-              <span className="mb-1" style={{ color: s.color }}>{s.icon}</span>
-              <span className="text-3xl md:text-4xl font-extrabold" style={{ color: s.color }}>
-                {s.value === null ? (
-                  <span className="animate-pulse text-gray-500">—</span>
-                ) : (
-                  <AnimatedCounter target={s.value} suffix={s.suffix} />
-                )}
+            <div key={s.label} className="flex flex-col items-center gap-1 py-2">
+              <span style={{ color: s.color }}>{s.icon}</span>
+              <span className="font-extrabold" style={{ color: s.color, fontSize: 'clamp(1.5rem, 5vw, 2.5rem)' }}>
+                {s.value === null ? <span className="animate-pulse text-gray-600">—</span> : <AnimatedCounter target={s.value} suffix={s.suffix} />}
               </span>
-              <span className="text-gray-400 text-sm mt-1 font-medium">{s.label}</span>
+              <span className="text-gray-400 text-xs font-medium">{s.label}</span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── How It Works ── */}
-      <section className="py-20 px-6 bg-gray-50">
+      {/* ── SERVICES GRID ── */}
+      <section className="py-16 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <span className="text-blue-700 text-sm font-bold uppercase tracking-widest">Simple &amp; Fast</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2">How It Works</h2>
+          <div className="text-center mb-10">
+            <span className="text-red-600 text-xs font-black uppercase tracking-widest">Emergency Services</span>
+            <h2 className="font-extrabold text-gray-900 mt-2" style={{ fontSize: 'clamp(1.5rem, 4vw, 2.25rem)' }}>What Can You Report?</h2>
+            <p className="text-gray-500 text-sm mt-2">Tap any category to report immediately. No account required.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {STEPS.map((step, i) => (
-              <div key={step.num} className="relative bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
-                {i < STEPS.length - 1 && (
-                  <div className="hidden md:block absolute top-1/3 -right-4 text-gray-300 text-2xl z-10">→</div>
-                )}
-                <div className="flex justify-center mb-4 text-blue-700">{step.icon}</div>
-                <span className="text-blue-700 font-black text-xs tracking-widest">{step.num}</span>
-                <h3 className="text-lg font-bold text-gray-900 mt-1 mb-3">{step.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Services / Quick Report ── */}
-      <section className="py-20 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <span className="text-red-600 text-sm font-bold uppercase tracking-widest">Emergency Services</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2">What Can You Report?</h2>
-          </div>
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {SERVICES.map((svc) => (
               <button
                 key={svc.type}
                 onClick={() => router.push(`/report?type=${svc.type}`)}
-                className="group text-left rounded-2xl p-6 border-2 transition-all hover:shadow-lg hover:-translate-y-1 active:scale-95"
-                style={{
-                  background: svc.bg,
-                  borderColor: svc.border,
-                }}
+                className="group relative rounded-2xl p-5 text-left transition-all active:scale-95 hover:-translate-y-1 border border-gray-100 hover:shadow-lg overflow-hidden"
+                style={{ background: '#FAFAFA' }}
               >
-                <span className="block mb-3" style={{ color: svc.color }}>{svc.icon}</span>
-                <h3 className="font-bold text-gray-900 text-base mb-2">{svc.label}</h3>
-                <p className="text-gray-500 text-xs leading-relaxed">{svc.description}</p>
-                <span
-                  className="inline-block mt-4 text-xs font-semibold group-hover:underline"
-                  style={{ color: svc.color }}
-                >
-                  Report now →
-                </span>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white mb-3 transition-transform group-hover:scale-110" style={{ background: svc.grad }}>
+                  {svc.icon}
+                </div>
+                <p className="font-bold text-gray-900 text-sm mb-1 leading-snug">{svc.label}</p>
+                <div className="flex items-center gap-1 mt-2">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: svc.badge, color: svc.badgeText }}>Report →</span>
+                </div>
               </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Agencies ── */}
-      <section className="py-20 px-6 bg-gray-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <span className="text-green-700 text-sm font-bold uppercase tracking-widest">Emergency Agencies</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2">Who Responds?</h2>
-            <p className="text-gray-500 mt-3 max-w-xl mx-auto text-sm">
-              Rwanda Safe connects you to the right agency automatically based on your incident type.
-            </p>
+      {/* ── HOW IT WORKS ── */}
+      <section className="py-16 px-4" style={{ background: '#F8FAFC' }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-blue-700 text-xs font-black uppercase tracking-widest">Simple & Fast</span>
+            <h2 className="font-extrabold text-gray-900 mt-2" style={{ fontSize: 'clamp(1.5rem, 4vw, 2.25rem)' }}>How It Works</h2>
           </div>
-          <div className="grid sm:grid-cols-2 gap-6">
+          <div className="grid sm:grid-cols-3 gap-6">
+            {[
+              { num: '01', title: 'Report the Emergency', desc: 'Submit your location & description with optional photos. No account needed.', icon: <MapPin size={28} />, color: '#3B82F6' },
+              { num: '02', title: 'Agency Dispatched', desc: 'The right agency — Police, SAMU, Fire, or RIB — gets your report instantly.', icon: <Radio size={28} />, color: '#10B981' },
+              { num: '03', title: 'Track Resolution', desc: 'Follow your report in real time with your unique code until resolved.', icon: <CheckCircle2 size={28} />, color: '#F59E0B' },
+            ].map((step, i) => (
+              <div key={step.num} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white mb-4" style={{ background: step.color }}>
+                  {step.icon}
+                </div>
+                <div className="text-xs font-black text-gray-400 tracking-widest mb-1">{step.num}</div>
+                <h3 className="font-bold text-gray-900 mb-2 text-base">{step.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{step.desc}</p>
+                {i < 2 && <div className="hidden sm:block absolute -right-3 top-1/2 -translate-y-1/2 text-gray-300 z-10"><ArrowRight size={20} /></div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── AGENCIES ── */}
+      <section className="py-16 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-green-700 text-xs font-black uppercase tracking-widest">Response Agencies</span>
+            <h2 className="font-extrabold text-gray-900 mt-2" style={{ fontSize: 'clamp(1.5rem, 4vw, 2.25rem)' }}>Who Responds?</h2>
+            <p className="text-gray-500 text-sm mt-2 max-w-md mx-auto">Rwanda Safe connects you to the right agency based on your incident type.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
             {AGENCIES.map((agency) => (
-              <div
-                key={agency.short}
-                className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex gap-4 items-start"
-              >
-                <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: agency.bg, color: agency.color }}
-                >
+              <div key={agency.short} className="flex gap-4 items-start p-5 rounded-2xl border border-gray-100 hover:shadow-md transition-all bg-gray-50">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: agency.bg, color: agency.color }}>
                   {agency.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
                     <h3 className="font-bold text-gray-900 text-sm">{agency.name}</h3>
-                    <a
-                      href={`tel:${agency.hotline}`}
-                      className="text-xs font-bold px-3 py-1 rounded-full text-white flex-shrink-0 flex items-center gap-1"
+                    <a href={`tel:${agency.hotline}`}
+                      className="text-xs font-bold px-3 py-1 rounded-full text-white flex items-center gap-1 flex-shrink-0"
                       style={{ background: agency.color }}
                     >
-                      <Phone size={12} /> {agency.hotline}
+                      <Phone size={11} /> {agency.hotline}
                     </a>
                   </div>
-                  <p className="text-gray-500 text-xs mt-2 leading-relaxed">{agency.desc}</p>
+                  <p className="text-gray-500 text-xs leading-relaxed">{agency.desc}</p>
                 </div>
               </div>
             ))}
@@ -391,18 +234,16 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Track Report ── */}
-      <section id="track-section" className="py-20 px-6">
-        <div className="max-w-xl mx-auto text-center">
-          <span className="text-blue-700 text-sm font-bold uppercase tracking-widest">Already Reported?</span>
-          <h2 className="text-3xl font-extrabold text-gray-900 mt-2 mb-3">Track Your Report</h2>
-          <p className="text-gray-500 text-sm mb-8">
-            Enter your unique tracking code to see the live status of your incident.
-          </p>
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-md p-6">
+      {/* ── TRACK ── */}
+      <section id="track-section" className="py-16 px-4" style={{ background: '#F8FAFC' }}>
+        <div className="max-w-lg mx-auto text-center">
+          <span className="text-blue-700 text-xs font-black uppercase tracking-widest">Already Reported?</span>
+          <h2 className="font-extrabold text-gray-900 mt-2 mb-2" style={{ fontSize: 'clamp(1.5rem, 4vw, 2.25rem)' }}>Track Your Report</h2>
+          <p className="text-gray-500 text-sm mb-8">Enter your unique tracking code to see the live status of your incident.</p>
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6">
             <div className="flex gap-2">
               <input
-                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all uppercase"
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none font-mono uppercase transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 value={trackCode}
                 onChange={(e) => setTrackCode(e.target.value.toUpperCase())}
                 placeholder="e.g. RW-2026-00042"
@@ -411,62 +252,56 @@ export default function LandingPage() {
               <button
                 onClick={() => trackCode && router.push(`/track/${trackCode}`)}
                 disabled={!trackCode}
-                className="bg-blue-800 disabled:opacity-40 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-blue-900 transition-colors flex items-center gap-1"
+                className="text-white px-5 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center gap-1 disabled:opacity-40"
+                style={{ background: 'linear-gradient(135deg,#0F4C75,#0D3B5E)' }}
               >
                 <Search size={16} /> Track
               </button>
             </div>
             <p className="text-xs text-gray-400 mt-3">
-              Don't have a code?{' '}
-              <Link href="/my-reports" className="text-blue-600 hover:underline">
-                Sign in to see all your reports →
-              </Link>
+              No code?{' '}
+              <Link href="/my-reports?login=1" className="text-blue-600 font-semibold hover:underline">Sign in to see all your reports →</Link>
             </p>
           </div>
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer style={{ background: '#0D1B4B' }} className="text-white py-12 px-6">
+      {/* ── FOOTER ── */}
+      <footer style={{ background: '#0F172A' }} className="text-white py-12 px-4">
         <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-10 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-8">
             <div>
-              <div className="text-xl font-extrabold mb-2 flex items-center gap-2">
-                <Shield size={20} /> Rwanda Safe
+              <div className="flex items-center gap-2 font-extrabold text-lg mb-3">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg,#C62828,#0F4C75)' }}>
+                  <Shield size={14} />
+                </div>
+                SafeRwanda
               </div>
-              <p className="text-blue-300 text-sm max-w-xs">
-                A digital emergency reporting platform by the Ministry of Internal Security, Republic of Rwanda.
-              </p>
+              <p className="text-gray-400 text-sm leading-relaxed">Emergency reporting platform by the Ministry of Internal Security, Republic of Rwanda.</p>
             </div>
             <div>
-              <div className="text-sm font-bold text-blue-300 uppercase tracking-widest mb-4">Emergency Hotlines</div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="text-xs font-bold text-blue-300 uppercase tracking-widest mb-4">Emergency Hotlines</div>
+              <div className="grid grid-cols-2 gap-2">
                 {AGENCIES.map((a) => (
-                  <a
-                    key={a.short}
-                    href={`tel:${a.hotline}`}
-                    className="flex items-center gap-2 text-sm hover:text-blue-300 transition-colors"
-                  >
-                    <span>{a.icon}</span>
-                    <span>
-                      {a.short}: <span className="font-bold">{a.hotline}</span>
-                    </span>
+                  <a key={a.short} href={`tel:${a.hotline}`} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+                    {a.icon}
+                    <span>{a.short}: <strong>{a.hotline}</strong></span>
                   </a>
                 ))}
               </div>
             </div>
             <div>
-              <div className="text-sm font-bold text-blue-300 uppercase tracking-widest mb-4">Quick Links</div>
-              <div className="flex flex-col gap-2 text-sm">
-                <Link href="/report" className="hover:text-blue-300 transition-colors">Report an Emergency</Link>
-                <Link href="/track" className="hover:text-blue-300 transition-colors">Track a Report</Link>
-                <Link href="/map" className="hover:text-blue-300 transition-colors">Live Map</Link>
-                <Link href="/my-reports" className="hover:text-blue-300 transition-colors">My Reports</Link>
+              <div className="text-xs font-bold text-blue-300 uppercase tracking-widest mb-4">Quick Links</div>
+              <div className="flex flex-col gap-2 text-sm text-gray-400">
+                <Link href="/report" className="hover:text-white transition-colors">Report Emergency</Link>
+                <Link href="/track" className="hover:text-white transition-colors">Track Report</Link>
+                <Link href="/map" className="hover:text-white transition-colors">Live Map</Link>
+                <Link href="/signin" className="hover:text-white transition-colors">Sign In</Link>
               </div>
             </div>
           </div>
-          <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-blue-400">
-            <span>© 2026 Rwanda Safe — Ministry of Internal Security, Republic of Rwanda</span>
+          <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-500">
+            <span>© 2026 Rwanda Safe — Ministry of Internal Security</span>
             <span>All rights reserved</span>
           </div>
         </div>

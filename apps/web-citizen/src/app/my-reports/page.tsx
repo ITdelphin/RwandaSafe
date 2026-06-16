@@ -16,8 +16,10 @@ function MyReportsContent() {
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
 
+  const loginParam = searchParams?.get('login');
+
   useEffect(() => {
-    const hasLoginParam = searchParams?.get('login') === '1';
+    const hasLoginParam = loginParam === '1';
     if (hasLoginParam && !isAuthenticated) {
       setShowLogin(true);
       setLoading(false);
@@ -29,16 +31,16 @@ function MyReportsContent() {
     }
     incidentsApi.list()
       .then((r) => setIncidents(r.data.data ?? []))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
-  }, [isAuthenticated, searchParams]);
+  }, [isAuthenticated, loginParam]);
 
   const handleLoginClose = () => {
     setShowLogin(false);
     if (isAuthenticated) {
       incidentsApi.list()
         .then((r) => setIncidents(r.data.data ?? []))
-        .catch(() => {});
+        .catch(() => { });
     }
   };
 
@@ -46,7 +48,7 @@ function MyReportsContent() {
     <div className="min-h-screen bg-surface">
       <Navbar />
       <LoginModal open={showLogin} onClose={handleLoginClose} />
-      <div className="max-w-2xl mx-auto px-6 py-10">
+      <div className="max-w-2xl mx-auto px-6 py-28">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">My Reports</h1>
         {loading ? (
           <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#0F4C75] border-t-transparent rounded-full animate-spin" /></div>

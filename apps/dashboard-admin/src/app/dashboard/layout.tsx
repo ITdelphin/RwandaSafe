@@ -13,7 +13,7 @@ import '../../styles/globals.css';
 import {
   LayoutDashboard, Map, Activity, Building2, Users, Bell, Gauge,
   ScrollText, Database, Server, Shield, LogOut, ChevronRight, Menu, X,
-  Search as SearchIcon, Keyboard,
+  Search as SearchIcon, Keyboard, Settings,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -27,6 +27,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/audit', label: 'Audit Log', icon: ScrollText },
   { href: '/dashboard/opendata', label: 'Open Data', icon: Database },
   { href: '/dashboard/system', label: 'System Health', icon: Server },
+  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];
 
 function LiveClock() {

@@ -19,6 +19,7 @@ import {
   Menu,
   X,
   Shield,
+  Settings,
 } from 'lucide-react';
 import { Theme } from '../../constants/theme';
 
@@ -33,6 +34,7 @@ const NAV = [
   { href: '/dashboard/analytics', label: 'Analytics', icon: <BarChart2 size={18} /> },
   { href: '/dashboard/handover', label: 'Handover', icon: <ArrowLeftRight size={18} /> },
   { href: '/dashboard/reports', label: 'Reports', icon: <FileText size={18} /> },
+  { href: '/dashboard/settings', label: 'Settings', icon: <Settings size={18} /> },
 ];
 
 export function Sidebar() {

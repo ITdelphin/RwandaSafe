@@ -52,9 +52,8 @@ export default function RegisterPage() {
     try {
       await authApi.register({ name, email, password, phone: phone || undefined, agencyType: AGENCY_TYPE });
       setSuccess(true);
-      setTimeout(() => router.push('/login?registered=1'), 2000);
     } catch (e: any) {
-      setError(e.response?.data?.message ?? 'Registration failed. Please try again.');
+      setError(e.response?.data?.error ?? e.response?.data?.message ?? 'Registration failed. Please try again.');
     } finally { setLoading(false); }
   };
 
@@ -72,11 +71,13 @@ export default function RegisterPage() {
         <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '32px', boxShadow: '0 2px 16px rgba(0,0,0,0.08)', border: '1px solid #e8eaed' }}>
           {success ? (
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#e6f4ea', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <span style={{ fontSize: '28px' }}>✅</span>
-              </div>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#e6f4ea', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '28px' }}>✅</div>
               <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#202124', margin: '0 0 8px' }}>Account Created!</h2>
-              <p style={{ fontSize: '13px', color: '#5f6368' }}>Redirecting to login...</p>
+              <p style={{ fontSize: '13px', color: '#5f6368', margin: '0 0 12px' }}>
+                Your account is pending <strong>admin approval</strong>.<br />
+                A Super Admin will grant you access. You can sign in once activated.
+              </p>
+              <Link href="/login" style={{ fontSize: '13px', color: AGENCY.color, fontWeight: 600, textDecoration: 'none' }}>Go to Sign In →</Link>
             </div>
           ) : (
             <>
@@ -121,7 +122,7 @@ export default function RegisterPage() {
                   {password && (
                     <div style={{ marginTop: '8px' }}>
                       <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                        {[1,2,3,4,5].map(i => (
+                        {[1, 2, 3, 4, 5].map(i => (
                           <div key={i} style={{ flex: 1, height: '4px', borderRadius: '2px', backgroundColor: i <= strength.score ? strength.color : '#e8eaed', transition: 'background-color 0.2s' }} />
                         ))}
                       </div>

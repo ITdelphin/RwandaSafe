@@ -46,7 +46,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
       setDevOtp(data?.devOtp ?? '');
       setStep('otp');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to send OTP');
+      setError(err.response?.data?.error ?? err.response?.data?.message ?? 'Failed to send OTP');
     } finally {
       setLoading(false);
     }
@@ -67,7 +67,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
       onClose();
       router.refresh();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid or expired code');
+      setError(err.response?.data?.error ?? err.response?.data?.message ?? 'Invalid or expired code');
     } finally {
       setLoading(false);
     }

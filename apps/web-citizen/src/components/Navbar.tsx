@@ -39,7 +39,7 @@ export function Navbar() {
               </button>
             </div>
           ) : (
-            <Link href="/my-reports?login=1"
+            <Link href="/signin"
               className="text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-md active:scale-95"
               style={{ background: 'linear-gradient(135deg, #0F4C75, #0D3B5E)' }}
             >

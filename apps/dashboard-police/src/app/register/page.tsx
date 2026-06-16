@@ -53,9 +53,8 @@ export default function RegisterPage() {
     try {
       await authApi.register({ name, email, password, phone: phone || undefined, agencyType: AGENCY_TYPE });
       setSuccess(true);
-      setTimeout(() => router.push('/login?registered=1'), 2000);
     } catch (e: any) {
-      setError(e.response?.data?.message ?? 'Registration failed. Please try again.');
+      setError(e.response?.data?.error ?? e.response?.data?.message ?? 'Registration failed. Please try again.');
     } finally { setLoading(false); }
   };
 
@@ -79,7 +78,13 @@ export default function RegisterPage() {
                 <CheckCircle2 size={28} color="#34A853" />
               </div>
               <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#202124', margin: '0 0 8px' }}>Account Created!</h2>
-              <p style={{ fontSize: '13px', color: '#5f6368' }}>Redirecting to login...</p>
+              <p style={{ fontSize: '13px', color: '#5f6368', margin: '0 0 12px' }}>
+                Your account is pending <strong>admin approval</strong>.<br />
+                A Super Admin will review your request and grant you access. You&apos;ll be able to sign in once activated.
+              </p>
+              <Link href="/login" style={{ fontSize: '13px', color: AGENCY.color, fontWeight: 600, textDecoration: 'none' }}>
+                Go to Sign In →
+              </Link>
             </div>
           ) : (
             <>
@@ -127,7 +132,7 @@ export default function RegisterPage() {
                   {password && (
                     <div style={{ marginTop: '8px' }}>
                       <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                        {[1,2,3,4,5].map(i => (
+                        {[1, 2, 3, 4, 5].map(i => (
                           <div key={i} style={{ flex: 1, height: '4px', borderRadius: '2px', backgroundColor: i <= strength.score ? strength.color : '#e8eaed', transition: 'background-color 0.2s' }} />
                         ))}
                       </div>

@@ -11,6 +11,7 @@ import {
 import toast from 'react-hot-toast';
 
 const ROLE_OPTIONS = [
+  { value: 'ADMIN', label: '⭐ Administrator' },
   { value: 'POLICE_OFFICER', label: 'Police Officer' },
   { value: 'MEDICAL_RESPONDER', label: 'Medical Responder' },
   { value: 'FIRE_OFFICER', label: 'Fire Officer' },
@@ -246,8 +247,8 @@ export default function AdminUsersPage() {
                 <Shield size={24} />
               </div>
               <div>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0F172A', margin: 0 }}>Promote to Staff</h3>
-                <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>Grant professional access to the system</p>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0F172A', margin: 0 }}>Promote User</h3>
+                <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>Grant staff or admin access to this account</p>
               </div>
             </div>
 
@@ -263,40 +264,51 @@ export default function AdminUsersPage() {
                 </select>
               </div>
 
-              <div>
-                <label style={labelStyle}>Assigned Agency</label>
-                <select
-                  style={inputStyle}
-                  value={promotionData.agencyId}
-                  onChange={e => setPromotionData({ ...promotionData, agencyId: e.target.value })}
-                >
-                  <option value="">Select Agency...</option>
-                  {agenciesData?.map((a: any) => (
-                    <option key={a.agency} value={a.agency}>{a.agency} - Performance: {a.performanceScore}%</option>
-                  ))}
-                </select>
-              </div>
+              {promotionData.role !== 'ADMIN' && (
+                <>
+                  <div>
+                    <label style={labelStyle}>Assigned Agency</label>
+                    <select
+                      style={inputStyle}
+                      value={promotionData.agencyId}
+                      onChange={e => setPromotionData({ ...promotionData, agencyId: e.target.value })}
+                    >
+                      <option value="">Select Agency...</option>
+                      {agenciesData?.map((a: any) => (
+                        <option key={a.agency} value={a.agency}>{a.agency} - Performance: {a.performanceScore}%</option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={labelStyle}>Badge Number</label>
-                  <input
-                    style={inputStyle}
-                    placeholder="Optional"
-                    value={promotionData.badgeNumber}
-                    onChange={e => setPromotionData({ ...promotionData, badgeNumber: e.target.value })}
-                  />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={labelStyle}>Badge Number</label>
+                      <input
+                        style={inputStyle}
+                        placeholder="Optional"
+                        value={promotionData.badgeNumber}
+                        onChange={e => setPromotionData({ ...promotionData, badgeNumber: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Officer Rank</label>
+                      <input
+                        style={inputStyle}
+                        placeholder="e.g. Sergeant"
+                        value={promotionData.rank}
+                        onChange={e => setPromotionData({ ...promotionData, rank: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {promotionData.role === 'ADMIN' && (
+                <div style={{ padding: '12px', background: '#EFF6FF', borderRadius: '10px', border: '1px solid #BFDBFE' }}>
+                  <p style={{ fontSize: '12px', color: '#1D4ED8', margin: 0, fontWeight: 600 }}>⭐ Admin Access</p>
+                  <p style={{ fontSize: '11px', color: '#3B82F6', margin: '4px 0 0' }}>This user will gain full admin dashboard access to manage incidents, users, and system settings.</p>
                 </div>
-                <div>
-                  <label style={labelStyle}>Officer Rank</label>
-                  <input
-                    style={inputStyle}
-                    placeholder="e.g. Sergeant"
-                    value={promotionData.rank}
-                    onChange={e => setPromotionData({ ...promotionData, rank: e.target.value })}
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
@@ -308,11 +320,11 @@ export default function AdminUsersPage() {
               </button>
               <button
                 onClick={() => promoteMutation.mutate({ id: promoteUserId, data: promotionData })}
-                disabled={!promotionData.agencyId || promoteMutation.isPending}
+                disabled={(promotionData.role !== 'ADMIN' && !promotionData.agencyId) || promoteMutation.isPending}
                 style={{
                   flex: 1, padding: '12px', borderRadius: '12px', border: 'none',
-                  background: !promotionData.agencyId ? '#CBD5E1' : '#0F4C75',
-                  color: '#fff', fontWeight: 700, cursor: promotionData.agencyId ? 'pointer' : 'not-allowed',
+                  background: (promotionData.role !== 'ADMIN' && !promotionData.agencyId) ? '#CBD5E1' : '#0F4C75',
+                  color: '#fff', fontWeight: 700, cursor: (promotionData.role === 'ADMIN' || promotionData.agencyId) ? 'pointer' : 'not-allowed',
                   opacity: promoteMutation.isPending ? 0.7 : 1
                 }}
               >

@@ -16,6 +16,7 @@ import {
   LogOut,
   Menu,
   X,
+  Settings,
 } from 'lucide-react';
 import { Theme } from '../../constants/theme';
 
@@ -28,6 +29,7 @@ const NAV = [
   { href: '/dashboard/officers', label: 'Officers', icon: <Users size={18} /> },
   { href: '/dashboard/analytics', label: 'Analytics', icon: <BarChart2 size={18} /> },
   { href: '/dashboard/handover', label: 'Handover', icon: <ArrowLeftRight size={18} /> },
+  { href: '/dashboard/settings', label: 'Settings', icon: <Settings size={18} /> },
 ];
 
 export function Sidebar() {

@@ -55,7 +55,7 @@ export default function RegisterPage() {
       setSuccess(true);
       setTimeout(() => router.push('/login?registered=1'), 2000);
     } catch (e: any) {
-      setError(e.response?.data?.message ?? 'Registration failed. Please try again.');
+      setError(e.response?.data?.error ?? e.response?.data?.message ?? 'Registration failed. Please try again.');
     } finally { setLoading(false); }
   };
 
@@ -122,7 +122,7 @@ export default function RegisterPage() {
                   {password && (
                     <div style={{ marginTop: '8px' }}>
                       <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                        {[1,2,3,4,5].map(i => (
+                        {[1, 2, 3, 4, 5].map(i => (
                           <div key={i} style={{ flex: 1, height: '4px', borderRadius: '2px', backgroundColor: i <= strength.score ? strength.color : '#e8eaed', transition: 'background-color 0.2s' }} />
                         ))}
                       </div>
