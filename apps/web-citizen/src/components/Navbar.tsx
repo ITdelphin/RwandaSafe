@@ -25,11 +25,14 @@ export function Navbar() {
 
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
+              <Link href="/dashboard" className="text-sm font-bold text-gray-700 hover:text-blue-900">
+                Dashboard
+              </Link>
               <Link href="/my-reports" className="text-sm font-bold text-gray-700 hover:text-blue-900">
                 My Reports
               </Link>
               <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-900 text-xs font-bold border border-blue-200">
-                {user?.phone?.slice(-2) || '??'}
+                {user?.name?.[0] ?? user?.email?.[0] ?? user?.phone?.slice(-2) ?? '?'}
               </div>
               <button
                 onClick={logout}
@@ -39,7 +42,7 @@ export function Navbar() {
               </button>
             </div>
           ) : (
-            <Link href="/signin"
+            <Link href="/login"
               className="text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-md active:scale-95"
               style={{ background: 'linear-gradient(135deg, #0F4C75, #0D3B5E)' }}
             >

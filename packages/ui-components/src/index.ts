@@ -1,2 +1,2 @@
-// Shared UI components — implemented in later chapters
-export {};
+export { LoginPage } from './LoginPage';
+export type { LoginPageProps } from './LoginPage';

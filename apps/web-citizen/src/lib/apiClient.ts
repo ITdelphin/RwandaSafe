@@ -8,10 +8,9 @@ export const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach token from localStorage on each request
 if (typeof window !== 'undefined') {
   apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   });
@@ -30,8 +29,10 @@ if (typeof window !== 'undefined') {
           } catch {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
           }
         }
+        window.location.href = '/login';
       }
       return Promise.reject(error);
     }
@@ -50,6 +51,7 @@ export const incidentsApi = {
 };
 
 export const authApi = {
+  login: (email: string, password: string) => apiClient.post('/auth/login', { email, password }),
   requestOtp: (phone: string) => apiClient.post('/auth/otp/request', { phone }),
   verifyOtp: (phone: string, code: string) => apiClient.post('/auth/verify', { phone, code }),
 };
