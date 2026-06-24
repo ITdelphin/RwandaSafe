@@ -56,6 +56,14 @@ export const adminApi = {
   updateSystemConfig: (key: string, value: string) => apiClient.patch(`/admin/config/${key}`, { value }),
 };
 
+export const accessApi = {
+  listAccess: (params?: Record<string, any>) => apiClient.get('/access', { params }),
+  listAllUsers: (params?: Record<string, any>) => apiClient.get('/access/users', { params }),
+  grantAccess: (data: { userId: string, dashboard: string }) => apiClient.post('/access/grant', data),
+  revokeAccess: (data: { userId: string, dashboard: string }) => apiClient.delete('/access/revoke', { data }),
+  promoteAndGrant: (data: { userId: string, dashboard: string }) => apiClient.post('/access/promote-and-grant', data),
+};
+
 export const slaApi = {
   getConfigs: () => apiClient.get('/sla'),
   updateConfig: (id: string, data: any) => apiClient.patch(`/sla/${id}`, data),

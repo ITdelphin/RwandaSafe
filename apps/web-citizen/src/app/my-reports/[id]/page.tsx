@@ -24,12 +24,18 @@ export default function ReportDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      incidentsApi.getById(id).then((r) => r.data.data),
-      incidentsApi.getNotes(id).then((r) => r.data.data),
-    ])
-      .then(([inc, nts]) => { setIncident(inc); setNotes(nts ?? []); })
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        const [inc, nts] = await Promise.all([
+          incidentsApi.getById(id) as Promise<any>,
+          incidentsApi.getNotes(id) as Promise<any>,
+        ]);
+        setIncident(inc?.data?.data ?? null);
+        setNotes(nts?.data?.data ?? []);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [id]);
 
   if (loading) return (

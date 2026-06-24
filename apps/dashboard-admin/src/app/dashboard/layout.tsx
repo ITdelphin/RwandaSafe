@@ -22,6 +22,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/heatmap', label: 'Heat Map', icon: Activity },
   { href: '/dashboard/agencies', label: 'Agency Comparison', icon: Building2 },
   { href: '/dashboard/users', label: 'User Management', icon: Users },
+  { href: '/dashboard/access', label: 'Access Control', icon: Shield },
   { href: '/dashboard/broadcast', label: 'Broadcast Alerts', icon: Bell },
   { href: '/dashboard/sla', label: 'SLA Config', icon: Gauge },
   { href: '/dashboard/audit', label: 'Audit Log', icon: ScrollText },

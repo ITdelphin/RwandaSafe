@@ -4,9 +4,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface User {
   id: string;
-  phone: string;
+  phone?: string;
+  email?: string;
   name?: string;
   role: string;
+  isVerified: boolean;
+  isEmailVerified: boolean;
 }
 
 interface AuthState {
@@ -14,10 +17,10 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
-  isAnonymous: boolean;
+  isGuest: boolean;
   setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  setGuestAuth: (user: User, accessToken: string) => void;
   setAccessToken: (token: string) => void;
-  setAnonymous: () => void;
   logout: () => void;
 }
 
@@ -28,16 +31,14 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       refreshToken: null,
       isAuthenticated: false,
-      isAnonymous: false,
+      isGuest: false,
       setAuth: (user, accessToken, refreshToken) =>
-        set({ user, accessToken, refreshToken, isAuthenticated: true, isAnonymous: false }),
+        set({ user, accessToken, refreshToken, isAuthenticated: true, isGuest: false }),
+      setGuestAuth: (user, accessToken) =>
+        set({ user, accessToken, refreshToken: null, isAuthenticated: true, isGuest: true }),
       setAccessToken: (accessToken) => set({ accessToken }),
-      setAnonymous: () => set({ isAnonymous: true, isAuthenticated: false }),
-      logout: () => set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false, isAnonymous: false }),
+      logout: () => set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false, isGuest: false }),
     }),
-    {
-      name: 'auth-storage',
-      storage: createJSONStorage(() => AsyncStorage),
-    }
+    { name: 'auth-storage', storage: createJSONStorage(() => AsyncStorage) }
   )
 );

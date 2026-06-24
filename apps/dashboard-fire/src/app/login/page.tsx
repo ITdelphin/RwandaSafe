@@ -12,7 +12,21 @@ export default function FireLoginPage() {
 
   const handleLogin = async (email: string, password: string, remember: boolean) => {
     const res = await authApi.login(email, password);
-    const { accessToken, user } = (res as any).data.data;
+    const { accessToken, user, dashboardAccess } = (res as any).data.data;
+
+    if (user.role === 'CITIZEN') {
+      throw { response: { data: { message: 'This portal is for Fire Brigade staff only. Citizens please use the Rwanda Safe citizen portal.' } } };
+    }
+
+    const hasFireAccess = Array.isArray(dashboardAccess) && dashboardAccess.includes('FIRE');
+    if (!hasFireAccess) {
+      throw { response: { data: { message: 'Access denied. You do not have Fire dashboard access. Please contact the Super Administrator.' } } };
+    }
+
+    if (typeof window !== 'undefined') {
+      const storage = remember ? localStorage : sessionStorage;
+      storage.setItem('dashboardAccess', JSON.stringify(dashboardAccess));
+    }
     login(user, accessToken, remember);
     router.push('/dashboard');
   };

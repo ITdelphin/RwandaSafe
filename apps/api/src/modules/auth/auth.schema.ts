@@ -1,32 +1,34 @@
 import { z } from 'zod';
 
-export const loginSchema = z.object({
+const rwandaPhoneRegex = /^\+2507[2389]\d{7}$/;
+
+export const sendPhoneOtpSchema = z.object({
   body: z.object({
-    email: z.string().email(),
-    password: z.string().min(6),
+    phone: z.string().regex(rwandaPhoneRegex, 'Enter a valid Rwandan phone number (+2507XXXXXXXX)'),
+    name: z.string().min(2).max(100).optional(),
+    lang: z.enum(['en', 'rw', 'fr']).default('en'),
   }),
 });
 
-export const registerSchema = z.object({
+export const verifyPhoneOtpSchema = z.object({
   body: z.object({
-    email: z.string().email(),
-    password: z.string().min(8),
-    name: z.string().min(2).max(100),
-    phone: z.string().optional(),
-    agencyType: z.enum(['POLICE','HOSPITAL','FIRE','RIB']).optional(),
+    phone: z.string().regex(rwandaPhoneRegex),
+    code: z.string().length(6),
   }),
 });
 
-export const forgotPasswordSchema = z.object({
+export const sendEmailOtpSchema = z.object({
   body: z.object({
-    email: z.string().email(),
+    email: z.string().email('Enter a valid email address'),
+    name: z.string().min(2).max(100).optional(),
+    lang: z.enum(['en', 'rw', 'fr']).default('en'),
   }),
 });
 
-export const resetPasswordSchema = z.object({
+export const verifyEmailOtpSchema = z.object({
   body: z.object({
-    token: z.string(),
-    password: z.string().min(8),
+    email: z.string().email(),
+    code: z.string().length(6),
   }),
 });
 
@@ -36,29 +38,14 @@ export const refreshTokenSchema = z.object({
   }),
 });
 
-// Keep OTP schemas for citizen app
-export const otpRequestSchema = z.object({
+export const guestSessionSchema = z.object({
   body: z.object({
-    phone: z.string(),
+    lang: z.enum(['en', 'rw', 'fr']).default('en'),
   }),
 });
 
-export const verifyOtpSchema = z.object({
+export const officerPhoneOtpSchema = z.object({
   body: z.object({
-    phone: z.string(),
-    code: z.string().length(6),
-  }),
-});
-
-export const sendEmailOtpSchema = z.object({
-  body: z.object({
-    email: z.string().email(),
-  }),
-});
-
-export const verifyEmailOtpSchema = z.object({
-  body: z.object({
-    email: z.string().email(),
-    code: z.string().length(6),
+    phone: z.string().regex(rwandaPhoneRegex, 'Enter a valid Rwandan phone number (+2507XXXXXXXX)'),
   }),
 });

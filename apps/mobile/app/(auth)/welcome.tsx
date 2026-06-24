@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSettingsStore } from '../../src/store/settingsStore';
 import { useAuthStore } from '../../src/store/authStore';
+import { authApi } from '../../src/api/auth';
 import { Colors } from '../../src/constants/colors';
 import { t } from '../../src/i18n';
 
@@ -15,7 +16,17 @@ const LANGUAGES = [
 
 export default function WelcomeScreen() {
   const { language, setLanguage } = useSettingsStore();
-  const { setAnonymous } = useAuthStore();
+  const setGuestAuth = useAuthStore(s => s.setGuestAuth);
+
+  const handleGuest = async () => {
+    try {
+      const { data } = await authApi.createGuestSession(language);
+      setGuestAuth(data.data.user, data.data.accessToken);
+      router.replace('/(app)/home');
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -44,14 +55,18 @@ export default function WelcomeScreen() {
 
       <View style={styles.actions}>
         <TouchableOpacity style={styles.primaryBtn} onPress={() => router.push('/(auth)/phone')}>
-          <Text style={styles.primaryBtnText}>{t('get_started')}</Text>
+          <Text style={styles.primaryBtnText}>📱 Continue with Phone</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.primaryBtn} onPress={() => router.push('/(auth)/email')}>
+          <Text style={styles.primaryBtnText}>✉️ Continue with Email</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.secondaryBtn}
-          onPress={() => { setAnonymous(); router.replace('/(app)/home'); }}
+          onPress={handleGuest}
         >
-          <Text style={styles.secondaryBtnText}>{t('continue_as_guest')}</Text>
+          <Text style={styles.secondaryBtnText}>👤 Continue as Guest</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

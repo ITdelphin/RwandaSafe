@@ -10,6 +10,14 @@ datasource db {
 
 // ─── ENUMS ───────────────────────────────────────────────────────────────────
 
+enum DashboardType {
+  POLICE
+  HOSPITAL
+  FIRE
+  RIB
+  ADMIN
+}
+
 enum Role {
   CITIZEN
   POLICE_OFFICER
@@ -152,6 +160,7 @@ model User {
   broadcastAlerts BroadcastAlert[]
   slaConfigs    SlaConfig[]
   systemConfigs SystemConfig[]
+  dashboardAccess DashboardAccess[]
 
   @@map("users")
 }
@@ -160,6 +169,7 @@ model OtpCode {
   id        String   @id @default(uuid())
   userId    String   @map("user_id")
   code      String
+  channel   String   @default("SMS")
   expiresAt DateTime @map("expires_at")
   isUsed    Boolean  @default(false) @map("is_used")
   attempts  Int      @default(0)
@@ -812,4 +822,19 @@ model BroadcastAlert {
   issuedBy User @relation(fields: [issuedById], references: [id])
 
   @@map("broadcast_alerts")
+}
+
+model DashboardAccess {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  dashboard     DashboardType
+  grantedById   String        @map("granted_by_id")
+  isActive      Boolean       @default(true) @map("is_active")
+  grantedAt     DateTime      @default(now()) @map("granted_at")
+  revokedAt     DateTime?     @map("revoked_at")
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dashboard])
+  @@map("dashboard_access")
 }

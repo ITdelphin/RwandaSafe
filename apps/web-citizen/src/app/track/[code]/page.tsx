@@ -26,7 +26,7 @@ export default function TrackDetailPage() {
 
   useEffect(() => {
     incidentsApi.track(code)
-      .then((r) => setIncident(r.data.data))
+      .then((r: any) => setIncident(r.data.data))
       .catch(() => setError('Report not found. Check your tracking code.'))
       .finally(() => setLoading(false));
   }, [code]);

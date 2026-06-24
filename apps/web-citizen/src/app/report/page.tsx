@@ -71,7 +71,7 @@ function ReportFormContent() {
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
-      const res = await incidentsApi.create(data);
+      const res: any = await incidentsApi.create(data);
       const incident = res.data.data;
       for (const file of files) {
         const fd = new FormData();

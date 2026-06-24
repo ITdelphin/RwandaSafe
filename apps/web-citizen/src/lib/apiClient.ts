@@ -22,7 +22,7 @@ if (typeof window !== 'undefined') {
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {
           try {
-            const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+            const { data }: any = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
             localStorage.setItem('accessToken', data.data.accessToken);
             error.config.headers.Authorization = `Bearer ${data.data.accessToken}`;
             return axios(error.config);
@@ -52,6 +52,7 @@ export const incidentsApi = {
 
 export const authApi = {
   login: (email: string, password: string) => apiClient.post('/auth/login', { email, password }),
+  register: (data: { name: string, email: string, password: string }) => apiClient.post('/auth/register', data),
   requestOtp: (phone: string) => apiClient.post('/auth/otp/request', { phone }),
   verifyOtp: (phone: string, code: string) => apiClient.post('/auth/verify', { phone, code }),
 };

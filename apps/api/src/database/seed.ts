@@ -116,6 +116,14 @@ async function main() {
     ? await prisma.user.update({ where: { id: existingAdmin.id }, data: adminData })
     : await prisma.user.create({ data: adminData });
 
+  for (const dashboard of ['POLICE', 'HOSPITAL', 'FIRE', 'RIB', 'ADMIN'] as const) {
+    await prisma.dashboardAccess.upsert({
+      where: { userId_dashboard: { userId: adminUser.id, dashboard } },
+      update: {},
+      create: { userId: adminUser.id, dashboard, grantedById: adminUser.id },
+    });
+  }
+
   // ── Officer users ────────────────────────────────────────────────────────────
   const policeUser = await prisma.user.upsert({
     where: { phone: '+250788100001' },
@@ -208,6 +216,16 @@ async function main() {
       rank: 'Senior Investigator',
       isOnDuty: true,
     },
+  });
+
+  await prisma.dashboardAccess.createMany({
+    skipDuplicates: true,
+    data: [
+      { userId: policeUser.id, dashboard: 'POLICE', grantedById: adminUser.id },
+      { userId: medicalUser.id, dashboard: 'HOSPITAL', grantedById: adminUser.id },
+      { userId: fireUser.id, dashboard: 'FIRE', grantedById: adminUser.id },
+      { userId: ribUser.id, dashboard: 'RIB', grantedById: adminUser.id },
+    ]
   });
 
   console.log('Officers created');

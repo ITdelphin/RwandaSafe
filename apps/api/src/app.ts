@@ -8,7 +8,10 @@ import { globalRateLimiter } from './middleware/rateLimiter';
 import { env } from './config/env';
 import { auditLogger } from './audit/audit.middleware';
 import { authRouter } from './modules/auth/auth.router';
+import { accessRouter } from './modules/access/access.router';
 import { incidentsRouter } from './modules/incidents/incidents.router';
+import { dashboardGuard } from './middleware/dashboardGuard';
+import { requireAuth } from './middleware/auth';
 import { mediaRouter } from './modules/media/media.router';
 import { deleteMediaRouter } from './modules/media/deleteRouter';
 import { dashboardRouter } from './modules/dashboard/dashboard.router';
@@ -48,6 +51,7 @@ app.use(cors({
     env.DASHBOARD_FIRE_URL,
     env.DASHBOARD_RIB_URL,
     env.DASHBOARD_ADMIN_URL,
+    'http://localhost:3006',
   ],
   credentials: true,
 }));
@@ -71,17 +75,18 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/v1/auth', authRouter);
+app.use('/v1/access', accessRouter);
 app.use('/v1/incidents', incidentsRouter);
 app.use('/v1/incidents', mediaRouter);
 app.use('/v1/media', deleteMediaRouter);
-app.use('/v1/dashboard', dashboardRouter);
+app.use('/v1/dashboard', requireAuth, dashboardGuard, dashboardRouter);
 app.use('/v1/officers', officersRouter);
 app.use('/v1/resources', resourcesRouter);
-app.use('/v1/medical', medicalRouter);
+app.use('/v1/medical', requireAuth, dashboardGuard, medicalRouter);
 app.use('/v1/ambulances', ambulanceRouter);
 app.use('/v1/capacity', capacityRouter);
-app.use('/v1/fire', fireRouter);
-app.use('/v1/investigations', investigationRouter);
+app.use('/v1/fire', requireAuth, dashboardGuard, fireRouter);
+app.use('/v1/investigations', requireAuth, dashboardGuard, investigationRouter);
 app.use('/v1/patterns', patternRouter);
 app.use('/v1/tips', tiplineRouter);
 app.use('/v1/stats', statsRouter);

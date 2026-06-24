@@ -6,9 +6,9 @@ export function generateOtpCode(): string {
   return String(crypto.randomInt(100000, 999999));
 }
 
-export async function createOtp(userId: string): Promise<string> {
+export async function createOtp(userId: string, channel: string = 'SMS'): Promise<string> {
   await prisma.otpCode.updateMany({
-    where: { userId, isUsed: false },
+    where: { userId, channel, isUsed: false },
     data: { isUsed: true },
   });
 
@@ -16,7 +16,7 @@ export async function createOtp(userId: string): Promise<string> {
   const expiresAt = new Date(Date.now() + env.OTP_EXPIRES_MINUTES * 60 * 1000);
 
   await prisma.otpCode.create({
-    data: { userId, code, expiresAt },
+    data: { userId, code, channel, expiresAt },
   });
 
   return code;
@@ -43,7 +43,7 @@ export async function verifyOtp(userId: string, code: string): Promise<boolean> 
   return true;
 }
 
-export async function sendOtpSms(phone: string, code: string): Promise<void> {
+export async function sendOtpSms(phone: string, code: string, lang: string = 'en'): Promise<void> {
   // Always log OTP for debugging (visible in Railway logs)
   console.log(`[OTP] ${phone}: ${code}`);
 

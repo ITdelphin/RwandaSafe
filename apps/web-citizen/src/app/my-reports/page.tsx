@@ -30,7 +30,7 @@ function MyReportsContent() {
       return;
     }
     incidentsApi.list()
-      .then((r) => setIncidents(r.data.data ?? []))
+      .then((r: any) => setIncidents(r.data.data ?? []))
       .catch(() => { })
       .finally(() => setLoading(false));
   }, [isAuthenticated, loginParam]);
@@ -39,7 +39,7 @@ function MyReportsContent() {
     setShowLogin(false);
     if (isAuthenticated) {
       incidentsApi.list()
-        .then((r) => setIncidents(r.data.data ?? []))
+        .then((r: any) => setIncidents(r.data.data ?? []))
         .catch(() => { });
     }
   };

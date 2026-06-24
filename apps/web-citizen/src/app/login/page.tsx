@@ -1,8 +1,8 @@
 'use client';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
-import { Shield, Eye, EyeOff, AlertCircle, Lock, ArrowLeft } from 'lucide-react';
+import { Shield, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { authApi } from '../../lib/apiClient';
 import { useAuthStore } from '../../store/authStore';
 
@@ -12,107 +12,129 @@ export default function CitizenLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
-  const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const submit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const res = await authApi.login(email, password);
-      const { accessToken, user } = (res as any).data.data;
-      login(user, accessToken, remember);
+      const res: any = await authApi.login(email, password);
+      const { accessToken, user } = res.data.data;
+      // Staff accounts should not log in through the citizen portal
+      if (user.role !== 'CITIZEN') {
+        setError('This portal is for citizens only. Please use your department staff portal to sign in.');
+        setLoading(false);
+        return;
+      }
+      login(user, accessToken, true);
       router.push('/dashboard');
-    } catch (e: any) {
-      setError(e.response?.data?.error ?? e.response?.data?.message ?? 'Invalid email or password');
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.response?.data?.error || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
   };
 
-  const inp: React.CSSProperties = {
-    width: '100%', boxSizing: 'border-box', padding: '11px 14px',
-    border: '1px solid #dadce0', borderRadius: '10px', fontSize: '14px',
-    backgroundColor: '#f8f9fa', color: '#202124', outline: 'none',
-  };
-
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0F172A 0%, #0F4C75 60%, #0D3B5E 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-      <div style={{ width: '100%', maxWidth: '420px' }}>
-        <div className="relative w-full max-w-sm mb-4" style={{ maxWidth: '420px' }}>
-          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#93C5FD', fontSize: '13px', fontWeight: 500, textDecoration: 'none' }}>
-            <ArrowLeft size={16} /> Back to Home
-          </Link>
-        </div>
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden bg-slate-900">
+      {/* Background gradients */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 z-0"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/20 rounded-full blur-[100px] z-0 pointer-events-none"></div>
 
-        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <div style={{ width: '60px', height: '60px', borderRadius: '16px', background: 'linear-gradient(135deg, #C62828, #0F4C75)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', boxShadow: '0 4px 14px rgba(15,76,117,0.4)' }}>
-            <Shield size={26} color="white" />
+      <div className="relative z-10 w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 mb-4">
+            <Shield className="text-white w-8 h-8" />
           </div>
-          <h1 style={{ fontSize: 'clamp(18px,5vw,22px)', fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>Rwanda Safe</h1>
-          <p style={{ fontSize: '13px', color: '#94A3B8', margin: 0 }}>Citizen Portal</p>
+          <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Citizen Portal</h1>
+          <p className="text-blue-200">Sign in to report incidents and track emergencies.</p>
         </div>
 
-        <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: 'clamp(20px,5vw,32px)', boxShadow: '0 2px 16px rgba(0,0,0,0.08)', border: '1px solid #e8eaed' }}>
-          <h2 style={{ fontSize: '17px', fontWeight: 700, color: '#202124', margin: '0 0 4px' }}>Sign in</h2>
-          <p style={{ fontSize: '13px', color: '#5f6368', margin: '0 0 20px' }}>Access your reports and dashboard.</p>
-
-          <form onSubmit={submit}>
-            <div style={{ marginBottom: '14px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#202124', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email address</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@example.com" style={inp}
-                onFocus={e => { e.target.style.borderColor = '#0F4C75'; e.target.style.backgroundColor = '#fff'; e.target.style.boxShadow = '0 0 0 3px rgba(15,76,117,0.12)'; }}
-                onBlur={e => { e.target.style.borderColor = '#dadce0'; e.target.style.backgroundColor = '#f8f9fa'; e.target.style.boxShadow = 'none'; }}
-              />
-            </div>
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#202124', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Password</label>
-              <div style={{ position: 'relative' }}>
-                <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" style={{ ...inp, paddingRight: '44px' }}
-                  onFocus={e => { e.target.style.borderColor = '#0F4C75'; e.target.style.backgroundColor = '#fff'; e.target.style.boxShadow = '0 0 0 3px rgba(15,76,117,0.12)'; }}
-                  onBlur={e => { e.target.style.borderColor = '#dadce0'; e.target.style.backgroundColor = '#f8f9fa'; e.target.style.boxShadow = 'none'; }}
+        <div className="bg-white rounded-3xl p-8 shadow-2xl">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Email Address</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                  <Mail size={18} />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-900"
                 />
-                <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#5f6368', padding: 0, display: 'flex', alignItems: 'center' }}>
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Password</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                  <Lock size={18} />
+                </div>
+                <input
+                  type={showPw ? "text" : "password"}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="w-full pl-12 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-900"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(!showPw)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-blue-600 transition-colors"
+                >
+                  {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#5f6368' }}>
-                <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} style={{ accentColor: '#0F4C75' }} /> Remember me
+
+            <div className="flex items-center justify-between mt-2">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input type="checkbox" className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300" />
+                <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Remember me</span>
               </label>
-              <Link href="/forgot-password" style={{ fontSize: '13px', color: '#0F4C75', textDecoration: 'none', fontWeight: 500 }}>Forgot password?</Link>
+              <Link href="/forgot-password" className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                Reset Account
+              </Link>
             </div>
 
             {error && (
-              <div style={{ backgroundColor: '#fce8e6', border: '1px solid #f5c6c2', borderRadius: '10px', padding: '10px 14px', marginBottom: '14px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                <AlertCircle size={14} style={{ color: '#d93025', flexShrink: 0, marginTop: '1px' }} />
-                <p style={{ fontSize: '13px', color: '#c5221f', margin: 0 }}>{error}</p>
+              <div className="bg-red-50 text-red-600 text-sm font-medium p-4 rounded-xl border border-red-100 flex gap-3 items-start animate-in fade-in slide-in-from-top-2">
+                <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+                <span>{error}</span>
               </div>
             )}
 
-            <button type="submit" disabled={loading || !email || !password}
-              style={{ width: '100%', padding: '12px', borderRadius: '10px', border: 'none', backgroundColor: loading || !email || !password ? '#dadce0' : '#0F4C75', color: loading || !email || !password ? '#80868b' : '#fff', fontSize: '14px', fontWeight: 700, cursor: loading || !email || !password ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.15s' }}>
-              {loading ? <><span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} /> Signing in...</> : 'Sign In'}
+            <button
+              type="submit"
+              disabled={loading || !email || !password}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md shadow-blue-600/20 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Authenticating...
+                </>
+              ) : 'Sign In to Portal'}
             </button>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </form>
 
-          <div style={{ textAlign: 'center', marginTop: '18px' }}>
-            <p style={{ fontSize: '13px', color: '#5f6368', margin: '0 0 6px' }}>
-              Don&apos;t have an account?{' '}<Link href="/signin" style={{ color: '#0F4C75', fontWeight: 600, textDecoration: 'none' }}>Sign up with phone</Link>
+          <div className="mt-8 pt-6 border-t border-slate-100 text-center flex flex-col gap-3">
+            <p className="text-slate-500 text-sm">
+              Don't have an account? <Link href="/register" className="font-bold text-blue-600 hover:text-blue-800">Sign Up</Link>
             </p>
-            <p style={{ fontSize: '13px', color: '#5f6368', margin: 0 }}>
-              Use phone & OTP instead?{' '}<Link href="/signin" style={{ color: '#0F4C75', fontWeight: 600, textDecoration: 'none' }}>Go to phone sign in</Link>
+            <p className="text-slate-500 text-sm">
+              Need immediate help? <Link href="/dashboard" className="font-bold text-slate-700 hover:text-slate-900">Continue as Guest</Link>
             </p>
           </div>
         </div>
-
-        <p style={{ textAlign: 'center', fontSize: '11px', color: '#9e9e9e', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-          <Lock size={10} /> Secured by Rwanda Safe
-        </p>
       </div>
     </div>
   );
