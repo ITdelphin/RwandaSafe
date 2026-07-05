@@ -15,6 +15,7 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   login: (user: Officer, token: string, remember?: boolean) => void;
+  setTokens: (accessToken: string, refreshToken?: string) => void;
   logout: () => void;
   hydrate: () => void;
 }
@@ -34,9 +35,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user, token, isAuthenticated: true });
   },
 
+  setTokens: (accessToken, refreshToken) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('rib_access_token', accessToken);
+      if (refreshToken) localStorage.setItem('rib_refresh_token', refreshToken);
+    }
+  },
+
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('rib_access_token');
+      localStorage.removeItem('rib_refresh_token');
       localStorage.removeItem('rib_user');
       sessionStorage.removeItem('rib_access_token');
       sessionStorage.removeItem('rib_user');

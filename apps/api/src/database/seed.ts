@@ -1,10 +1,12 @@
 import 'dotenv/config';
 import { PrismaClient, AgencyType, Role, ResourceType } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database...');
+  const adminPasswordHash = await bcrypt.hash('Admin@2025!', 10);
 
   // ── Agencies ────────────────────────────────────────────────────────────────
   const rnp = await prisma.agency.upsert({
@@ -91,13 +93,16 @@ async function main() {
 
   // ── Super Admin ─────────────────────────────────────────────────────────────
   const adminUser = await prisma.user.upsert({
-    where: { phone: '+250788000001' },
+    where: { email: 'admin@rwanadasafe.rw' },
     update: {},
     create: {
+      email: 'admin@rwanadasafe.rw',
       phone: '+250788000001',
       name: 'Super Administrator',
       role: Role.SUPER_ADMIN,
       isVerified: true,
+      isApproved: true,
+      passwordHash: adminPasswordHash,
     },
   });
 
@@ -110,6 +115,7 @@ async function main() {
       name: 'Officer Jean-Paul Habimana',
       role: Role.POLICE_OFFICER,
       isVerified: true,
+      isApproved: true,
     },
   });
 
@@ -121,6 +127,7 @@ async function main() {
       name: 'Dr. Marie Uwimana',
       role: Role.MEDICAL_RESPONDER,
       isVerified: true,
+      isApproved: true,
     },
   });
 
@@ -132,6 +139,7 @@ async function main() {
       name: 'Officer Eric Nkurunziza',
       role: Role.FIRE_OFFICER,
       isVerified: true,
+      isApproved: true,
     },
   });
 
@@ -143,6 +151,7 @@ async function main() {
       name: 'Investigator Alice Mukamana',
       role: Role.RIB_INVESTIGATOR,
       isVerified: true,
+      isApproved: true,
     },
   });
 
@@ -239,7 +248,7 @@ async function main() {
 
   console.log('Resources created');
   console.log('\nSeed complete. Accounts:');
-  console.log('  Super Admin : +250788000001');
+  console.log('  Super Admin : admin@rwanadasafe.rw / Admin@2025!');
   console.log('  Police      : +250788100001');
   console.log('  Medical     : +250788200001');
   console.log('  Fire        : +250788300001');

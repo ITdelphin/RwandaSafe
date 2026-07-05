@@ -1,6 +1,6 @@
 import axios from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/v1';
-export const apiClient = axios.create({ baseURL: API_BASE_URL });
+export const apiClient = axios.create({ baseURL: API_BASE_URL, withCredentials: true });
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('rib_access_token');
@@ -8,10 +8,27 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
-apiClient.interceptors.response.use(res => res, error => {
+apiClient.interceptors.response.use(res => res, async (error) => {
   if (error.response?.status === 401 && typeof window !== 'undefined') {
-    localStorage.removeItem('rib_access_token');
-    window.location.href = '/login';
+    const refreshToken = localStorage.getItem('rib_refresh_token');
+    if (refreshToken && !error.config._retry) {
+      error.config._retry = true;
+      try {
+        const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken }, { withCredentials: true });
+        localStorage.setItem('rib_access_token', data.data.accessToken);
+        error.config.headers.Authorization = `Bearer ${data.data.accessToken}`;
+        return apiClient(error.config);
+      } catch {
+        localStorage.removeItem('rib_access_token');
+        localStorage.removeItem('rib_refresh_token');
+        localStorage.removeItem('rib_user');
+        window.location.href = '/login';
+      }
+    } else {
+      localStorage.removeItem('rib_access_token');
+      localStorage.removeItem('rib_user');
+      window.location.href = '/login';
+    }
   }
   return Promise.reject(error);
 });
@@ -38,33 +55,26 @@ export const investigationApi = {
   linkIncidents: (id: string, data: any) => apiClient.post(`/investigations/${id}/link-incidents`, data),
   close: (id: string, data: any) => apiClient.post(`/investigations/${id}/close`, data),
   addSuspect: (id: string, data: any) => apiClient.post(`/investigations/${id}/suspects`, data),
-  updateSuspect: (suspectId: string, data: any) => apiClient.patch(`/suspects/${suspectId}/status`, data),
-  uploadEvidence: (id: string, formData: FormData) => apiClient.post(`/investigations/${id}/evidence`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-  listEvidence: (id: string) => apiClient.get(`/investigations/${id}/evidence`),
-  getEvidenceUrl: (evidenceId: string) => apiClient.get(`/evidence/${evidenceId}/url`),
-  exportPdf: (id: string) => apiClient.get(`/investigations/${id}/export-pdf`, { responseType: 'blob' }),
+  updateSuspectStatus: (id: string, suspectId: string, data: any) => apiClient.patch(`/investigations/${id}/suspects/${suspectId}`, data),
+  getEvidence: (id: string) => apiClient.get(`/investigations/${id}/evidence`),
+  addEvidence: (id: string, data: any) => apiClient.post(`/investigations/${id}/evidence`, data),
+  deleteEvidence: (id: string, evidenceId: string) => apiClient.delete(`/investigations/${id}/evidence/${evidenceId}`),
 };
 export const patternApi = {
+  list: (params?: any) => apiClient.get('/patterns', { params }),
   getAlerts: () => apiClient.get('/patterns/alerts'),
   review: (id: string, data: any) => apiClient.patch(`/patterns/${id}/review`, data),
-  run: () => apiClient.post('/patterns/run'),
 };
 export const tiplineApi = {
   list: (params?: any) => apiClient.get('/tips', { params }),
-  review: (id: string, data: any) => apiClient.patch(`/tips/${id}/review`, data),
-};
-export const officersApi = {
-  list: (params?: any) => apiClient.get('/officers', { params }),
-  getById: (id: string) => apiClient.get(`/officers/${id}`),
-  toggleDuty: (id: string) => apiClient.patch(`/officers/${id}/duty`),
-  updateLocation: (id: string, data: any) => apiClient.patch(`/officers/${id}/location`, data),
+  getById: (id: string) => apiClient.get(`/tips/${id}`),
+  updateStatus: (id: string, data: any) => apiClient.patch(`/tips/${id}/status`, data),
 };
 export const authApi = {
   login: (email: string, password: string) => apiClient.post('/auth/login', { email, password }),
   register: (data: any) => apiClient.post('/auth/register', data),
   forgotPassword: (email: string) => apiClient.post('/auth/forgot-password', { email }),
   resetPassword: (token: string, password: string) => apiClient.post('/auth/reset-password', { token, password }),
-  // Keep OTP for citizen
   requestOtp: (phone: string) => apiClient.post('/auth/otp/request', { phone }),
   verifyOtp: (phone: string, code: string) => apiClient.post('/auth/otp/verify', { phone, code }),
 };

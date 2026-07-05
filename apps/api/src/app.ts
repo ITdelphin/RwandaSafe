@@ -20,6 +20,7 @@ import { fireRouter } from './modules/fire/fire.router';
 import { investigationRouter } from './modules/investigation/investigation.router';
 import { patternRouter } from './modules/investigation/pattern.router';
 import { tiplineRouter } from './modules/tipline/tipline.router';
+import { adminRouter } from './modules/admin/admin.router';
 
 export const app = express();
 
@@ -78,6 +79,7 @@ app.use('/v1/fire', fireRouter);
 app.use('/v1/investigations', investigationRouter);
 app.use('/v1/patterns', patternRouter);
 app.use('/v1/tips', tiplineRouter);
+app.use('/v1/admin', adminRouter);
 
 app.use(notFound);
 app.use(errorHandler);

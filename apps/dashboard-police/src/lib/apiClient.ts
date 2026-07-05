@@ -4,12 +4,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/v
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: false,
+  withCredentials: true,
 });
 
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    // TODO: use httpOnly cookies in production instead of localStorage
     const token = localStorage.getItem('police_access_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
@@ -18,11 +17,28 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (res) => res,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('police_access_token');
-      localStorage.removeItem('police_user');
-      window.location.href = '/login';
+      const refreshToken = localStorage.getItem('police_refresh_token');
+      if (refreshToken && !error.config._retry) {
+        error.config._retry = true;
+        try {
+          const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken }, { withCredentials: true });
+          const newToken = data.data.accessToken;
+          localStorage.setItem('police_access_token', newToken);
+          error.config.headers.Authorization = `Bearer ${newToken}`;
+          return apiClient(error.config);
+        } catch {
+          localStorage.removeItem('police_access_token');
+          localStorage.removeItem('police_refresh_token');
+          localStorage.removeItem('police_user');
+          window.location.href = '/login';
+        }
+      } else {
+        localStorage.removeItem('police_access_token');
+        localStorage.removeItem('police_user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

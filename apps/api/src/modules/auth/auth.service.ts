@@ -40,6 +40,9 @@ export const authService = {
     const user = await prisma.user.findFirst({ where: { email } });
     if (!user || !user.passwordHash) throw Object.assign(new Error('Invalid email or password'), { statusCode: 401 });
     if (!user.isActive) throw Object.assign(new Error('Account is disabled'), { statusCode: 403 });
+    if (!user.isApproved && user.role !== Role.SUPER_ADMIN && user.role !== Role.CITIZEN) {
+      throw Object.assign(new Error('Your account is pending approval by a Super Admin. Please wait for activation.'), { statusCode: 403 });
+    }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) throw Object.assign(new Error('Invalid email or password'), { statusCode: 401 });
@@ -55,7 +58,7 @@ export const authService = {
       data: { userId: user.id, token: refreshToken, expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
     });
 
-    return { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role, phone: user.phone } };
+    return { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role, phone: user.phone, isApproved: user.isApproved } };
   },
 
   async register(data: { email: string; password: string; name: string; phone?: string; agencyType?: string }) {
@@ -72,6 +75,7 @@ export const authService = {
       RIB: Role.RIB_INVESTIGATOR,
     };
     const role = data.agencyType ? (roleMap[data.agencyType] ?? Role.CITIZEN) : Role.CITIZEN;
+    const requiresApproval = data.agencyType && role !== Role.CITIZEN;
 
     const user = await prisma.user.create({
       data: {
@@ -82,6 +86,9 @@ export const authService = {
         role,
         isVerified: true,
         isActive: true,
+        isApproved: !requiresApproval,
+        requestedRole: requiresApproval ? role : null,
+        requestedAgency: requiresApproval ? data.agencyType : null,
       },
     });
 
@@ -91,22 +98,35 @@ export const authService = {
       if (agency) {
         await prisma.officer.create({
           data: { userId: user.id, agencyId: agency.id, isOnDuty: false },
-        }).catch(() => {}); // ignore if already exists
+        }).catch(() => {});
       }
     }
 
-    // Send welcome email
-    await sendEmail(data.email, 'Welcome to Rwanda Safe', `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #1B5E82;">Welcome to Rwanda Safe, ${data.name}!</h2>
-        <p>Your account has been created successfully.</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        <p><strong>Role:</strong> ${role.replace(/_/g, ' ')}</p>
-        <p>You can now log in to your dashboard.</p>
-        <hr>
-        <p style="color: #666; font-size: 12px;">Rwanda Safe Emergency Response Platform</p>
-      </div>
-    `);
+    // Send email notification
+    if (requiresApproval) {
+      await sendEmail(data.email, 'Rwanda Safe - Account Pending Approval', `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #1B5E82;">Welcome to Rwanda Safe, ${data.name}!</h2>
+          <p>Your account has been created with the role of <strong>${role.replace(/_/g, ' ')}</strong>.</p>
+          <p>Your account is currently <strong>pending approval</strong> from a Super Admin.</p>
+          <p>You will receive an email once your account has been approved. You will then be able to log in to your dashboard.</p>
+          <hr>
+          <p style="color: #666; font-size: 12px;">Rwanda Safe Emergency Response Platform</p>
+        </div>
+      `);
+    } else {
+      await sendEmail(data.email, 'Welcome to Rwanda Safe', `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #1B5E82;">Welcome to Rwanda Safe, ${data.name}!</h2>
+          <p>Your account has been created successfully.</p>
+          <p><strong>Email:</strong> ${data.email}</p>
+          <p><strong>Role:</strong> ${role.replace(/_/g, ' ')}</p>
+          <p>You can now log in to your dashboard.</p>
+          <hr>
+          <p style="color: #666; font-size: 12px;">Rwanda Safe Emergency Response Platform</p>
+        </div>
+      `);
+    }
 
     const accessToken = signAccess(user);
     const refreshToken = signRefresh(user.id);
@@ -114,16 +134,15 @@ export const authService = {
       data: { userId: user.id, token: refreshToken, expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
     });
 
-    return { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role } };
+    return { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role, isApproved: user.isApproved } };
   },
 
   async forgotPassword(email: string) {
     const user = await prisma.user.findFirst({ where: { email } });
-    // Always return success to prevent email enumeration
     if (!user) return { message: 'If that email exists, a reset link has been sent.' };
 
     const token = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
 
     await prisma.user.update({
       where: { id: user.id },
@@ -217,5 +236,86 @@ export const authService = {
 
   async logout(refreshToken: string) {
     await prisma.refreshToken.updateMany({ where: { token: refreshToken }, data: { isRevoked: true } });
+  },
+
+  // ── Super Admin Approval ─────────────────────────────────────────────
+
+  async getPendingApprovals() {
+    const users = await prisma.user.findMany({
+      where: { isApproved: false, requestedRole: { not: null } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return users.map((u) => ({
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      role: u.role,
+      requestedRole: u.requestedRole,
+      requestedAgency: u.requestedAgency,
+      createdAt: u.createdAt,
+    }));
+  },
+
+  async approveUser(adminId: string, userId: string, data: { role?: string; agency?: string }) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw Object.assign(new Error('User not found'), { statusCode: 404 });
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        isApproved: true,
+        role: (data.role as Role) ?? user.role,
+        approvedBy: adminId,
+        approvedAt: new Date(),
+        requestedRole: null,
+        requestedAgency: null,
+      },
+    });
+
+    // Link officer record if agency given
+    if (data.agency) {
+      const agency = await prisma.agency.findFirst({ where: { type: data.agency as any } });
+      if (agency) {
+        await prisma.officer.create({ data: { userId: updated.id, agencyId: agency.id, isOnDuty: false } }).catch(() => {});
+      }
+    }
+
+    await sendEmail(updated.email ?? '', 'Rwanda Safe - Account Approved', `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #22C55E;">Account Approved!</h2>
+        <p>Hello ${updated.name ?? 'User'},</p>
+        <p>Your Rwanda Safe account has been <strong>approved</strong> by a Super Admin.</p>
+        <p><strong>Role:</strong> ${(data.role ?? user.role).replace(/_/g, ' ')}</p>
+        <p>You can now log in to your dashboard.</p>
+        <hr>
+        <p style="color: #666; font-size: 12px;">Rwanda Safe Emergency Response Platform</p>
+      </div>
+    `);
+
+    return { message: 'User approved successfully', user: { id: updated.id, email: updated.email, name: updated.name, role: updated.role, isApproved: updated.isApproved } };
+  },
+
+  async rejectUser(adminId: string, userId: string, reason?: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw Object.assign(new Error('User not found'), { statusCode: 404 });
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isActive: false, requestedRole: null, requestedAgency: null, approvedBy: adminId, approvedAt: new Date() },
+    });
+
+    await sendEmail(user.email ?? '', 'Rwanda Safe - Account Request Declined', `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #d93025;">Account Request Declined</h2>
+        <p>Hello ${user.name ?? 'User'},</p>
+        <p>Your request for a Rwanda Safe agency account has been declined.</p>
+        ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+        <p>If you believe this is in error, please contact the system administrator.</p>
+        <hr>
+        <p style="color: #666; font-size: 12px;">Rwanda Safe Emergency Response Platform</p>
+      </div>
+    `);
+
+    return { message: 'User request rejected' };
   },
 };

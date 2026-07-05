@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/v1';
 
-export const apiClient = axios.create({ baseURL: API_BASE_URL, withCredentials: false });
+export const apiClient = axios.create({ baseURL: API_BASE_URL, withCredentials: true });
 
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
@@ -14,11 +14,27 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (res) => res,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('hospital_access_token');
-      localStorage.removeItem('hospital_user');
-      window.location.href = '/login';
+      const refreshToken = localStorage.getItem('hospital_refresh_token');
+      if (refreshToken && !error.config._retry) {
+        error.config._retry = true;
+        try {
+          const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken }, { withCredentials: true });
+          localStorage.setItem('hospital_access_token', data.data.accessToken);
+          error.config.headers.Authorization = `Bearer ${data.data.accessToken}`;
+          return apiClient(error.config);
+        } catch {
+          localStorage.removeItem('hospital_access_token');
+          localStorage.removeItem('hospital_refresh_token');
+          localStorage.removeItem('hospital_user');
+          window.location.href = '/login';
+        }
+      } else {
+        localStorage.removeItem('hospital_access_token');
+        localStorage.removeItem('hospital_user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

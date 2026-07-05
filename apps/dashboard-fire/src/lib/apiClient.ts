@@ -1,6 +1,6 @@
 import axios from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/v1';
-export const apiClient = axios.create({ baseURL: API_BASE_URL });
+export const apiClient = axios.create({ baseURL: API_BASE_URL, withCredentials: true });
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('fire_access_token');
@@ -8,10 +8,27 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
-apiClient.interceptors.response.use(res => res, error => {
+apiClient.interceptors.response.use(res => res, async (error) => {
   if (error.response?.status === 401 && typeof window !== 'undefined') {
-    localStorage.removeItem('fire_access_token');
-    window.location.href = '/login';
+    const refreshToken = localStorage.getItem('fire_refresh_token');
+    if (refreshToken && !error.config._retry) {
+      error.config._retry = true;
+      try {
+        const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken }, { withCredentials: true });
+        localStorage.setItem('fire_access_token', data.data.accessToken);
+        error.config.headers.Authorization = `Bearer ${data.data.accessToken}`;
+        return apiClient(error.config);
+      } catch {
+        localStorage.removeItem('fire_access_token');
+        localStorage.removeItem('fire_refresh_token');
+        localStorage.removeItem('fire_user');
+        window.location.href = '/login';
+      }
+    } else {
+      localStorage.removeItem('fire_access_token');
+      localStorage.removeItem('fire_user');
+      window.location.href = '/login';
+    }
   }
   return Promise.reject(error);
 });
@@ -39,21 +56,17 @@ export const fireApi = {
   searchChemical: (q: string) => apiClient.get('/fire/chemicals', { params: { q } }),
   submitPostReport: (incidentId: string, data: any) => apiClient.post(`/fire/${incidentId}/post-report`, data),
   getUnits: () => apiClient.get('/fire/units'),
-  getAvailableUnits: () => apiClient.get('/fire/units/available'),
-  getReports: (params?: any) => apiClient.get('/fire/reports', { params }),
+  updateUnitLocation: (id: string, data: any) => apiClient.patch(`/fire/units/${id}/location`, data),
+  createNearMiss: (data: any) => apiClient.post('/fire/near-miss', data),
 };
-export const officersApi = {
-  list: (params?: any) => apiClient.get('/officers', { params }),
-  getById: (id: string) => apiClient.get(`/officers/${id}`),
-  toggleDuty: (id: string) => apiClient.patch(`/officers/${id}/duty`),
-  updateLocation: (id: string, data: any) => apiClient.patch(`/officers/${id}/location`, data),
+export const resourcesApi = {
+  list: (params?: any) => apiClient.get('/resources', { params }),
 };
 export const authApi = {
   login: (email: string, password: string) => apiClient.post('/auth/login', { email, password }),
   register: (data: any) => apiClient.post('/auth/register', data),
   forgotPassword: (email: string) => apiClient.post('/auth/forgot-password', { email }),
   resetPassword: (token: string, password: string) => apiClient.post('/auth/reset-password', { token, password }),
-  // Keep OTP for citizen
   requestOtp: (phone: string) => apiClient.post('/auth/otp/request', { phone }),
   verifyOtp: (phone: string, code: string) => apiClient.post('/auth/otp/verify', { phone, code }),
 };

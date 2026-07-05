@@ -5,6 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/v
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15000,
+  withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -21,9 +22,10 @@ if (typeof window !== 'undefined') {
     async (error) => {
       if (error.response?.status === 401) {
         const refreshToken = localStorage.getItem('refreshToken');
-        if (refreshToken) {
+        if (refreshToken && !error.config._retry) {
+          error.config._retry = true;
           try {
-            const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+            const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken }, { withCredentials: true });
             localStorage.setItem('accessToken', data.data.accessToken);
             error.config.headers.Authorization = `Bearer ${data.data.accessToken}`;
             return axios(error.config);

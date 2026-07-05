@@ -34,9 +34,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user, token, isAuthenticated: true });
   },
 
+  setTokens: (accessToken: string, refreshToken?: string) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('police_access_token', accessToken);
+      if (refreshToken) localStorage.setItem('police_refresh_token', refreshToken);
+    }
+  },
+
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('police_access_token');
+      localStorage.removeItem('police_refresh_token');
       localStorage.removeItem('police_user');
       sessionStorage.removeItem('police_access_token');
       sessionStorage.removeItem('police_user');

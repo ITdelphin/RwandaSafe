@@ -1,2 +1,12 @@
-// Shared UI components — implemented in later chapters
-export {};
+export { Button } from './Button';
+export { Card } from './Card';
+export { Input } from './Input';
+export { Modal } from './Modal';
+export { Badge } from './Badge';
+export { Spinner } from './Spinner';
+export { Select } from './Select';
+export { EmptyState } from './EmptyState';
+export { Avatar } from './Avatar';
+export { Tabs } from './Tabs';
+export { Table } from './Table';
+export { Toast } from './Toast';
